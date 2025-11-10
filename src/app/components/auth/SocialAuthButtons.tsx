@@ -1,14 +1,14 @@
 'use client';
+import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
 import { BsApple } from 'react-icons/bs';
 
 export default function SocialAuthButtons() {
-  // Later: wire to NextAuth signIn('google') / signIn('apple')
   const continueWithGoogle = () => {
-    // signIn('google'); // from "next-auth/react"
+    signIn('google', { callbackUrl: '/dashboard' });
   };
   const continueWithApple = () => {
-    // signIn('apple');
+    signIn('apple', { callbackUrl: '/dashboard' });
   };
 
   return (
