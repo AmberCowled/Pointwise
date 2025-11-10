@@ -24,3 +24,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Gradient rotation */
+@keyframes rotate-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Register custom utilities WITH hover variants */
+@layer utilities {
+  /* Hover variant for gradient rotation */
+  .hover\:animate-rotate-gradient:hover {
+    background-size: 200% 200%;
+    animation: rotate-gradient 4s linear infinite;
+  }
+}

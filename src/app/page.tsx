@@ -1,5 +1,5 @@
-import Authentication from './components/Authentication';
+import AuthPage from './components/auth/AuthPage';
 
 export default function Home() {
-  return <Authentication />;
+  return <AuthPage />;
 }
