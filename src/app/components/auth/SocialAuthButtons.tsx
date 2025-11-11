@@ -1,14 +1,14 @@
 'use client';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
-import { BsApple } from 'react-icons/bs';
+import { FaGithub } from 'react-icons/fa';
 
 export default function SocialAuthButtons() {
   const continueWithGoogle = () => {
     signIn('google', { callbackUrl: '/dashboard' });
   };
-  const continueWithApple = () => {
-    signIn('apple', { callbackUrl: '/dashboard' });
+  const continueWithGithub = () => {
+    signIn('github', { callbackUrl: '/dashboard' });
   };
 
   return (
@@ -23,11 +23,11 @@ export default function SocialAuthButtons() {
       </button>
       <button
         type="button"
-        onClick={continueWithApple}
+        onClick={continueWithGithub}
         className="flex flex-col items-center justify-center rounded-lg bg-zinc-900 border border-white/10 py-2 text-sm hover:bg-zinc-800"
       >
-        <BsApple className="text-2xl mb-1 text-white" />
-        Continue with Apple
+        <FaGithub className="text-2xl mb-1 text-white" />
+        Continue with Github
       </button>
     </div>
   );
