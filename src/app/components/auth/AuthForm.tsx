@@ -24,7 +24,12 @@ export default function AuthForm({ tab }: Props) {
         password: String(fd.get('password') || ''),
       });
     } else {
-      signin(String(fd.get('email') || ''), String(fd.get('password') || ''));
+      const remember = fd.get('remember') === 'on';
+      signin(
+        String(fd.get('email') || ''),
+        String(fd.get('password') || ''),
+        remember,
+      );
     }
   };
 
@@ -98,7 +103,11 @@ export default function AuthForm({ tab }: Props) {
       {tab === 'signin' && (
         <div className="flex items-center justify-between text-xs text-zinc-400">
           <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" className="accent-fuchsia-500/90" />
+            <input
+              type="checkbox"
+              name="remember"
+              className="accent-fuchsia-500/90"
+            />
             Remember me
           </label>
           <a href="#" className="hover:text-zinc-200">

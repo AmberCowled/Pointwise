@@ -31,6 +31,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials?.email },
         });
         if (!user || !user.passwordHash) return null;
+
         const isValid = await bcrypt.compare(
           credentials!.password,
           user.passwordHash,
@@ -39,9 +40,28 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  session: { strategy: sessionStrategy },
+  session: {
+    strategy: sessionStrategy,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // refresh every 24h
+  },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/auth',
+  },
+  callbacks: {
+    async jwt({ token, session }) {
+      if (session?.remember === false) {
+        token.shortSession = true;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Optional: mark it in session object for debugging
+      if (token.shortSession) {
+        session.remember = false;
+      }
+      return session;
+    },
   },
 };

@@ -6,7 +6,7 @@ export function useSignin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signin = async (email: string, password: string) => {
+  const signin = async (email: string, password: string, remember: boolean) => {
     setLoading(true);
     setError(null);
     const res = await signIn('credentials', {
@@ -14,6 +14,7 @@ export function useSignin() {
       password,
       redirect: false, // handle manually
       callbackUrl: '/dashboard',
+      remember,
     });
     setLoading(false);
     if (res?.error) {
