@@ -54,7 +54,7 @@ export default async function DashboardPage() {
     where: {
       userId: userRecord.id,
     },
-    orderBy: [{ dueAt: 'asc' }, { createdAt: 'asc' }],
+    orderBy: [{ startAt: 'asc' }, { dueAt: 'asc' }, { createdAt: 'asc' }],
     take: 500,
   });
 
@@ -66,6 +66,7 @@ export default async function DashboardPage() {
     xp: task.xpValue ?? 0,
     status: task.completedAt ? 'completed' : 'scheduled',
     completed: Boolean(task.completedAt),
+    startAt: task.startAt ? task.startAt.toISOString() : null,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
   }));
 

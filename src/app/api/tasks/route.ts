@@ -8,6 +8,7 @@ type CreateTaskBody = {
   category: string;
   xpValue: number;
   context?: string;
+  startAt?: string | null;
   dueAt?: string | null;
   recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
   recurrenceDays?: number[];
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
     ? Math.max(0, Math.floor(body.xpValue!))
     : 0;
   const description = body.context?.trim() ?? '';
+  const startAt = body.startAt ? new Date(body.startAt) : null;
   const dueAt = body.dueAt ? new Date(body.dueAt) : null;
   const recurrence = body.recurrence ?? 'none';
   const recurrenceDays = Array.isArray(body.recurrenceDays)
@@ -54,11 +56,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 });
   }
 
+  if (startAt && Number.isNaN(startAt.getTime())) {
+    return NextResponse.json(
+      { error: 'Invalid startAt value' },
+      { status: 400 },
+    );
+  }
+
   if (dueAt && Number.isNaN(dueAt.getTime())) {
     return NextResponse.json({ error: 'Invalid dueAt value' }, { status: 400 });
   }
 
-  const baseDate = dueAt ?? startOfDay(new Date());
+  if (startAt && dueAt && startAt > dueAt) {
+    return NextResponse.json(
+      { error: 'Start date cannot be after due date' },
+      { status: 400 },
+    );
+  }
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
@@ -77,6 +91,7 @@ export async function POST(req: Request) {
       xp: number;
       context: string | null;
       status: 'scheduled' | 'in-progress' | 'focus';
+      startAt: string | null;
       dueAt: string | null;
     } & { completed?: boolean }
   > = [];
@@ -89,14 +104,16 @@ export async function POST(req: Request) {
         description,
         category,
         xpValue,
-        dueAt: baseDate,
+        startAt,
+        dueAt,
       },
     });
 
     tasksToReturn.push(serializeTask(task));
   } else {
-    const safeTimes = deriveTimesOfDay({ dueAt: baseDate, timesOfDay });
-    const startDate = new Date(baseDate);
+    const anchorDate = dueAt ?? startAt ?? new Date();
+    const safeTimes = deriveTimesOfDay({ anchorDate, timesOfDay });
+    const startDate = startAt ?? anchorDate;
     const occurrences = generateOccurrences({
       recurrence,
       startDate,
@@ -133,6 +150,7 @@ export async function POST(req: Request) {
           description,
           category,
           xpValue,
+          startAt: occurrence,
           dueAt: occurrence,
           sourceRecurringTaskId: recurringTask.id,
         },
@@ -152,6 +170,7 @@ function serializeTask(task: {
   description: string | null;
   category: string;
   xpValue: number;
+  startAt: Date | null;
   dueAt: Date | null;
   completedAt?: Date | null;
 }): {
@@ -162,6 +181,7 @@ function serializeTask(task: {
   xp: number;
   status: 'scheduled';
   completed?: boolean;
+  startAt: string | null;
   dueAt: string | null;
 } {
   return {
@@ -172,6 +192,7 @@ function serializeTask(task: {
     xp: task.xpValue,
     status: 'scheduled',
     completed: Boolean(task.completedAt),
+    startAt: task.startAt ? task.startAt.toISOString() : null,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
   };
 }
@@ -287,16 +308,16 @@ function addDays(date: Date, amount: number) {
 }
 
 function deriveTimesOfDay({
-  dueAt,
+  anchorDate,
   timesOfDay,
 }: {
-  dueAt: Date | null;
+  anchorDate: Date | null;
   timesOfDay: string[];
 }): string[] {
   if (timesOfDay.length > 0) return timesOfDay;
-  if (dueAt) {
-    const hours = String(dueAt.getHours()).padStart(2, '0');
-    const minutes = String(dueAt.getMinutes()).padStart(2, '0');
+  if (anchorDate) {
+    const hours = String(anchorDate.getHours()).padStart(2, '0');
+    const minutes = String(anchorDate.getMinutes()).padStart(2, '0');
     return [`${hours}:${minutes}`];
   }
   return ['09:00'];

@@ -30,6 +30,7 @@ export async function POST(
           description: true,
           category: true,
           xpValue: true,
+          startAt: true,
           dueAt: true,
           completedAt: true,
         },
@@ -106,6 +107,7 @@ function serializeTask(task: {
   description: string | null;
   category: string | null;
   xpValue: number | null;
+  startAt: Date | null;
   dueAt: Date | null;
   completedAt: Date | null;
 }) {
@@ -117,6 +119,7 @@ function serializeTask(task: {
     xp: task.xpValue ?? 0,
     status: task.completedAt ? 'completed' : 'scheduled',
     completed: Boolean(task.completedAt),
+    startAt: task.startAt ? task.startAt.toISOString() : null,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
   };
 }

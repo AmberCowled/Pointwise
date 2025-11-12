@@ -75,6 +75,7 @@ model Task {
   description   String?
   category      String
   xpValue       Int       @default(0)
+  startAt       DateTime?
   dueAt         DateTime?
   completedAt   DateTime?
   sourceRecurringTaskId String? @db.ObjectId
@@ -87,6 +88,7 @@ model Task {
 
   @@index([userId])
   @@index([sourceRecurringTaskId])
+  @@index([startAt])
 }
 
 enum RecurrenceType {

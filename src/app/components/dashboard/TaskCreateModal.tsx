@@ -8,7 +8,8 @@ export type TaskFormValues = {
   category: string;
   xpValue: number;
   context: string;
-  dueAt?: string;
+  startAt?: string | null;
+  dueAt?: string | null;
   recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
   recurrenceDays?: number[];
   recurrenceMonthDays?: number[];
@@ -66,6 +67,7 @@ export default function TaskCreateModal({
     category: CATEGORIES[0],
     xpValue: 50,
     context: '',
+    startAt: undefined,
     dueAt: initialDate,
     recurrence: 'none',
     recurrenceDays: [],
@@ -74,6 +76,8 @@ export default function TaskCreateModal({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasStart, setHasStart] = useState(false);
+  const [hasDue, setHasDue] = useState(Boolean(initialDate));
 
   const handleChange = <T extends keyof TaskFormValues>(
     key: T,
@@ -140,7 +144,12 @@ export default function TaskCreateModal({
     if (Object.keys(nextErrors).length > 0) return;
 
     try {
-      await onSubmit?.(form);
+      await onSubmit?.({
+        ...form,
+        startAt: hasStart ? (form.startAt ?? null) : null,
+        dueAt: hasDue ? (form.dueAt ?? null) : null,
+        recurrence: form.recurrence ?? 'none',
+      });
       onClose();
     } catch (error) {
       console.error('Failed to create task', error);
@@ -306,16 +315,38 @@ export default function TaskCreateModal({
                           <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
                             Due date & time
                           </label>
+                          <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-zinc-400">
+                            <input
+                              type="checkbox"
+                              className="h-3 w-3 rounded border border-white/20 bg-transparent"
+                              checked={hasDue}
+                              onChange={(event) => {
+                                const next = event.target.checked;
+                                setHasDue(next);
+                                if (next && !form.dueAt) {
+                                  handleChange(
+                                    'dueAt',
+                                    toLocalDateTimeString(defaultDate),
+                                  );
+                                }
+                                if (!next) {
+                                  handleChange('dueAt', undefined);
+                                }
+                              }}
+                            />
+                            <span>Set due date</span>
+                          </label>
                           <input
-                            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:opacity-40"
                             type="datetime-local"
-                            value={form.dueAt ?? ''}
+                            value={hasDue ? (form.dueAt ?? '') : ''}
                             onChange={(event) =>
                               handleChange(
                                 'dueAt',
                                 event.target.value || undefined,
                               )
                             }
+                            disabled={!hasDue}
                           />
                         </div>
                         <div className="space-y-2">
@@ -477,6 +508,46 @@ export default function TaskCreateModal({
                           </div>
                         </div>
                       ) : null}
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+                          Start date & time
+                        </label>
+                        <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-zinc-400">
+                          <input
+                            type="checkbox"
+                            className="h-3 w-3 rounded border border-white/20 bg-transparent"
+                            checked={hasStart}
+                            onChange={(event) => {
+                              const next = event.target.checked;
+                              setHasStart(next);
+                              if (next && !form.startAt) {
+                                handleChange(
+                                  'startAt',
+                                  toLocalDateTimeString(defaultDate),
+                                );
+                              }
+                              if (!next) {
+                                handleChange('startAt', undefined);
+                              }
+                            }}
+                          />
+                          <span>Set start date</span>
+                        </label>
+                        {hasStart ? (
+                          <input
+                            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                            type="datetime-local"
+                            value={form.startAt ?? ''}
+                            onChange={(event) =>
+                              handleChange(
+                                'startAt',
+                                event.target.value || undefined,
+                              )
+                            }
+                          />
+                        ) : null}
+                      </div>
                     </div>
 
                     <aside className="space-y-6">
@@ -494,6 +565,7 @@ export default function TaskCreateModal({
                                 'Add context to describe what success looks like.',
                               xp: form.xpValue,
                               status: 'scheduled',
+                              startAt: hasStart ? (form.startAt ?? null) : null,
                               dueAt: form.dueAt,
                               completed: false,
                             } satisfies DashboardTask

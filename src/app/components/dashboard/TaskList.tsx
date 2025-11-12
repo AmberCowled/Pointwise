@@ -12,6 +12,7 @@ export type DashboardTask = {
   xp: number;
   status: TaskStatus;
   completed?: boolean;
+  startAt?: string | Date | null;
   dueAt?: string | Date | null;
 };
 

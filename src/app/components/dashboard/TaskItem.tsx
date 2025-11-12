@@ -31,17 +31,59 @@ const MONTH_ABBREVIATIONS = [
   'Dec',
 ];
 
-function formatDueLabel(input: Date | string) {
-  const date = input instanceof Date ? input : new Date(input);
-  if (Number.isNaN(date.getTime())) return null;
+function toDate(input?: string | Date | null) {
+  if (!input) return null;
+  const value = input instanceof Date ? input : new Date(input);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+
+function formatScheduleLabel(task: DashboardTask) {
+  const safeStart = toDate(task.startAt);
+  const safeEnd = toDate(task.dueAt);
+
+  if (!safeStart && !safeEnd) return null;
+
+  if (safeStart && safeEnd) {
+    const sameDay = isSameDay(safeStart, safeEnd);
+    if (sameDay) {
+      const datePart = formatDatePart(safeStart);
+      const startTime = formatTimePart(safeStart);
+      const endTime = formatTimePart(safeEnd);
+      const timeRange = startTime === endTime ? '' : ` – ${endTime}`;
+      return `${datePart} · ${startTime}${timeRange}`;
+    }
+    return `${formatDateTime(safeStart)} → ${formatDateTime(safeEnd)}`;
+  }
+
+  if (safeStart) return formatDateTime(safeStart);
+  return formatDateTime(safeEnd!);
+}
+
+function formatDateTime(date: Date) {
+  return `${formatDatePart(date)} · ${formatTimePart(date)}`;
+}
+
+function formatDatePart(date: Date) {
   const weekday = DAY_ABBREVIATIONS[date.getDay()];
   const month = MONTH_ABBREVIATIONS[date.getMonth()];
   const day = date.getDate();
+  return `${weekday}, ${String(day).padStart(2, '0')} ${month}`;
+}
+
+function formatTimePart(date: Date) {
   const hours24 = date.getHours();
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
   const period = hours24 < 12 ? 'AM' : 'PM';
-  return `${weekday}, ${day.toString().padStart(2, '0')} ${month} · ${hours12}:${minutes} ${period}`;
+  return `${hours12}:${minutes} ${period}`;
+}
+
+function isSameDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 export default function TaskItem({
@@ -71,7 +113,7 @@ export default function TaskItem({
       : 'border-white/10 text-zinc-300 group-hover:border-indigo-400/60 group-hover:text-white',
   ].join(' ');
 
-  const dueDateLabel = task.dueAt ? formatDueLabel(task.dueAt) : null;
+  const scheduleLabel = formatScheduleLabel(task);
 
   const subtitle = task.context ?? task.category ?? '';
 
@@ -83,9 +125,9 @@ export default function TaskItem({
           {subtitle ? (
             <p className="text-sm text-zinc-400">{subtitle}</p>
           ) : null}
-          {dueDateLabel ? (
+          {scheduleLabel ? (
             <p className="text-xs font-medium text-indigo-200/80">
-              Due {dueDateLabel}
+              {scheduleLabel}
             </p>
           ) : null}
         </div>

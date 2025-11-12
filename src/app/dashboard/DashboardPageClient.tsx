@@ -70,9 +70,6 @@ export default function DashboardPageClient({
   const handleCreateTask = async (values: TaskFormValues) => {
     setIsCreating(true);
     try {
-      const dueAtPayload =
-        values.dueAt ?? `${toDateKey(selectedDate)}T${DEFAULT_TIME_OF_DAY}`;
-
       const response = await fetch('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +78,8 @@ export default function DashboardPageClient({
           category: values.category,
           xpValue: values.xpValue,
           context: values.context,
-          dueAt: dueAtPayload,
+          startAt: values.startAt ?? null,
+          dueAt: values.dueAt ?? null,
           recurrence: values.recurrence ?? 'none',
           recurrenceDays: values.recurrenceDays ?? [],
           recurrenceMonthDays: values.recurrenceMonthDays ?? [],
@@ -107,19 +105,52 @@ export default function DashboardPageClient({
   };
 
   const filteredTasks = useMemo(() => {
+    const dayStart = startOfDay(selectedDate);
+    const dayKey = dayStart.getTime();
     return taskItems.filter((task) => {
-      if (!task.dueAt) {
-        return isSameDay(selectedDate, startOfDay(new Date()));
-      }
-      const due =
-        task.dueAt instanceof Date
-          ? task.dueAt
-          : new Date(task.dueAt as string);
-      if (Number.isNaN(due.getTime()))
-        return isSameDay(selectedDate, startOfDay(new Date()));
-      return isSameDay(startOfDay(due), selectedDate);
+      if (task.completed) return false;
+      const rawStart = toDate(task.startAt);
+      const rawEnd = toDate(task.dueAt);
+      const start = rawStart
+        ? startOfDay(rawStart)
+        : rawEnd
+          ? startOfDay(rawEnd)
+          : null;
+      const end = rawEnd
+        ? startOfDay(rawEnd)
+        : rawStart && !task.completed
+          ? null
+          : start;
+      if (!start && !end) return false;
+      const startTime = start?.getTime() ?? Number.NEGATIVE_INFINITY;
+      const endTime = end ? end.getTime() : Number.POSITIVE_INFINITY;
+      return startTime <= dayKey && endTime >= dayKey;
     });
   }, [selectedDate, taskItems]);
+
+  const optionalTasks = useMemo(
+    () =>
+      taskItems.filter(
+        (task) => !task.completed && !task.startAt && !task.dueAt,
+      ),
+    [taskItems],
+  );
+
+  const overdueTasks = useMemo(() => {
+    const now = Date.now();
+    return taskItems
+      .filter((task) => {
+        if (task.completed) return false;
+        const due = toDate(task.dueAt);
+        if (!due) return false;
+        return due.getTime() < now;
+      })
+      .sort((a, b) => {
+        const aDue = toDate(a.dueAt)!.getTime();
+        const bDue = toDate(b.dueAt)!.getTime();
+        return aDue - bDue;
+      });
+  }, [taskItems]);
 
   const selectedDateLabel = useMemo(() => {
     return formatDateLabel(selectedDate);
@@ -281,6 +312,46 @@ export default function DashboardPageClient({
                 </div>
               )}
             </div>
+
+            {overdueTasks.length > 0 ? (
+              <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-rose-400/70">
+                      Needs attention
+                    </p>
+                    <h2 className="mt-2 text-xl font-semibold text-rose-200">
+                      Overdue tasks
+                    </h2>
+                  </div>
+                </div>
+                <TaskList
+                  tasks={overdueTasks}
+                  onComplete={handleComplete}
+                  completingTaskId={completingId}
+                />
+              </div>
+            ) : null}
+
+            {optionalTasks.length > 0 ? (
+              <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+                      Backlog
+                    </p>
+                    <h2 className="mt-2 text-xl font-semibold">
+                      Optional tasks
+                    </h2>
+                  </div>
+                </div>
+                <TaskList
+                  tasks={optionalTasks}
+                  onComplete={handleComplete}
+                  completingTaskId={completingId}
+                />
+              </div>
+            ) : null}
           </section>
 
           <section className="space-y-6">
@@ -423,14 +494,6 @@ function addDays(date: Date, amount: number) {
   return startOfDay(copy);
 }
 
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
 function toDateKey(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -451,7 +514,11 @@ function formatDateLabel(date: Date) {
   return DATE_LABEL_FORMATTER.format(utcSafe);
 }
 
-const DEFAULT_TIME_OF_DAY = '09:00';
+function toDate(input?: string | Date | null) {
+  if (!input) return null;
+  const value = input instanceof Date ? input : new Date(input);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
 
 function mergeTasks(existing: DashboardTask[], incoming: DashboardTask[]) {
   const map = new Map<string, DashboardTask>();
@@ -463,9 +530,22 @@ function mergeTasks(existing: DashboardTask[], incoming: DashboardTask[]) {
   }
   const result = Array.from(map.values());
   result.sort((a, b) => {
-    const aTime = a.dueAt ? new Date(a.dueAt as string).getTime() : Infinity;
-    const bTime = b.dueAt ? new Date(b.dueAt as string).getTime() : Infinity;
+    const aTime = getTaskSortTime(a);
+    const bTime = getTaskSortTime(b);
+    const aFinite = Number.isFinite(aTime);
+    const bFinite = Number.isFinite(bTime);
+    if (!aFinite && !bFinite) return 0;
+    if (!aFinite) return 1;
+    if (!bFinite) return -1;
     return aTime - bTime;
   });
   return result;
+}
+
+function getTaskSortTime(task: DashboardTask) {
+  const start = toDate(task.startAt);
+  if (start) return start.getTime();
+  const due = toDate(task.dueAt);
+  if (due) return due.getTime();
+  return Number.POSITIVE_INFINITY;
 }
