@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, Transition, Listbox } from '@headlessui/react';
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import TaskItem from './TaskItem';
 import type { DashboardTask } from './TaskList';
 import GradientButton from '../ui/GradientButton';
@@ -28,6 +28,7 @@ type TaskCreateModalProps = {
   loading?: boolean;
   mode?: 'create' | 'edit';
   task?: DashboardTask | null;
+  errorMessage?: string | null;
 };
 
 const CATEGORIES = ['Focus', 'Planning', 'Communication', 'Health', 'Custom'];
@@ -73,6 +74,7 @@ export default function TaskCreateModal({
   loading = false,
   mode = 'create',
   task,
+  errorMessage,
 }: TaskCreateModalProps) {
   const initialDate = useMemo(
     () => toLocalDateTimeString(defaultDate),
@@ -112,6 +114,59 @@ export default function TaskCreateModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasStart, setHasStart] = useState(Boolean(defaultStartValue));
   const [hasDue, setHasDue] = useState(Boolean(defaultDueValue));
+
+  const clearDateOrderError = useCallback(() => {
+    setErrors((prev) => {
+      if (!prev.dateOrder) return prev;
+      const { dateOrder, ...rest } = prev;
+      void dateOrder;
+      return rest;
+    });
+  }, []);
+
+  const updateStartAt = useCallback(
+    (value?: string) => {
+      const nextStart = value && value.length > 0 ? value : undefined;
+      let nextDue: string | undefined;
+      setForm((prev) => {
+        nextDue = prev.dueAt ?? undefined;
+        if (
+          hasDue &&
+          nextStart &&
+          nextDue &&
+          new Date(nextStart).getTime() > new Date(nextDue).getTime()
+        ) {
+          nextDue = nextStart;
+        }
+        return { ...prev, startAt: nextStart, dueAt: nextDue };
+      });
+
+      clearDateOrderError();
+    },
+    [clearDateOrderError, hasDue],
+  );
+
+  const updateDueAt = useCallback(
+    (value?: string) => {
+      const nextDue = value && value.length > 0 ? value : undefined;
+      let nextStart: string | undefined;
+      setForm((prev) => {
+        nextStart = prev.startAt ?? undefined;
+        if (
+          hasStart &&
+          nextStart &&
+          nextDue &&
+          new Date(nextStart).getTime() > new Date(nextDue).getTime()
+        ) {
+          nextStart = nextDue;
+        }
+        return { ...prev, startAt: nextStart, dueAt: nextDue };
+      });
+
+      clearDateOrderError();
+    },
+    [clearDateOrderError, hasStart],
+  );
 
   const handleChange = <T extends keyof TaskFormValues>(
     key: T,
@@ -172,6 +227,12 @@ export default function TaskCreateModal({
       !(form.recurrenceMonthDays?.length ?? 0)
     ) {
       nextErrors.recurrenceMonthDays = 'Choose at least one day of the month';
+    }
+
+    const startDate = hasStart && form.startAt ? new Date(form.startAt) : null;
+    const dueDate = hasDue && form.dueAt ? new Date(form.dueAt) : null;
+    if (startDate && dueDate && startDate.getTime() > dueDate.getTime()) {
+      nextErrors.dateOrder = 'Start date must be before or equal to due date';
     }
 
     setErrors(nextErrors);
@@ -243,6 +304,11 @@ export default function TaskCreateModal({
                   className="flex-1 overflow-y-auto px-6 py-8"
                   onSubmit={handleSubmit}
                 >
+                  {errorMessage ? (
+                    <div className="mb-6 rounded-2xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                      {errorMessage}
+                    </div>
+                  ) : null}
                   <section className="grid gap-6 lg:grid-cols-3">
                     <div className="space-y-6 lg:col-span-2">
                       <div className="space-y-2">
@@ -360,13 +426,20 @@ export default function TaskCreateModal({
                                 const next = event.target.checked;
                                 setHasDue(next);
                                 if (next && !form.dueAt) {
-                                  handleChange(
-                                    'dueAt',
-                                    toLocalDateTimeString(defaultDate),
+                                  updateDueAt(
+                                    toLocalDateTimeString(
+                                      form.startAt
+                                        ? new Date(form.startAt)
+                                        : defaultDate,
+                                    ),
                                   );
                                 }
                                 if (!next) {
-                                  handleChange('dueAt', undefined);
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    dueAt: undefined,
+                                  }));
+                                  clearDateOrderError();
                                 }
                               }}
                             />
@@ -376,14 +449,21 @@ export default function TaskCreateModal({
                             className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:opacity-40"
                             type="datetime-local"
                             value={hasDue ? (form.dueAt ?? '') : ''}
+                            min={
+                              hasStart && form.startAt
+                                ? form.startAt
+                                : undefined
+                            }
                             onChange={(event) =>
-                              handleChange(
-                                'dueAt',
-                                event.target.value || undefined,
-                              )
+                              updateDueAt(event.target.value || undefined)
                             }
                             disabled={!hasDue}
                           />
+                          {errors.dateOrder ? (
+                            <p className="text-xs text-rose-400">
+                              {errors.dateOrder}
+                            </p>
+                          ) : null}
                         </div>
                         <div className="space-y-2">
                           <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
@@ -558,13 +638,20 @@ export default function TaskCreateModal({
                               const next = event.target.checked;
                               setHasStart(next);
                               if (next && !form.startAt) {
-                                handleChange(
-                                  'startAt',
-                                  toLocalDateTimeString(defaultDate),
+                                updateStartAt(
+                                  toLocalDateTimeString(
+                                    form.dueAt
+                                      ? new Date(form.dueAt)
+                                      : defaultDate,
+                                  ),
                                 );
                               }
                               if (!next) {
-                                handleChange('startAt', undefined);
+                                setForm((prev) => ({
+                                  ...prev,
+                                  startAt: undefined,
+                                }));
+                                clearDateOrderError();
                               }
                             }}
                           />
@@ -575,11 +662,9 @@ export default function TaskCreateModal({
                             className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                             type="datetime-local"
                             value={form.startAt ?? ''}
+                            max={hasDue && form.dueAt ? form.dueAt : undefined}
                             onChange={(event) =>
-                              handleChange(
-                                'startAt',
-                                event.target.value || undefined,
-                              )
+                              updateStartAt(event.target.value || undefined)
                             }
                           />
                         ) : null}

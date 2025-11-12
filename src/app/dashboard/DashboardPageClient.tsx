@@ -10,6 +10,14 @@ import TaskCreateModal, {
 } from '@pointwise/app/components/dashboard/TaskCreateModal';
 import TaskManageModal from '@pointwise/app/components/dashboard/TaskManageModal';
 import AnalyticsSection from '@pointwise/app/components/dashboard/analytics/AnalyticsSection';
+import {
+  addDays,
+  formatDateLabel,
+  startOfDay,
+  toDate,
+  toDateKey,
+} from '@pointwise/lib/datetime';
+import { mergeTasks } from '@pointwise/lib/tasks';
 
 type ProfileSnapshot = {
   level: number;
@@ -57,9 +65,11 @@ export default function DashboardPageClient({
   const [manageTask, setManageTask] = useState<DashboardTask | null>(null);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [editorVersion, setEditorVersion] = useState(0);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const handleSubmitTask = async (values: TaskFormValues) => {
     setIsCreating(true);
+    setCreateError(null);
     try {
       if (editorMode === 'edit' && values.id) {
         const response = await fetch(`/api/tasks/${values.id}`, {
@@ -100,7 +110,16 @@ export default function DashboardPageClient({
           }),
         });
 
-        if (!response.ok) throw new Error('Task creation failed');
+        if (!response.ok) {
+          const errorPayload = await response.json().catch(() => null);
+          const message =
+            typeof errorPayload === 'object' &&
+            errorPayload &&
+            'error' in errorPayload
+              ? String((errorPayload as Record<string, unknown>).error)
+              : 'Task creation failed';
+          throw new Error(message);
+        }
 
         const payload = await response.json();
         if (Array.isArray(payload.tasks)) {
@@ -113,7 +132,10 @@ export default function DashboardPageClient({
       setManageTask(null);
       setIsManageOpen(false);
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to create task';
       console.error('Failed to create task', error);
+      setCreateError(message);
     } finally {
       setIsCreating(false);
     }
@@ -125,7 +147,12 @@ export default function DashboardPageClient({
     setEditorMode(mode);
     setEditorTask(task);
     setEditorVersion((v) => v + 1);
+    setCreateError(null);
     setIsCreateOpen(true);
+  };
+  const closeCreateModal = () => {
+    setIsCreateOpen(false);
+    setCreateError(null);
   };
   const handleTaskClick = (task: DashboardTask) => {
     setManageTask(task);
@@ -270,12 +297,13 @@ export default function DashboardPageClient({
       <TaskCreateModal
         key={`task-modal-${editorMode}-${editorTask?.id ?? 'new'}-${editorVersion}`}
         open={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        onClose={closeCreateModal}
         defaultDate={selectedDate}
         onSubmit={handleSubmitTask}
         loading={isCreating}
         mode={editorMode}
         task={editorTask}
+        errorMessage={createError}
       />
       <TaskManageModal
         open={isManageOpen}
@@ -430,72 +458,4 @@ export default function DashboardPageClient({
       </div>
     </>
   );
-}
-
-function startOfDay(date: Date) {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
-
-function addDays(date: Date, amount: number) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() + amount);
-  return startOfDay(copy);
-}
-
-function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-});
-
-function formatDateLabel(date: Date) {
-  const utcSafe = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-  );
-  return DATE_LABEL_FORMATTER.format(utcSafe);
-}
-
-function toDate(input?: string | Date | null) {
-  if (!input) return null;
-  const value = input instanceof Date ? input : new Date(input);
-  return Number.isNaN(value.getTime()) ? null : value;
-}
-
-function mergeTasks(existing: DashboardTask[], incoming: DashboardTask[]) {
-  const map = new Map<string, DashboardTask>();
-  for (const task of existing) {
-    map.set(task.id, task);
-  }
-  for (const task of incoming) {
-    map.set(task.id, task);
-  }
-  const result = Array.from(map.values());
-  result.sort((a, b) => {
-    const aTime = getTaskSortTime(a);
-    const bTime = getTaskSortTime(b);
-    const aFinite = Number.isFinite(aTime);
-    const bFinite = Number.isFinite(bTime);
-    if (!aFinite && !bFinite) return 0;
-    if (!aFinite) return 1;
-    if (!bFinite) return -1;
-    return aTime - bTime;
-  });
-  return result;
-}
-
-function getTaskSortTime(task: DashboardTask) {
-  const start = toDate(task.startAt);
-  if (start) return start.getTime();
-  const due = toDate(task.dueAt);
-  if (due) return due.getTime();
-  return Number.POSITIVE_INFINITY;
 }

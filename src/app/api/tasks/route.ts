@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
+import { addDays, startOfDay } from '@pointwise/lib/datetime';
 
 type CreateTaskBody = {
   title: string;
@@ -299,18 +300,6 @@ function generateMonthlyOccurrences(
   }
 
   return occurrences;
-}
-
-function startOfDay(date: Date) {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
-
-function addDays(date: Date, amount: number) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() + amount);
-  return startOfDay(copy);
 }
 
 function deriveTimesOfDay({

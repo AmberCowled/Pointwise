@@ -1,6 +1,20 @@
-import type { DashboardTask } from '../TaskList';
+import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
+import { addDays, startOfDay, toDate, toDateKey } from './datetime';
 
-export type AnalyticsRange = '1d' | '7d' | '30d';
+export const ANALYTICS_TAB_LABELS = {
+  xp: 'XP Trend',
+  focus: 'Focus Tracker',
+  categories: 'Category Breakdown',
+} as const;
+
+export const ANALYTICS_RANGE_LABELS = {
+  '1d': 'Past day',
+  '7d': 'Last 7 days',
+  '30d': 'Last 30 days',
+} as const;
+
+export type AnalyticsTab = keyof typeof ANALYTICS_TAB_LABELS;
+export type AnalyticsRange = keyof typeof ANALYTICS_RANGE_LABELS;
 
 export type LineDataPoint = {
   label: string;
@@ -169,31 +183,6 @@ export function formatHourLabel(hour: number) {
   const period = hour >= 12 ? 'PM' : 'AM';
   const hour12 = hour % 12 === 0 ? 12 : hour % 12;
   return `${hour12} ${period}`;
-}
-
-export function addDays(date: Date, amount: number) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() + amount);
-  return startOfDay(copy);
-}
-
-export function startOfDay(date: Date) {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
-
-export function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-export function toDate(input?: string | Date | null) {
-  if (!input) return null;
-  const value = input instanceof Date ? input : new Date(input);
-  return Number.isNaN(value.getTime()) ? null : value;
 }
 
 export function createSmoothPath(points: ChartPoint[]) {
