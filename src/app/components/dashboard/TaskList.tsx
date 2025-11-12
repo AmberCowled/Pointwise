@@ -2,15 +2,17 @@
 
 import TaskItem from './TaskItem';
 
-export type TaskStatus = 'in-progress' | 'focus' | 'scheduled';
+export type TaskStatus = 'in-progress' | 'focus' | 'scheduled' | 'completed';
 
 export type DashboardTask = {
   id: string;
   title: string;
-  context: string;
+  context?: string | null;
+  category?: string | null;
   xp: number;
   status: TaskStatus;
   completed?: boolean;
+  dueAt?: string | Date | null;
 };
 
 type TaskListProps = {

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import DashboardNavbar from '@pointwise/app/components/dashboard/DashboardNavbar';
 import TaskList, {
   type DashboardTask,
 } from '@pointwise/app/components/dashboard/TaskList';
-import { levelFromXp } from '@pointwise/lib/xp';
+import TaskCreateModal, {
+  type TaskFormValues,
+} from '@pointwise/app/components/dashboard/TaskCreateModal';
 
 type Stat = { label: string; value: string; change: string };
 type Achievement = {
@@ -55,50 +57,109 @@ export default function DashboardPageClient({
     xpRemaining: profile.xpRemaining,
     progress: profile.progress,
   });
-  const [taskItems, setTaskItems] = useState<DashboardTask[]>(tasks);
+  const [taskItems, setTaskItems] = useState<DashboardTask[]>(
+    Array.isArray(tasks) ? tasks : [],
+  );
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(() =>
+    startOfDay(new Date()),
+  );
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const progressPercent = Math.min(100, Math.round(xpState.progress * 100));
+  const handleCreateTask = async (values: TaskFormValues) => {
+    setIsCreating(true);
+    try {
+      const dueAtPayload =
+        values.dueAt ?? `${toDateKey(selectedDate)}T${DEFAULT_TIME_OF_DAY}`;
+
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: values.title,
+          category: values.category,
+          xpValue: values.xpValue,
+          context: values.context,
+          dueAt: dueAtPayload,
+          recurrence: values.recurrence ?? 'none',
+          recurrenceDays: values.recurrenceDays ?? [],
+          recurrenceMonthDays: values.recurrenceMonthDays ?? [],
+          timesOfDay: (values.timesOfDay ?? []).filter(Boolean),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Task creation failed');
+      }
+
+      const payload = await response.json();
+      if (Array.isArray(payload.tasks)) {
+        setTaskItems((prev) => mergeTasks(prev, payload.tasks));
+      }
+
+      setIsCreateOpen(false);
+    } catch (error) {
+      console.error('Failed to create task', error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const filteredTasks = useMemo(() => {
+    return taskItems.filter((task) => {
+      if (!task.dueAt) {
+        return isSameDay(selectedDate, startOfDay(new Date()));
+      }
+      const due =
+        task.dueAt instanceof Date
+          ? task.dueAt
+          : new Date(task.dueAt as string);
+      if (Number.isNaN(due.getTime()))
+        return isSameDay(selectedDate, startOfDay(new Date()));
+      return isSameDay(startOfDay(due), selectedDate);
+    });
+  }, [selectedDate, taskItems]);
+
+  const selectedDateLabel = useMemo(() => {
+    return formatDateLabel(selectedDate);
+  }, [selectedDate]);
+
+  const selectedDateInputValue = useMemo(() => {
+    return toDateKey(selectedDate);
+  }, [selectedDate]);
 
   const handleComplete = async (task: DashboardTask) => {
     if (task.completed || completingId) return;
     setCompletingId(task.id);
     try {
-      const response = await fetch('/api/xp/award', {
+      const response = await fetch(`/api/tasks/${task.id}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ delta: task.xp }),
       });
 
       if (!response.ok) {
-        throw new Error('XP award failed');
+        throw new Error('Task completion failed');
       }
 
-      const payload: Partial<ReturnType<typeof levelFromXp> & { xp: number }> =
-        await response.json().catch(() => ({}));
+      const payload = await response.json();
 
-      setTaskItems((prev) =>
-        prev.map((item) =>
-          item.id === task.id ? { ...item, completed: true } : item,
-        ),
-      );
+      if (payload.task) {
+        setTaskItems((prev) => mergeTasks(prev, [payload.task]));
+      }
 
-      setXpState((prev) => {
-        const xpFromServer =
-          typeof payload.xp === 'number' && Number.isFinite(payload.xp)
-            ? Math.max(0, Math.floor(payload.xp))
-            : prev.totalXp + task.xp;
-        const { level, progress, xpIntoLevel, xpToNext } =
-          levelFromXp(xpFromServer);
-
-        return {
-          level,
-          totalXp: xpFromServer,
+      if (payload.xp) {
+        const xpSnapshot = payload.xp;
+        const xpIntoLevel = xpSnapshot.xpIntoLevel ?? 0;
+        const xpToNext = xpSnapshot.xpToNext ?? 0;
+        setXpState({
+          level: xpSnapshot.level,
+          totalXp: xpSnapshot.totalXp,
           xpIntoLevel,
           xpRemaining: Math.max(0, xpToNext - xpIntoLevel),
-          progress,
-        };
-      });
+          progress: xpSnapshot.progress ?? 0,
+        });
+      }
     } catch (error) {
       console.error('Failed to complete task', error);
     } finally {
@@ -115,6 +176,15 @@ export default function DashboardPageClient({
         progress={xpState.progress}
       />
 
+      <TaskCreateModal
+        key={isCreateOpen ? selectedDateInputValue : 'task-modal'}
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        defaultDate={selectedDate}
+        onSubmit={handleCreateTask}
+        loading={isCreating}
+      />
+
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
@@ -124,42 +194,92 @@ export default function DashboardPageClient({
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Welcome back, {displayName}
             </h1>
-            <p className="max-w-xl text-sm text-zinc-400 sm:text-base">
-              Stay in flow, level up your productivity, and keep your streak
-              alive. Here&apos;s what&apos;s lined up for today.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <button className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-100 transition hover:border-indigo-400/60 hover:bg-indigo-500/10">
-              Add Quick Task
-            </button>
-            <button className="rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30">
-              Start Focus Session
-            </button>
           </div>
         </header>
 
         <main className="grid flex-1 gap-6 lg:grid-cols-[2fr,1fr]">
           <section className="space-y-6">
             <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                    Today&apos;s plan
+                    Overview
                   </p>
-                  <h2 className="mt-2 text-xl font-semibold">
-                    Priority task list
-                  </h2>
+                  <h2 className="mt-2 text-xl font-semibold">Task list</h2>
                 </div>
-                <button className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white">
-                  View all
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white">
+                    View all
+                  </button>
+                  <button
+                    className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-200 transition hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white"
+                    onClick={() => setIsCreateOpen(true)}
+                  >
+                    Create Task
+                  </button>
+                  <button className="rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500 px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-indigo-500/30">
+                    Start Focus Session
+                  </button>
+                </div>
               </div>
-              <TaskList
-                tasks={taskItems}
-                onComplete={handleComplete}
-                completingTaskId={completingId}
-              />
+              <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-zinc-400">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium text-zinc-200">
+                  {selectedDateLabel}
+                </div>
+                <div className="inline-flex items-center gap-1">
+                  <button
+                    className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
+                    onClick={() => setSelectedDate((prev) => addDays(prev, -1))}
+                  >
+                    ⟨ Prev
+                  </button>
+                  <button
+                    className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
+                    onClick={() => setSelectedDate(startOfDay(new Date()))}
+                  >
+                    Today
+                  </button>
+                  <button
+                    className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
+                    onClick={() => setSelectedDate((prev) => addDays(prev, 1))}
+                  >
+                    Next ⟩
+                  </button>
+                </div>
+                <label className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium text-zinc-200">
+                  <span className="text-xs text-zinc-400">Jump to</span>
+                  <input
+                    className="cursor-pointer border-0 bg-transparent text-sm text-zinc-100 focus:outline-none"
+                    type="date"
+                    value={selectedDateInputValue}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (!value) return;
+                      const next = new Date(value);
+                      if (!Number.isNaN(next.getTime())) {
+                        setSelectedDate(startOfDay(next));
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              {filteredTasks.length > 0 ? (
+                <TaskList
+                  tasks={filteredTasks}
+                  onComplete={handleComplete}
+                  completingTaskId={completingId}
+                />
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
+                  No tasks scheduled for{' '}
+                  <span className="font-medium text-zinc-200">
+                    {selectedDateLabel}
+                  </span>
+                  . Add one with{' '}
+                  <span className="font-medium text-zinc-200">Create Task</span>{' '}
+                  or set up a recurring routine.
+                </div>
+              )}
             </div>
           </section>
 
@@ -289,4 +409,63 @@ export default function DashboardPageClient({
       </div>
     </>
   );
+}
+
+function startOfDay(date: Date) {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+function addDays(date: Date, amount: number) {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() + amount);
+  return startOfDay(copy);
+}
+
+function isSameDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function toDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+});
+
+function formatDateLabel(date: Date) {
+  const utcSafe = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
+  return DATE_LABEL_FORMATTER.format(utcSafe);
+}
+
+const DEFAULT_TIME_OF_DAY = '09:00';
+
+function mergeTasks(existing: DashboardTask[], incoming: DashboardTask[]) {
+  const map = new Map<string, DashboardTask>();
+  for (const task of existing) {
+    map.set(task.id, task);
+  }
+  for (const task of incoming) {
+    map.set(task.id, task);
+  }
+  const result = Array.from(map.values());
+  result.sort((a, b) => {
+    const aTime = a.dueAt ? new Date(a.dueAt as string).getTime() : Infinity;
+    const bTime = b.dueAt ? new Date(b.dueAt as string).getTime() : Infinity;
+    return aTime - bTime;
+  });
+  return result;
 }

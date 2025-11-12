@@ -28,10 +28,15 @@ export default async function DashboardPage() {
   const userRecord = session.user?.email
     ? await prisma.user.findUnique({
         where: { email: session.user.email },
-        select: { xp: true },
+        select: { id: true, xp: true },
       })
     : null;
-  const totalXp = userRecord?.xp ?? 0;
+
+  if (!userRecord) {
+    redirect('/');
+  }
+
+  const totalXp = userRecord.xp ?? 0;
   const { level, progress, xpIntoLevel, xpToNext } = levelFromXp(totalXp);
   const xpRemaining = Math.max(0, xpToNext - xpIntoLevel);
 
@@ -45,36 +50,24 @@ export default async function DashboardPage() {
     title: 'Momentum Builder',
   };
 
-  const tasks: DashboardTask[] = [
-    {
-      id: 'task-1',
-      title: 'Deep work sprint on priority project',
-      context: 'Focus • 90 minutes',
-      xp: 120,
-      status: 'in-progress',
+  const tasksFromDb = await prisma.task.findMany({
+    where: {
+      userId: userRecord.id,
     },
-    {
-      id: 'task-2',
-      title: 'Weekly planning and retrospective',
-      context: 'Planning • 30 minutes',
-      xp: 80,
-      status: 'scheduled',
-    },
-    {
-      id: 'task-3',
-      title: 'Inbox zero and follow-ups',
-      context: 'Communication • 25 minutes',
-      xp: 60,
-      status: 'scheduled',
-    },
-    {
-      id: 'task-4',
-      title: 'Ship update to the product roadmap',
-      context: 'Delivery • Due today at 4pm',
-      xp: 150,
-      status: 'focus',
-    },
-  ];
+    orderBy: [{ dueAt: 'asc' }, { createdAt: 'asc' }],
+    take: 500,
+  });
+
+  const tasks: DashboardTask[] = tasksFromDb.map((task) => ({
+    id: task.id,
+    title: task.title,
+    context: task.description,
+    category: task.category,
+    xp: task.xpValue ?? 0,
+    status: task.completedAt ? 'completed' : 'scheduled',
+    completed: Boolean(task.completedAt),
+    dueAt: task.dueAt ? task.dueAt.toISOString() : null,
+  }));
 
   const stats = [
     {

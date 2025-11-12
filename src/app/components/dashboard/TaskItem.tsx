@@ -6,6 +6,7 @@ const ACTION_LABEL: Record<DashboardTask['status'], string> = {
   'in-progress': 'Resume',
   focus: 'Start focus session',
   scheduled: 'Schedule',
+  completed: 'Completed',
 };
 
 type TaskItemProps = {
@@ -13,6 +14,35 @@ type TaskItemProps = {
   onComplete?: (task: DashboardTask) => void;
   isProcessing?: boolean;
 };
+
+const DAY_ABBREVIATIONS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTH_ABBREVIATIONS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+function formatDueLabel(input: Date | string) {
+  const date = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(date.getTime())) return null;
+  const weekday = DAY_ABBREVIATIONS[date.getDay()];
+  const month = MONTH_ABBREVIATIONS[date.getMonth()];
+  const day = date.getDate();
+  const hours24 = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  const period = hours24 < 12 ? 'AM' : 'PM';
+  return `${weekday}, ${day.toString().padStart(2, '0')} ${month} · ${hours12}:${minutes} ${period}`;
+}
 
 export default function TaskItem({
   task,
@@ -41,12 +71,23 @@ export default function TaskItem({
       : 'border-white/10 text-zinc-300 group-hover:border-indigo-400/60 group-hover:text-white',
   ].join(' ');
 
+  const dueDateLabel = task.dueAt ? formatDueLabel(task.dueAt) : null;
+
+  const subtitle = task.context ?? task.category ?? '';
+
   return (
     <li className={containerClass}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1.5">
           <p className="text-base font-medium text-zinc-100">{task.title}</p>
-          <p className="text-sm text-zinc-400">{task.context}</p>
+          {subtitle ? (
+            <p className="text-sm text-zinc-400">{subtitle}</p>
+          ) : null}
+          {dueDateLabel ? (
+            <p className="text-xs font-medium text-indigo-200/80">
+              Due {dueDateLabel}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-col items-start gap-3 sm:items-end">
           <span className="inline-flex items-center rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-300">
