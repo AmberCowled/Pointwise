@@ -559,6 +559,9 @@ export default function DashboardPageClient({
                     data={xpSeries}
                     lineColor="#a855f7"
                     gradientId={xpGradientId}
+                    formatValue={(point) =>
+                      `+${Math.round(point.value).toLocaleString()} XP`
+                    }
                   />
                   <div className="grid grid-cols-3 text-xs text-zinc-500">
                     <span>{xpSeries[0]?.label ?? ''}</span>
@@ -596,6 +599,9 @@ export default function DashboardPageClient({
                     data={focusSeries}
                     lineColor="#22d3ee"
                     gradientId={focusGradientId}
+                    formatValue={(point) =>
+                      `${Math.round(point.value).toLocaleString()} XP/hr`
+                    }
                   />
                   <div className="grid grid-cols-5 text-xs text-zinc-500">
                     {[0, 6, 12, 18, 23].map((hour) => (
@@ -691,11 +697,13 @@ function LineChart({
   gradientId,
   lineColor,
   height = 160,
+  formatValue,
 }: {
   data: LineDataPoint[];
   gradientId: string;
   lineColor: string;
   height?: number;
+  formatValue?: (point: LineDataPoint) => string;
 }) {
   const chartHeight = 100;
   const topPadding = 12;
@@ -716,14 +724,61 @@ function LineChart({
     ? [{ x: 0, y: baseline }, ...corePoints, { x: 100, y: baseline }]
     : [];
   const linePath = createSmoothPath(linePoints);
-  const areaPath = createAreaPath(linePoints, chartHeight, bottomPadding);
+  const areaPath = createAreaPath(corePoints, chartHeight, bottomPadding);
+
+  const [hover, setHover] = useState<{
+    index: number;
+    dataPoint: LineDataPoint;
+    svgX: number;
+    svgY: number;
+    xPx: number;
+    yPx: number;
+  } | null>(null);
+
+  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (!corePoints.length) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const relativeX = ((event.clientX - rect.left) / rect.width) * 100;
+
+    let nearestIndex = 0;
+    let shortestDistance = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < corePoints.length; index += 1) {
+      const distance = Math.abs(corePoints[index].x - relativeX);
+      if (distance < shortestDistance) {
+        shortestDistance = distance;
+        nearestIndex = index;
+      }
+    }
+
+    const point = corePoints[nearestIndex];
+    const dataPoint = data[nearestIndex];
+    const xPx = (point.x / 100) * rect.width;
+    const unclampedYPx = (point.y / 100) * rect.height;
+    const clampedYPx = Math.min(Math.max(unclampedYPx, 16), rect.height - 16);
+
+    setHover({
+      index: nearestIndex,
+      dataPoint,
+      svgX: point.x,
+      svgY: point.y,
+      xPx,
+      yPx: clampedYPx,
+    });
+  };
+
+  const handlePointerLeave = () => {
+    setHover(null);
+  };
 
   return (
     <div className="relative w-full" style={{ height }}>
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
-        className="h-full w-full"
+        className="h-full w-full touch-none"
+        onPointerMove={handlePointerMove}
+        onPointerDown={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -752,6 +807,28 @@ function LineChart({
             strokeLinejoin="round"
           />
         ) : null}
+        {hover ? (
+          <>
+            <line
+              x1={hover.svgX}
+              x2={hover.svgX}
+              y1={topPadding}
+              y2={baseline}
+              stroke={lineColor}
+              strokeWidth={0.6}
+              strokeDasharray="1.5 2.5"
+              opacity={0.6}
+            />
+            <circle
+              cx={hover.svgX}
+              cy={hover.svgY}
+              r={3}
+              fill="#09090b"
+              opacity={0.85}
+            />
+            <circle cx={hover.svgX} cy={hover.svgY} r={2.2} fill={lineColor} />
+          </>
+        ) : null}
         {corePoints.map((point, index) => (
           <circle
             key={index}
@@ -763,6 +840,21 @@ function LineChart({
           />
         ))}
       </svg>
+      {hover ? (
+        <div
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-3 rounded-2xl border border-white/10 bg-zinc-900/95 px-3 py-2 text-xs text-zinc-200 shadow-xl shadow-black/30"
+          style={{ left: `${hover.xPx}px`, top: `${hover.yPx}px` }}
+        >
+          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+            {hover.dataPoint.label}
+          </p>
+          <p className="mt-1 text-sm font-semibold text-white">
+            {formatValue
+              ? formatValue(hover.dataPoint)
+              : hover.dataPoint.value.toLocaleString()}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }
