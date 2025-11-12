@@ -5,7 +5,7 @@ import type { DashboardTask } from './TaskList';
 const ACTION_LABEL: Record<DashboardTask['status'], string> = {
   'in-progress': 'Resume',
   focus: 'Start focus session',
-  scheduled: 'Schedule',
+  scheduled: 'Mark complete',
   completed: 'Completed',
 };
 
@@ -114,10 +114,10 @@ export default function TaskItem({
   ].join(' ');
 
   const buttonClass = [
-    'rounded-full border px-3 py-1 text-xs font-medium transition',
+    'rounded-full border px-3 py-1 text-xs font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400/70',
     isDisabled
       ? 'border-white/5 text-zinc-500'
-      : 'border-white/10 text-zinc-300 group-hover:border-indigo-400/60 group-hover:text-white',
+      : 'border-white/10 text-zinc-300 hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white focus-visible:border-indigo-400/70',
   ].join(' ');
 
   const scheduleLabel = getTaskScheduleLabel(task);

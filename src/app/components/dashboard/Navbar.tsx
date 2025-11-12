@@ -4,19 +4,19 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 
-type DashboardNavbarProps = {
+type NavbarProps = {
   initials: string;
   level: number;
   xpRemaining: number;
   progress: number;
 };
 
-export default function DashboardNavbar({
+export default function Navbar({
   initials,
   level,
   xpRemaining,
   progress,
-}: DashboardNavbarProps) {
+}: NavbarProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 

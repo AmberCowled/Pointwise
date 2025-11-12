@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useMemo, useState } from 'react';
-import DashboardNavbar from '@pointwise/app/components/dashboard/DashboardNavbar';
+import Navbar from '@pointwise/app/components/dashboard/Navbar';
 import TaskList, {
   type DashboardTask,
 } from '@pointwise/app/components/dashboard/TaskList';
@@ -34,14 +34,6 @@ const CATEGORY_COLORS = [
   '#10b981',
 ];
 
-type Stat = { label: string; value: string; change: string };
-type Achievement = {
-  id: string;
-  title: string;
-  description: string;
-  progress: number;
-};
-
 type ProfileSnapshot = {
   level: number;
   totalXp: number;
@@ -56,11 +48,7 @@ type DashboardPageClientProps = {
   today: string;
   displayName: string;
   initials: string;
-  userName: string;
-  userEmail: string;
   tasks: DashboardTask[];
-  stats: Stat[];
-  achievements: Achievement[];
   profile: ProfileSnapshot;
 };
 
@@ -68,11 +56,7 @@ export default function DashboardPageClient({
   today,
   displayName,
   initials,
-  userName,
-  userEmail,
   tasks,
-  stats,
-  achievements,
   profile,
 }: DashboardPageClientProps) {
   const [xpState, setXpState] = useState({
@@ -355,7 +339,7 @@ export default function DashboardPageClient({
 
   return (
     <>
-      <DashboardNavbar
+      <Navbar
         initials={initials}
         level={xpState.level}
         xpRemaining={xpState.xpRemaining}
@@ -397,7 +381,7 @@ export default function DashboardPageClient({
           </div>
         </header>
 
-        <main className="grid flex-1 gap-6 lg:grid-cols-[2fr,1fr]">
+        <main className="flex-1 space-y-6">
           <section className="space-y-6">
             <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -518,129 +502,6 @@ export default function DashboardPageClient({
                 />
               </div>
             ) : null}
-          </section>
-
-          <section className="space-y-6">
-            <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-rose-500 text-lg font-semibold text-white">
-                  {initials}
-                </div>
-                <div>
-                  <p className="text-sm text-zinc-400">Profile</p>
-                  <h2 className="text-lg font-semibold text-zinc-100">
-                    {userName}
-                  </h2>
-                  <p className="text-sm text-zinc-500">{userEmail}</p>
-                </div>
-              </div>
-              <dl className="mt-6 grid grid-cols-2 gap-4 text-sm text-zinc-300">
-                <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
-                  <dt className="text-xs uppercase tracking-wide text-zinc-500">
-                    Level
-                  </dt>
-                  <dd className="mt-1 text-lg font-semibold text-zinc-100">
-                    {xpState.level}
-                  </dd>
-                </div>
-                <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
-                  <dt className="text-xs uppercase tracking-wide text-zinc-500">
-                    Title
-                  </dt>
-                  <dd className="mt-1 text-lg font-semibold text-zinc-100">
-                    {profile.title}
-                  </dd>
-                </div>
-                <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
-                  <dt className="text-xs uppercase tracking-wide text-zinc-500">
-                    Streak
-                  </dt>
-                  <dd className="mt-1 text-lg font-semibold text-zinc-100">
-                    {profile.streak} days
-                  </dd>
-                </div>
-                <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
-                  <dt className="text-xs uppercase tracking-wide text-zinc-500">
-                    Total XP
-                  </dt>
-                  <dd className="mt-1 text-lg font-semibold text-zinc-100">
-                    {xpState.totalXp.toLocaleString()}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-zinc-100">
-                  This week&apos;s stats
-                </h2>
-                <button className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white">
-                  Insights
-                </button>
-              </div>
-              <ul className="mt-4 grid gap-3">
-                {stats.map((stat) => (
-                  <li
-                    key={stat.label}
-                    className="rounded-2xl border border-white/5 bg-zinc-950/40 px-4 py-3"
-                  >
-                    <p className="text-xs uppercase tracking-wide text-zinc-500">
-                      {stat.label}
-                    </p>
-                    <div className="mt-2 flex items-baseline justify-between">
-                      <span className="text-xl font-semibold text-zinc-100">
-                        {stat.value}
-                      </span>
-                      <span className="text-xs text-emerald-300">
-                        {stat.change}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-zinc-100">
-                  Achievements
-                </h2>
-                <button className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white">
-                  View all badges
-                </button>
-              </div>
-              <ul className="mt-4 space-y-4">
-                {achievements.map((achievement) => (
-                  <li
-                    key={achievement.id}
-                    className="rounded-2xl border border-white/5 bg-zinc-950/40 p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-zinc-100">
-                          {achievement.title}
-                        </p>
-                        <p className="text-xs text-zinc-400">
-                          {achievement.description}
-                        </p>
-                      </div>
-                      <span className="text-xs font-medium text-indigo-300">
-                        {Math.round(achievement.progress * 100)}%
-                      </span>
-                    </div>
-                    <div className="mt-3 h-2 w-full rounded-full bg-white/10">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500"
-                        style={{
-                          width: `${Math.min(100, achievement.progress * 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </section>
         </main>
 
@@ -908,6 +769,24 @@ function LineChart({
 
 function buildXpSeries(tasks: DashboardTask[], range: AnalyticsRange) {
   const { start, end, days } = getAnalyticsWindow(range);
+
+  if (range === '1d') {
+    const buckets = new Array(24).fill(0);
+    for (const task of tasks) {
+      if (!task.completed) continue;
+      const completedAt = getEffectiveCompletionDate(task);
+      if (!completedAt) continue;
+      if (completedAt < start || completedAt > end) continue;
+      const hour = completedAt.getHours();
+      buckets[hour] += task.xp ?? 0;
+    }
+
+    return buckets.map((value, hour) => ({
+      label: formatHourLabel(hour),
+      value,
+    }));
+  }
+
   const totals = new Map<string, number>();
   for (const task of tasks) {
     if (!task.completed) continue;
@@ -917,6 +796,7 @@ function buildXpSeries(tasks: DashboardTask[], range: AnalyticsRange) {
     const key = toDateKey(startOfDay(completedAt));
     totals.set(key, (totals.get(key) ?? 0) + (task.xp ?? 0));
   }
+
   const series: LineDataPoint[] = [];
   for (let index = 0; index < days; index += 1) {
     const date = addDays(start, index);

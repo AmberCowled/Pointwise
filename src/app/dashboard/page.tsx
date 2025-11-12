@@ -72,38 +72,6 @@ export default async function DashboardPage() {
     sourceRecurringTaskId: task.sourceRecurringTaskId,
   }));
 
-  const stats = [
-    {
-      label: 'Weekly Focus Time',
-      value: '12.5h',
-      change: '+2.4h vs last week',
-    },
-    { label: 'Tasks Completed', value: '18', change: '+6 this week' },
-    { label: 'XP Earned', value: '860', change: '+18% growth' },
-    { label: 'Consistency', value: '87%', change: '5-day rolling average' },
-  ];
-
-  const achievements = [
-    {
-      id: 'ach-1',
-      title: 'Streak Keeper',
-      description: 'Maintain a 7-day productivity streak',
-      progress: 1,
-    },
-    {
-      id: 'ach-2',
-      title: 'XP Collector',
-      description: 'Earn 1,000 XP in a single week',
-      progress: 0.68,
-    },
-    {
-      id: 'ach-3',
-      title: 'Deep Work Devotee',
-      description: 'Log 15 hours of deep work sessions',
-      progress: 0.42,
-    },
-  ];
-
   const initials =
     session.user?.name
       ?.split(' ')
@@ -120,11 +88,7 @@ export default async function DashboardPage() {
         today={today}
         displayName={displayName}
         initials={initials}
-        userName={session.user?.name ?? 'Pointwise User'}
-        userEmail={session.user?.email ?? 'No email on file'}
         tasks={tasks}
-        stats={stats}
-        achievements={achievements}
         profile={profile}
       />
     </div>
