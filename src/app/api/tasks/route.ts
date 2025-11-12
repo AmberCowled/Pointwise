@@ -185,6 +185,7 @@ function serializeTask(task: {
   completed?: boolean;
   startAt: string | null;
   dueAt: string | null;
+  completedAt: string | null;
   sourceRecurringTaskId: string | null;
 } {
   return {
@@ -197,6 +198,7 @@ function serializeTask(task: {
     completed: Boolean(task.completedAt),
     startAt: task.startAt ? task.startAt.toISOString() : null,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
+    completedAt: task.completedAt ? task.completedAt.toISOString() : null,
     sourceRecurringTaskId: task.sourceRecurringTaskId ?? null,
   };
 }

@@ -14,6 +14,7 @@ export type DashboardTask = {
   completed?: boolean;
   startAt?: string | Date | null;
   dueAt?: string | Date | null;
+  completedAt?: string | Date | null;
   sourceRecurringTaskId?: string | null;
 };
 
