@@ -14,6 +14,7 @@ export type DashboardTask = {
   completed?: boolean;
   startAt?: string | Date | null;
   dueAt?: string | Date | null;
+  sourceRecurringTaskId?: string | null;
 };
 
 type TaskListProps = {
@@ -21,6 +22,7 @@ type TaskListProps = {
   className?: string;
   onComplete?: (task: DashboardTask) => void;
   completingTaskId?: string | null;
+  onTaskClick?: (task: DashboardTask) => void;
 };
 
 export default function TaskList({
@@ -28,6 +30,7 @@ export default function TaskList({
   className,
   onComplete,
   completingTaskId,
+  onTaskClick,
 }: TaskListProps) {
   const listClassName = ['mt-5 space-y-4', className].filter(Boolean).join(' ');
 
@@ -39,6 +42,7 @@ export default function TaskList({
           task={task}
           onComplete={onComplete}
           isProcessing={completingTaskId === task.id}
+          onOpen={onTaskClick}
         />
       ))}
     </ul>

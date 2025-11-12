@@ -33,6 +33,7 @@ export async function POST(
           startAt: true,
           dueAt: true,
           completedAt: true,
+          sourceRecurringTaskId: true,
         },
       });
 
@@ -110,6 +111,7 @@ function serializeTask(task: {
   startAt: Date | null;
   dueAt: Date | null;
   completedAt: Date | null;
+  sourceRecurringTaskId: string | null;
 }) {
   return {
     id: task.id,
@@ -121,5 +123,6 @@ function serializeTask(task: {
     completed: Boolean(task.completedAt),
     startAt: task.startAt ? task.startAt.toISOString() : null,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
+    sourceRecurringTaskId: task.sourceRecurringTaskId,
   };
 }

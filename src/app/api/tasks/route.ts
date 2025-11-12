@@ -93,6 +93,7 @@ export async function POST(req: Request) {
       status: 'scheduled' | 'in-progress' | 'focus';
       startAt: string | null;
       dueAt: string | null;
+      sourceRecurringTaskId: string | null;
     } & { completed?: boolean }
   > = [];
 
@@ -173,6 +174,7 @@ function serializeTask(task: {
   startAt: Date | null;
   dueAt: Date | null;
   completedAt?: Date | null;
+  sourceRecurringTaskId?: string | null;
 }): {
   id: string;
   title: string;
@@ -183,6 +185,7 @@ function serializeTask(task: {
   completed?: boolean;
   startAt: string | null;
   dueAt: string | null;
+  sourceRecurringTaskId: string | null;
 } {
   return {
     id: task.id,
@@ -194,6 +197,7 @@ function serializeTask(task: {
     completed: Boolean(task.completedAt),
     startAt: task.startAt ? task.startAt.toISOString() : null,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
+    sourceRecurringTaskId: task.sourceRecurringTaskId ?? null,
   };
 }
 

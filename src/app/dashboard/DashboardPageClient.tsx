@@ -8,6 +8,7 @@ import TaskList, {
 import TaskCreateModal, {
   type TaskFormValues,
 } from '@pointwise/app/components/dashboard/TaskCreateModal';
+import TaskManageModal from '@pointwise/app/components/dashboard/TaskManageModal';
 
 type Stat = { label: string; value: string; change: string };
 type Achievement = {
@@ -66,41 +67,115 @@ export default function DashboardPageClient({
   );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
+  const [editorTask, setEditorTask] = useState<DashboardTask | null>(null);
+  const [manageTask, setManageTask] = useState<DashboardTask | null>(null);
+  const [isManageOpen, setIsManageOpen] = useState(false);
+  const [editorVersion, setEditorVersion] = useState(0);
 
-  const handleCreateTask = async (values: TaskFormValues) => {
+  const handleSubmitTask = async (values: TaskFormValues) => {
     setIsCreating(true);
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: values.title,
-          category: values.category,
-          xpValue: values.xpValue,
-          context: values.context,
-          startAt: values.startAt ?? null,
-          dueAt: values.dueAt ?? null,
-          recurrence: values.recurrence ?? 'none',
-          recurrenceDays: values.recurrenceDays ?? [],
-          recurrenceMonthDays: values.recurrenceMonthDays ?? [],
-          timesOfDay: (values.timesOfDay ?? []).filter(Boolean),
-        }),
-      });
+      if (editorMode === 'edit' && values.id) {
+        const response = await fetch(`/api/tasks/${values.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: values.title,
+            category: values.category,
+            xpValue: values.xpValue,
+            context: values.context,
+            startAt: values.startAt,
+            dueAt: values.dueAt,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Task creation failed');
-      }
+        if (!response.ok) throw new Error('Task update failed');
 
-      const payload = await response.json();
-      if (Array.isArray(payload.tasks)) {
-        setTaskItems((prev) => mergeTasks(prev, payload.tasks));
+        const payload = await response.json();
+        if (payload.task) {
+          setTaskItems((prev) => mergeTasks(prev, [payload.task]));
+          setEditorTask(payload.task);
+        }
+      } else {
+        const response = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: values.title,
+            category: values.category,
+            xpValue: values.xpValue,
+            context: values.context,
+            startAt: values.startAt ?? null,
+            dueAt: values.dueAt ?? null,
+            recurrence: values.recurrence ?? 'none',
+            recurrenceDays: values.recurrenceDays ?? [],
+            recurrenceMonthDays: values.recurrenceMonthDays ?? [],
+            timesOfDay: (values.timesOfDay ?? []).filter(Boolean),
+          }),
+        });
+
+        if (!response.ok) throw new Error('Task creation failed');
+
+        const payload = await response.json();
+        if (Array.isArray(payload.tasks)) {
+          setTaskItems((prev) => mergeTasks(prev, payload.tasks));
+        }
       }
 
       setIsCreateOpen(false);
+      setEditorTask(null);
+      setManageTask(null);
+      setIsManageOpen(false);
     } catch (error) {
       console.error('Failed to create task', error);
     } finally {
       setIsCreating(false);
+    }
+  };
+  const openCreateModal = (
+    mode: 'create' | 'edit',
+    task: DashboardTask | null = null,
+  ) => {
+    setEditorMode(mode);
+    setEditorTask(task);
+    setEditorVersion((v) => v + 1);
+    setIsCreateOpen(true);
+  };
+  const handleTaskClick = (task: DashboardTask) => {
+    setManageTask(task);
+    setIsManageOpen(true);
+  };
+
+  const handleEditTask = (task: DashboardTask) => {
+    setIsManageOpen(false);
+    openCreateModal('edit', task);
+  };
+
+  const handleDeleteTask = async (
+    task: DashboardTask,
+    scope: 'single' | 'all',
+  ) => {
+    try {
+      const url =
+        scope === 'all'
+          ? `/api/tasks/${task.id}?scope=series`
+          : `/api/tasks/${task.id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Task deletion failed');
+      }
+      const payload = await response.json();
+      const deletedIds: string[] = payload.deletedIds ?? [task.id];
+      setTaskItems((prev) =>
+        prev.filter((item) => !deletedIds.includes(item.id)),
+      );
+      setIsManageOpen(false);
+      setManageTask(null);
+    } catch (error) {
+      console.error('Failed to delete task', error);
     }
   };
 
@@ -208,12 +283,26 @@ export default function DashboardPageClient({
       />
 
       <TaskCreateModal
-        key={isCreateOpen ? selectedDateInputValue : 'task-modal'}
+        key={`task-modal-${editorMode}-${editorTask?.id ?? 'new'}-${editorVersion}`}
         open={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         defaultDate={selectedDate}
-        onSubmit={handleCreateTask}
+        onSubmit={handleSubmitTask}
         loading={isCreating}
+        mode={editorMode}
+        task={editorTask}
+      />
+      <TaskManageModal
+        open={isManageOpen}
+        task={manageTask}
+        onClose={() => {
+          setIsManageOpen(false);
+          setManageTask(null);
+        }}
+        onEdit={handleEditTask}
+        onDelete={handleDeleteTask}
+        onComplete={handleComplete}
+        isCompleting={Boolean(completingId && manageTask?.id === completingId)}
       />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -239,17 +328,11 @@ export default function DashboardPageClient({
                   <h2 className="mt-2 text-xl font-semibold">Task list</h2>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white">
-                    View all
-                  </button>
                   <button
                     className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-200 transition hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white"
-                    onClick={() => setIsCreateOpen(true)}
+                    onClick={() => openCreateModal('create')}
                   >
                     Create Task
-                  </button>
-                  <button className="rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500 px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-indigo-500/30">
-                    Start Focus Session
                   </button>
                 </div>
               </div>
@@ -299,6 +382,7 @@ export default function DashboardPageClient({
                   tasks={filteredTasks}
                   onComplete={handleComplete}
                   completingTaskId={completingId}
+                  onTaskClick={handleTaskClick}
                 />
               ) : (
                 <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
@@ -329,6 +413,7 @@ export default function DashboardPageClient({
                   tasks={overdueTasks}
                   onComplete={handleComplete}
                   completingTaskId={completingId}
+                  onTaskClick={handleTaskClick}
                 />
               </div>
             ) : null}
@@ -349,6 +434,7 @@ export default function DashboardPageClient({
                   tasks={optionalTasks}
                   onComplete={handleComplete}
                   completingTaskId={completingId}
+                  onTaskClick={handleTaskClick}
                 />
               </div>
             ) : null}

@@ -13,6 +13,8 @@ type TaskItemProps = {
   task: DashboardTask;
   onComplete?: (task: DashboardTask) => void;
   isProcessing?: boolean;
+  onOpen?: (task: DashboardTask) => void;
+  showActions?: boolean;
 };
 
 const DAY_ABBREVIATIONS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -37,7 +39,7 @@ function toDate(input?: string | Date | null) {
   return Number.isNaN(value.getTime()) ? null : value;
 }
 
-function formatScheduleLabel(task: DashboardTask) {
+export function getTaskScheduleLabel(task: DashboardTask) {
   const safeStart = toDate(task.startAt);
   const safeEnd = toDate(task.dueAt);
 
@@ -86,10 +88,15 @@ function isSameDay(a: Date, b: Date) {
   );
 }
 
+const subtitleFallback = (task: DashboardTask) =>
+  task.context ?? task.category ?? '';
+
 export default function TaskItem({
   task,
   onComplete,
   isProcessing = false,
+  onOpen,
+  showActions = true,
 }: TaskItemProps) {
   const isCompleted = Boolean(task.completed);
   const isDisabled = isCompleted || isProcessing;
@@ -113,12 +120,18 @@ export default function TaskItem({
       : 'border-white/10 text-zinc-300 group-hover:border-indigo-400/60 group-hover:text-white',
   ].join(' ');
 
-  const scheduleLabel = formatScheduleLabel(task);
+  const scheduleLabel = getTaskScheduleLabel(task);
 
-  const subtitle = task.context ?? task.category ?? '';
+  const subtitle = subtitleFallback(task);
 
   return (
-    <li className={containerClass}>
+    <li
+      className={containerClass}
+      onClick={(event) => {
+        if (event.target instanceof HTMLButtonElement) return;
+        onOpen?.(task);
+      }}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1.5">
           <p className="text-base font-medium text-zinc-100">{task.title}</p>
@@ -135,14 +148,16 @@ export default function TaskItem({
           <span className="inline-flex items-center rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-300">
             +{task.xp} XP
           </span>
-          <button
-            type="button"
-            className={buttonClass}
-            disabled={isDisabled}
-            onClick={() => onComplete?.(task)}
-          >
-            {actionLabel}
-          </button>
+          {showActions ? (
+            <button
+              type="button"
+              className={buttonClass}
+              disabled={isDisabled}
+              onClick={() => onComplete?.(task)}
+            >
+              {actionLabel}
+            </button>
+          ) : null}
         </div>
       </div>
     </li>

@@ -68,6 +68,7 @@ export default async function DashboardPage() {
     completed: Boolean(task.completedAt),
     startAt: task.startAt ? task.startAt.toISOString() : null,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
+    sourceRecurringTaskId: task.sourceRecurringTaskId,
   }));
 
   const stats = [

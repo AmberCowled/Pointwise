@@ -1,9 +1,13 @@
+'use client';
+
 import { Dialog, Transition, Listbox } from '@headlessui/react';
 import { Fragment, useMemo, useState } from 'react';
 import TaskItem from './TaskItem';
 import type { DashboardTask } from './TaskList';
+import GradientButton from '../ui/GradientButton';
 
 export type TaskFormValues = {
+  id?: string;
   title: string;
   category: string;
   xpValue: number;
@@ -22,6 +26,8 @@ type TaskCreateModalProps = {
   defaultDate?: Date;
   onSubmit?: (values: TaskFormValues) => Promise<void> | void;
   loading?: boolean;
+  mode?: 'create' | 'edit';
+  task?: DashboardTask | null;
 };
 
 const CATEGORIES = ['Focus', 'Planning', 'Communication', 'Health', 'Custom'];
@@ -50,34 +56,62 @@ function toLocalDateTimeString(
   return `${year}-${month}-${day}T${time}`;
 }
 
+function extractTime(input?: string | Date | null) {
+  if (!input) return DEFAULT_TIME_OF_DAY;
+  const value = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(value.getTime())) return DEFAULT_TIME_OF_DAY;
+  const hours = String(value.getHours()).padStart(2, '0');
+  const minutes = String(value.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
 export default function TaskCreateModal({
   open,
   onClose,
   defaultDate,
   onSubmit,
   loading = false,
+  mode = 'create',
+  task,
 }: TaskCreateModalProps) {
   const initialDate = useMemo(
     () => toLocalDateTimeString(defaultDate),
     [defaultDate],
   );
 
-  const [form, setForm] = useState<TaskFormValues>({
-    title: '',
-    category: CATEGORIES[0],
-    xpValue: 50,
-    context: '',
-    startAt: undefined,
-    dueAt: initialDate,
+  const isEditMode = mode === 'edit' && task;
+  const defaultStartValue =
+    isEditMode && task?.startAt
+      ? toLocalDateTimeString(
+          new Date(task.startAt as string),
+          extractTime(task.startAt),
+        )
+      : undefined;
+  const defaultDueValue =
+    isEditMode && task?.dueAt
+      ? toLocalDateTimeString(
+          new Date(task.dueAt as string),
+          extractTime(task.dueAt),
+        )
+      : initialDate;
+
+  const [form, setForm] = useState<TaskFormValues>(() => ({
+    id: isEditMode ? task?.id : undefined,
+    title: isEditMode ? task!.title : '',
+    category: isEditMode ? (task!.category ?? CATEGORIES[0]) : CATEGORIES[0],
+    xpValue: isEditMode ? task!.xp : 50,
+    context: isEditMode ? (task!.context ?? '') : '',
+    startAt: defaultStartValue,
+    dueAt: defaultDueValue,
     recurrence: 'none',
     recurrenceDays: [],
     recurrenceMonthDays: [],
     timesOfDay: [],
-  });
+  }));
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [hasStart, setHasStart] = useState(false);
-  const [hasDue, setHasDue] = useState(Boolean(initialDate));
+  const [hasStart, setHasStart] = useState(Boolean(defaultStartValue));
+  const [hasDue, setHasDue] = useState(Boolean(defaultDueValue));
 
   const handleChange = <T extends keyof TaskFormValues>(
     key: T,
@@ -146,6 +180,7 @@ export default function TaskCreateModal({
     try {
       await onSubmit?.({
         ...form,
+        id: form.id,
         startAt: hasStart ? (form.startAt ?? null) : null,
         dueAt: hasDue ? (form.dueAt ?? null) : null,
         recurrence: form.recurrence ?? 'none',
@@ -186,11 +221,12 @@ export default function TaskCreateModal({
                 <header className="flex items-center justify-between border-b border-white/10 px-6 py-4">
                   <div>
                     <Dialog.Title className="text-lg font-semibold text-zinc-100">
-                      Create Task
+                      {mode === 'edit' ? 'Edit Task' : 'Create Task'}
                     </Dialog.Title>
                     <p className="text-sm text-zinc-500">
-                      Plan a task, attach XP rewards, and optionally set
-                      recurring rules.
+                      {mode === 'edit'
+                        ? 'Update task details or reschedule as needed.'
+                        : 'Plan a task, attach XP rewards, and optionally set recurring rules.'}
                     </p>
                   </div>
                   <button
@@ -563,10 +599,12 @@ export default function TaskCreateModal({
                               context:
                                 form.context ||
                                 'Add context to describe what success looks like.',
+                              category: form.category,
                               xp: form.xpValue,
                               status: 'scheduled',
                               startAt: hasStart ? (form.startAt ?? null) : null,
-                              dueAt: form.dueAt,
+                              dueAt: hasDue ? (form.dueAt ?? null) : null,
+                              sourceRecurringTaskId: undefined,
                               completed: false,
                             } satisfies DashboardTask
                           }
@@ -599,19 +637,20 @@ export default function TaskCreateModal({
                   <footer className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6">
                     <button
                       type="button"
-                      className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-rose-400/60 hover:text-white"
+                      className="w-full rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-rose-400/60 hover:text-white"
                       onClick={onClose}
                       disabled={loading}
                     >
                       Cancel
                     </button>
-                    <button
+                    <GradientButton
                       type="submit"
-                      className="rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+                      loading={loading}
                       disabled={loading}
+                      className="w-full"
                     >
-                      {loading ? 'Creating...' : 'Create task'}
-                    </button>
+                      {mode === 'edit' ? 'Save changes' : 'Create task'}
+                    </GradientButton>
                   </footer>
                 </form>
               </Dialog.Panel>
