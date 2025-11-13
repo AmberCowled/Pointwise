@@ -1,6 +1,13 @@
 'use client';
 
 import type { DashboardTask } from './TaskList';
+import {
+  formatDatePart,
+  formatDateTime,
+  formatTimePart,
+  isSameDay,
+  toDate,
+} from '@pointwise/lib/datetime';
 
 const ACTION_LABEL: Record<DashboardTask['status'], string> = {
   'in-progress': 'Resume',
@@ -16,28 +23,6 @@ type TaskItemProps = {
   onOpen?: (task: DashboardTask) => void;
   showActions?: boolean;
 };
-
-const DAY_ABBREVIATIONS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTH_ABBREVIATIONS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
-function toDate(input?: string | Date | null) {
-  if (!input) return null;
-  const value = input instanceof Date ? input : new Date(input);
-  return Number.isNaN(value.getTime()) ? null : value;
-}
 
 export function getTaskScheduleLabel(task: DashboardTask) {
   const safeStart = toDate(task.startAt);
@@ -59,33 +44,6 @@ export function getTaskScheduleLabel(task: DashboardTask) {
 
   if (safeStart) return formatDateTime(safeStart);
   return formatDateTime(safeEnd!);
-}
-
-function formatDateTime(date: Date) {
-  return `${formatDatePart(date)} · ${formatTimePart(date)}`;
-}
-
-function formatDatePart(date: Date) {
-  const weekday = DAY_ABBREVIATIONS[date.getDay()];
-  const month = MONTH_ABBREVIATIONS[date.getMonth()];
-  const day = date.getDate();
-  return `${weekday}, ${String(day).padStart(2, '0')} ${month}`;
-}
-
-function formatTimePart(date: Date) {
-  const hours24 = date.getHours();
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
-  const period = hours24 < 12 ? 'AM' : 'PM';
-  return `${hours12}:${minutes} ${period}`;
-}
-
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
 }
 
 const subtitleFallback = (task: DashboardTask) =>

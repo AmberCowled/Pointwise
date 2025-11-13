@@ -5,6 +5,7 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import TaskItem from './TaskItem';
 import type { DashboardTask } from './TaskList';
 import GradientButton from '../ui/GradientButton';
+import { extractTime, toLocalDateTimeString } from '@pointwise/lib/datetime';
 
 export type TaskFormValues = {
   id?: string;
@@ -46,26 +47,6 @@ const REPEAT_OPTIONS: Array<{
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DEFAULT_TIME_OF_DAY = '09:00';
 
-function toLocalDateTimeString(
-  date?: Date,
-  time: string = DEFAULT_TIME_OF_DAY,
-) {
-  const base = date ? new Date(date) : new Date();
-  const year = base.getFullYear();
-  const month = String(base.getMonth() + 1).padStart(2, '0');
-  const day = String(base.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}T${time}`;
-}
-
-function extractTime(input?: string | Date | null) {
-  if (!input) return DEFAULT_TIME_OF_DAY;
-  const value = input instanceof Date ? input : new Date(input);
-  if (Number.isNaN(value.getTime())) return DEFAULT_TIME_OF_DAY;
-  const hours = String(value.getHours()).padStart(2, '0');
-  const minutes = String(value.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
-
 export default function TaskCreateModal({
   open,
   onClose,
@@ -77,7 +58,7 @@ export default function TaskCreateModal({
   errorMessage,
 }: TaskCreateModalProps) {
   const initialDate = useMemo(
-    () => toLocalDateTimeString(defaultDate),
+    () => toLocalDateTimeString(defaultDate, DEFAULT_TIME_OF_DAY),
     [defaultDate],
   );
 
@@ -86,14 +67,14 @@ export default function TaskCreateModal({
     isEditMode && task?.startAt
       ? toLocalDateTimeString(
           new Date(task.startAt as string),
-          extractTime(task.startAt),
+          extractTime(task.startAt, DEFAULT_TIME_OF_DAY),
         )
       : undefined;
   const defaultDueValue =
     isEditMode && task?.dueAt
       ? toLocalDateTimeString(
           new Date(task.dueAt as string),
-          extractTime(task.dueAt),
+          extractTime(task.dueAt, DEFAULT_TIME_OF_DAY),
         )
       : initialDate;
 
