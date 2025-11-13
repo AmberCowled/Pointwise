@@ -3,19 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
 import { addDays, startOfDay } from '@pointwise/lib/datetime';
-
-type CreateTaskBody = {
-  title: string;
-  category: string;
-  xpValue: number;
-  context?: string;
-  startAt?: string | null;
-  dueAt?: string | null;
-  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
-  recurrenceDays?: number[];
-  recurrenceMonthDays?: number[];
-  timesOfDay?: string[];
-};
+import { parseCreateTaskBody } from '@pointwise/lib/validation/tasks';
 
 const DEFAULT_RECURRING_WINDOW_DAYS = 35;
 const DEFAULT_RECURRING_MONTHS = 3;
@@ -26,54 +14,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = (await req.json().catch(() => ({}))) as Partial<CreateTaskBody>;
-
-  const title = body.title?.trim();
-  const category = body.category?.trim() ?? 'General';
-  const xpValue = Number.isFinite(body.xpValue)
-    ? Math.max(0, Math.floor(body.xpValue!))
-    : 0;
-  const description = body.context?.trim() ?? '';
-  const startAt = body.startAt ? new Date(body.startAt) : null;
-  const dueAt = body.dueAt ? new Date(body.dueAt) : null;
-  const recurrence = body.recurrence ?? 'none';
-  const recurrenceDays = Array.isArray(body.recurrenceDays)
-    ? body.recurrenceDays.filter(
-        (day) => Number.isInteger(day) && day >= 0 && day <= 6,
-      )
-    : [];
-  const recurrenceMonthDays = Array.isArray(body.recurrenceMonthDays)
-    ? body.recurrenceMonthDays.filter(
-        (day) => Number.isInteger(day) && day >= 1 && day <= 31,
-      )
-    : [];
-  const timesOfDay = Array.isArray(body.timesOfDay)
-    ? body.timesOfDay.filter(
-        (time) => typeof time === 'string' && time.length > 0,
-      )
-    : [];
-
-  if (!title) {
-    return NextResponse.json({ error: 'Title is required' }, { status: 400 });
-  }
-
-  if (startAt && Number.isNaN(startAt.getTime())) {
+  const rawBody = await req.json().catch(() => ({}));
+  const parsed = parseCreateTaskBody(rawBody);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Invalid startAt value' },
-      { status: 400 },
+      { error: parsed.error },
+      { status: parsed.status },
     );
   }
 
-  if (dueAt && Number.isNaN(dueAt.getTime())) {
-    return NextResponse.json({ error: 'Invalid dueAt value' }, { status: 400 });
-  }
-
-  if (startAt && dueAt && startAt > dueAt) {
-    return NextResponse.json(
-      { error: 'Start date cannot be after due date' },
-      { status: 400 },
-    );
-  }
+  const {
+    title,
+    category,
+    xpValue,
+    context,
+    startAt,
+    dueAt,
+    recurrence,
+    recurrenceDays,
+    recurrenceMonthDays,
+    timesOfDay,
+  } = parsed.data;
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
@@ -103,7 +64,7 @@ export async function POST(req: Request) {
       data: {
         userId: user.id,
         title,
-        description,
+        description: context,
         category,
         xpValue,
         startAt,
@@ -128,7 +89,7 @@ export async function POST(req: Request) {
       data: {
         userId: user.id,
         title,
-        description,
+        description: context,
         category,
         xpValue,
         startAt: startDate,
@@ -149,7 +110,7 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           title,
-          description,
+          description: context,
           category,
           xpValue,
           startAt: occurrence,

@@ -8,6 +8,7 @@ import { extractTime, toLocalDateTimeString } from '@pointwise/lib/datetime';
 import {
   CORE_TASK_CATEGORIES,
   CUSTOM_CATEGORY_LABEL,
+  MAX_CUSTOM_CATEGORY_LENGTH,
   isCoreTaskCategory,
 } from '@pointwise/lib/categories';
 import {
@@ -66,6 +67,8 @@ const REPEAT_OPTIONS: FormSelectOption<TaskFormValues['recurrence']>[] = [
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DEFAULT_TIME_OF_DAY = '09:00';
+const TITLE_MAX_LENGTH = 200;
+const CONTEXT_MAX_LENGTH = 5000;
 
 export default function TaskCreateModal({
   open,
@@ -257,14 +260,35 @@ export default function TaskCreateModal({
     event.preventDefault();
     const nextErrors: Record<string, string> = {};
 
-    if (!form.title.trim()) {
+    const trimmedTitle = form.title.trim();
+    if (!trimmedTitle) {
       nextErrors.title = 'Title is required';
+    } else if (trimmedTitle.length > TITLE_MAX_LENGTH) {
+      nextErrors.title = `Title must be ${TITLE_MAX_LENGTH} characters or fewer`;
     }
 
-    const trimmedCategory = (form.category ?? '').trim();
+    const trimmedContext = form.context?.trim() ?? '';
+    if (trimmedContext.length > CONTEXT_MAX_LENGTH) {
+      nextErrors.context = `Context must be ${CONTEXT_MAX_LENGTH} characters or fewer`;
+    }
+
+    if (!Number.isFinite(form.xpValue) || form.xpValue < 0) {
+      nextErrors.xpValue = 'XP must be zero or greater';
+    } else if (form.xpValue > 1_000_000) {
+      nextErrors.xpValue = 'XP must be 1,000,000 or fewer';
+    }
+
+    const rawCategory = form.category ?? '';
+    const trimmedCategory = rawCategory.trim();
+    const finalCategory =
+      selectedCategory === CUSTOM_CATEGORY_OPTION_VALUE
+        ? trimmedCategory
+        : selectedCategory;
     if (selectedCategory === CUSTOM_CATEGORY_OPTION_VALUE) {
       if (!trimmedCategory) {
         nextErrors.category = 'Enter a custom category name';
+      } else if (trimmedCategory.length > MAX_CUSTOM_CATEGORY_LENGTH) {
+        nextErrors.category = `Custom categories must be ${MAX_CUSTOM_CATEGORY_LENGTH} characters or fewer`;
       }
     } else if (!trimmedCategory) {
       nextErrors.category = 'Choose a category';
@@ -293,7 +317,9 @@ export default function TaskCreateModal({
     try {
       const submission: TaskFormValues = {
         ...form,
-        category: trimmedCategory,
+        title: trimmedTitle,
+        context: trimmedContext,
+        category: finalCategory,
         id: form.id,
         startAt: hasStart ? (form.startAt ?? null) : null,
         dueAt: hasDue ? (form.dueAt ?? null) : null,
@@ -303,7 +329,8 @@ export default function TaskCreateModal({
       await onSubmit?.(submission);
       onClose();
     } catch (error) {
-      console.error('Failed to create task', error);
+      const action = mode === 'edit' ? 'update' : 'create';
+      console.error(`Failed to ${action} task`, error);
     }
   };
 
@@ -357,7 +384,11 @@ export default function TaskCreateModal({
                 />
               </FormField>
 
-              <FormField label="Context / notes" htmlFor={contextFieldId}>
+              <FormField
+                label="Context / notes"
+                htmlFor={contextFieldId}
+                error={errors.context}
+              >
                 <textarea
                   id={contextFieldId}
                   className="min-h-[120px] w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
@@ -395,13 +426,17 @@ export default function TaskCreateModal({
                   ) : null}
                 </FormField>
 
-                <FormField label="XP reward" htmlFor={xpFieldId}>
+                <FormField
+                  label="XP reward"
+                  htmlFor={xpFieldId}
+                  error={errors.xpValue}
+                >
                   <input
                     id={xpFieldId}
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                     type="number"
                     min={0}
-                    step={10}
+                    step={1}
                     value={form.xpValue}
                     onChange={(event) =>
                       handleChange('xpValue', Number(event.target.value))

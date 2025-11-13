@@ -50,6 +50,16 @@ export function isCoreTaskCategory(input: string) {
   return normalizeCoreTaskCategory(input) !== null;
 }
 
+export const MAX_CUSTOM_CATEGORY_LENGTH = 60;
+
+export function normalizeTaskCategory(input?: string | null) {
+  const raw = (input ?? '').trim();
+  if (!raw) return CORE_TASK_CATEGORIES[0];
+  const core = normalizeCoreTaskCategory(raw);
+  if (core) return core;
+  return raw.slice(0, MAX_CUSTOM_CATEGORY_LENGTH);
+}
+
 export function createCategorySlices(
   coreEntries: Array<[string, number]>,
   customEntries: Array<[string, number]>,

@@ -79,7 +79,16 @@ export default function DashboardPageClient({
           }),
         });
 
-        if (!response.ok) throw new Error('Task update failed');
+        if (!response.ok) {
+          const errorPayload = await response.json().catch(() => null);
+          const message =
+            typeof errorPayload === 'object' &&
+            errorPayload &&
+            'error' in errorPayload
+              ? String((errorPayload as Record<string, unknown>).error)
+              : 'Task update failed';
+          throw new Error(message);
+        }
 
         const payload = await response.json();
         if (payload.task) {
@@ -126,9 +135,12 @@ export default function DashboardPageClient({
       setManageTask(null);
       setIsManageOpen(false);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to create task';
-      console.error('Failed to create task', error);
+      const fallback =
+        editorMode === 'edit'
+          ? 'Failed to update task'
+          : 'Failed to create task';
+      const message = error instanceof Error ? error.message : fallback;
+      console.error(fallback, error);
       setCreateError(message);
     } finally {
       setIsCreating(false);

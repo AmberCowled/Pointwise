@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
+import { parseUpdateTaskBody } from '@pointwise/lib/validation/tasks';
 
 export async function PATCH(
   req: Request,
@@ -18,47 +19,15 @@ export async function PATCH(
     return NextResponse.json({ error: 'Task ID required' }, { status: 400 });
   }
 
-  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-
-  const title = typeof body.title === 'string' ? body.title.trim() : undefined;
-  const category =
-    typeof body.category === 'string' ? body.category.trim() : undefined;
-  const xpValue =
-    typeof body.xpValue === 'number' && Number.isFinite(body.xpValue)
-      ? Math.max(0, Math.floor(body.xpValue))
-      : undefined;
-  const description =
-    typeof body.context === 'string' ? body.context.trim() : undefined;
-  const startAt =
-    body.startAt === null
-      ? null
-      : typeof body.startAt === 'string'
-        ? new Date(body.startAt)
-        : undefined;
-  const dueAt =
-    body.dueAt === null
-      ? null
-      : typeof body.dueAt === 'string'
-        ? new Date(body.dueAt)
-        : undefined;
-
-  if (startAt instanceof Date && Number.isNaN(startAt.getTime())) {
+  const rawBody = await req.json().catch(() => ({}));
+  const parsed = parseUpdateTaskBody(rawBody);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Invalid startAt value' },
-      { status: 400 },
+      { error: parsed.error },
+      { status: parsed.status },
     );
   }
-
-  if (dueAt instanceof Date && Number.isNaN(dueAt.getTime())) {
-    return NextResponse.json({ error: 'Invalid dueAt value' }, { status: 400 });
-  }
-
-  if (startAt instanceof Date && dueAt instanceof Date && startAt > dueAt) {
-    return NextResponse.json(
-      { error: 'Start date cannot be after due date' },
-      { status: 400 },
-    );
-  }
+  const updates = parsed.data;
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
@@ -71,12 +40,12 @@ export async function PATCH(
       if (!task) return null;
 
       const data: Record<string, unknown> = {};
-      if (title !== undefined) data.title = title;
-      if (category !== undefined) data.category = category;
-      if (xpValue !== undefined) data.xpValue = xpValue;
-      if (description !== undefined) data.description = description;
-      if ('startAt' in body) data.startAt = startAt;
-      if ('dueAt' in body) data.dueAt = dueAt;
+      if (updates.title !== undefined) data.title = updates.title;
+      if (updates.category !== undefined) data.category = updates.category;
+      if (updates.xpValue !== undefined) data.xpValue = updates.xpValue;
+      if (updates.context !== undefined) data.description = updates.context;
+      if ('startAt' in updates) data.startAt = updates.startAt ?? null;
+      if ('dueAt' in updates) data.dueAt = updates.dueAt ?? null;
 
       if (Object.keys(data).length === 0) return task;
 
