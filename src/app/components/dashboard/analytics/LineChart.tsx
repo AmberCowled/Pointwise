@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { LineDataPoint } from '@pointwise/lib/analytics';
-import { createAreaPath, createSmoothPath } from '@pointwise/lib/analytics';
+import { createAreaPath, createSmoothPath } from '@pointwise/lib/charts';
 
 type LineChartProps = {
   data: LineDataPoint[];
