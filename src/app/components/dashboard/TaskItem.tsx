@@ -22,28 +22,38 @@ type TaskItemProps = {
   isProcessing?: boolean;
   onOpen?: (task: DashboardTask) => void;
   showActions?: boolean;
+  locale?: string;
+  timeZone?: string;
 };
 
-export function getTaskScheduleLabel(task: DashboardTask) {
+export function getTaskScheduleLabel(
+  task: DashboardTask,
+  locale?: string,
+  timeZone?: string,
+) {
   const safeStart = toDate(task.startAt);
   const safeEnd = toDate(task.dueAt);
 
   if (!safeStart && !safeEnd) return null;
 
   if (safeStart && safeEnd) {
-    const sameDay = isSameDay(safeStart, safeEnd);
+    const sameDay = isSameDay(safeStart, safeEnd, timeZone);
     if (sameDay) {
-      const datePart = formatDatePart(safeStart);
-      const startTime = formatTimePart(safeStart);
-      const endTime = formatTimePart(safeEnd);
+      const datePart = formatDatePart(safeStart, locale, timeZone);
+      const startTime = formatTimePart(safeStart, locale, timeZone);
+      const endTime = formatTimePart(safeEnd, locale, timeZone);
       const timeRange = startTime === endTime ? '' : ` – ${endTime}`;
       return `${datePart} · ${startTime}${timeRange}`;
     }
-    return `${formatDateTime(safeStart)} → ${formatDateTime(safeEnd)}`;
+    return `${formatDateTime(safeStart, locale, timeZone)} → ${formatDateTime(
+      safeEnd,
+      locale,
+      timeZone,
+    )}`;
   }
 
-  if (safeStart) return formatDateTime(safeStart);
-  return formatDateTime(safeEnd!);
+  if (safeStart) return formatDateTime(safeStart, locale, timeZone);
+  return formatDateTime(safeEnd!, locale, timeZone);
 }
 
 const subtitleFallback = (task: DashboardTask) =>
@@ -55,6 +65,8 @@ export default function TaskItem({
   isProcessing = false,
   onOpen,
   showActions = true,
+  locale,
+  timeZone,
 }: TaskItemProps) {
   const isCompleted = Boolean(task.completed);
   const isDisabled = isCompleted || isProcessing;
@@ -78,7 +90,7 @@ export default function TaskItem({
       : 'border-white/10 text-zinc-300 hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white focus-visible:border-indigo-400/70',
   ].join(' ');
 
-  const scheduleLabel = getTaskScheduleLabel(task);
+  const scheduleLabel = getTaskScheduleLabel(task, locale, timeZone);
 
   const subtitle = subtitleFallback(task);
 

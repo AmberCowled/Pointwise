@@ -24,6 +24,8 @@ type TaskListProps = {
   onComplete?: (task: DashboardTask) => void;
   completingTaskId?: string | null;
   onTaskClick?: (task: DashboardTask) => void;
+  locale?: string;
+  timeZone?: string;
 };
 
 export default function TaskList({
@@ -32,6 +34,8 @@ export default function TaskList({
   onComplete,
   completingTaskId,
   onTaskClick,
+  locale,
+  timeZone,
 }: TaskListProps) {
   const listClassName = ['mt-5 space-y-4', className].filter(Boolean).join(' ');
 
@@ -44,6 +48,8 @@ export default function TaskList({
           onComplete={onComplete}
           isProcessing={completingTaskId === task.id}
           onOpen={onTaskClick}
+          locale={locale}
+          timeZone={timeZone}
         />
       ))}
     </ul>

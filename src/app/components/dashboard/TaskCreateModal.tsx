@@ -4,7 +4,11 @@ import { useCallback, useId, useMemo, useState } from 'react';
 import TaskItem from './TaskItem';
 import type { DashboardTask } from './TaskList';
 import GradientButton from '../ui/GradientButton';
-import { extractTime, toLocalDateTimeString } from '@pointwise/lib/datetime';
+import {
+  DateTimeDefaults,
+  extractTime,
+  toLocalDateTimeString,
+} from '@pointwise/lib/datetime';
 import {
   CORE_TASK_CATEGORIES,
   CUSTOM_CATEGORY_LABEL,
@@ -43,6 +47,8 @@ type TaskCreateModalProps = {
   mode?: 'create' | 'edit';
   task?: DashboardTask | null;
   errorMessage?: string | null;
+  locale?: string | null;
+  timeZone?: string | null;
 };
 
 const CUSTOM_CATEGORY_OPTION_VALUE = '__custom__';
@@ -79,10 +85,15 @@ export default function TaskCreateModal({
   mode = 'create',
   task,
   errorMessage,
+  locale,
+  timeZone,
 }: TaskCreateModalProps) {
+  const activeLocale = locale ?? DateTimeDefaults.locale;
+  const activeTimeZone = timeZone ?? DateTimeDefaults.timeZone;
   const initialDate = useMemo(
-    () => toLocalDateTimeString(defaultDate, DEFAULT_TIME_OF_DAY),
-    [defaultDate],
+    () =>
+      toLocalDateTimeString(defaultDate, DEFAULT_TIME_OF_DAY, activeTimeZone),
+    [activeTimeZone, defaultDate],
   );
 
   const editingTask = mode === 'edit' && task ? task : null;
@@ -94,14 +105,16 @@ export default function TaskCreateModal({
 
   const defaultStartValue = editingTask?.startAt
     ? toLocalDateTimeString(
-        new Date(editingTask.startAt as string),
-        extractTime(editingTask.startAt, DEFAULT_TIME_OF_DAY),
+        editingTask.startAt,
+        extractTime(editingTask.startAt, DEFAULT_TIME_OF_DAY, activeTimeZone),
+        activeTimeZone,
       )
     : undefined;
   const defaultDueValue = editingTask?.dueAt
     ? toLocalDateTimeString(
-        new Date(editingTask.dueAt as string),
-        extractTime(editingTask.dueAt, DEFAULT_TIME_OF_DAY),
+        editingTask.dueAt,
+        extractTime(editingTask.dueAt, DEFAULT_TIME_OF_DAY, activeTimeZone),
+        activeTimeZone,
       )
     : initialDate;
 
@@ -467,9 +480,15 @@ export default function TaskCreateModal({
                         if (next && !form.dueAt) {
                           updateDueAt(
                             toLocalDateTimeString(
+                              form.startAt ?? defaultDate ?? new Date(),
                               form.startAt
-                                ? new Date(form.startAt)
-                                : defaultDate,
+                                ? extractTime(
+                                    form.startAt,
+                                    DEFAULT_TIME_OF_DAY,
+                                    activeTimeZone,
+                                  )
+                                : DEFAULT_TIME_OF_DAY,
+                              activeTimeZone,
                             ),
                           );
                         }
@@ -602,7 +621,10 @@ export default function TaskCreateModal({
                 </FormField>
               ) : null}
 
-              <FormField label="Start date & time" htmlFor={startFieldId}>
+              <FormField
+                label="Start date & time"
+                htmlFor={hasStart ? startFieldId : undefined}
+              >
                 <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-zinc-400">
                   <input
                     type="checkbox"
@@ -615,7 +637,15 @@ export default function TaskCreateModal({
                       if (next && !form.startAt) {
                         updateStartAt(
                           toLocalDateTimeString(
-                            form.dueAt ? new Date(form.dueAt) : defaultDate,
+                            form.dueAt ?? defaultDate ?? new Date(),
+                            form.dueAt
+                              ? extractTime(
+                                  form.dueAt,
+                                  DEFAULT_TIME_OF_DAY,
+                                  activeTimeZone,
+                                )
+                              : DEFAULT_TIME_OF_DAY,
+                            activeTimeZone,
                           ),
                         );
                       }
@@ -672,6 +702,9 @@ export default function TaskCreateModal({
                     } satisfies DashboardTask
                   }
                   isProcessing={false}
+                  showActions={false}
+                  locale={activeLocale}
+                  timeZone={activeTimeZone}
                 />
               </div>
 

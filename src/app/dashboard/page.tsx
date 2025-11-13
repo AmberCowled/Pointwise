@@ -1,11 +1,18 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
+import { cookies, headers } from 'next/headers';
 import BackgroundGlow from '@pointwise/app/components/general/BackgroundGlow';
 import DashboardPageClient from './DashboardPageClient';
 import { type DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
 import { levelFromXp } from '@pointwise/lib/xp';
+import { buildAnalyticsSnapshot } from '@pointwise/lib/analytics';
+import {
+  DateTimeDefaults,
+  formatDateLabel,
+  startOfDay,
+} from '@pointwise/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,25 +23,44 @@ export default async function DashboardPage() {
     redirect('/');
   }
 
+  const headerStore = await headers();
+  const cookieStore = await cookies();
+
   const displayName =
     session.user?.name?.split(' ')[0] ?? session.user?.email ?? 'Adventurer';
-
-  const today = new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date());
 
   const userRecord = session.user?.email
     ? await prisma.user.findUnique({
         where: { email: session.user.email },
-        select: { id: true, xp: true },
+        select: {
+          id: true,
+          xp: true,
+          preferredLocale: true,
+          preferredTimeZone: true,
+        },
       })
     : null;
 
   if (!userRecord) {
     redirect('/');
   }
+
+  const headerLocale =
+    headerStore.get('accept-language')?.split(',')[0]?.trim() ?? undefined;
+  const cookieLocale = cookieStore.get('pw-locale')?.value;
+  const cookieTimeZone = cookieStore.get('pw-timezone')?.value;
+
+  const locale =
+    userRecord.preferredLocale ??
+    cookieLocale ??
+    headerLocale ??
+    DateTimeDefaults.locale;
+  const timeZone =
+    userRecord.preferredTimeZone ?? cookieTimeZone ?? DateTimeDefaults.timeZone;
+
+  const now = new Date();
+  const todayStart = startOfDay(now, timeZone);
+  const today = formatDateLabel(todayStart, locale, timeZone);
 
   const totalXp = userRecord.xp ?? 0;
   const { level, progress, xpIntoLevel, xpToNext } = levelFromXp(totalXp);
@@ -55,7 +81,6 @@ export default async function DashboardPage() {
       userId: userRecord.id,
     },
     orderBy: [{ startAt: 'asc' }, { dueAt: 'asc' }, { createdAt: 'asc' }],
-    take: 500,
   });
 
   const tasks: DashboardTask[] = tasksFromDb.map((task) => ({
@@ -71,6 +96,13 @@ export default async function DashboardPage() {
     completedAt: task.completedAt ? task.completedAt.toISOString() : null,
     sourceRecurringTaskId: task.sourceRecurringTaskId,
   }));
+
+  const initialAnalytics = buildAnalyticsSnapshot(
+    tasks,
+    '7d',
+    locale,
+    timeZone,
+  );
 
   const initials =
     session.user?.name
@@ -90,6 +122,11 @@ export default async function DashboardPage() {
         initials={initials}
         tasks={tasks}
         profile={profile}
+        locale={locale}
+        timeZone={timeZone}
+        initialAnalytics={initialAnalytics}
+        initialSelectedDateMs={todayStart.getTime()}
+        initialNowMs={now.getTime()}
       />
     </div>
   );

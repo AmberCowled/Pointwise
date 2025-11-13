@@ -1,10 +1,18 @@
 import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
-import { addDays, startOfDay, toDate, toDateKey } from './datetime';
+import {
+  DateTimeDefaults,
+  addDays,
+  getDateTimeParts,
+  startOfDay,
+  toDate,
+  toDateKey,
+} from './datetime';
 import {
   createCategorySlices,
   normalizeCoreTaskCategory,
   type CategoryBreakdownResult,
 } from './categories';
+import { buildCategoryGradient } from './categories';
 
 export type { CategorySlice, CategoryBreakdownResult } from './categories';
 
@@ -33,13 +41,24 @@ export type ChartPoint = {
   y: number;
 };
 
-const SHORT_DAY_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-});
+export type AnalyticsSnapshot = {
+  xpSeries: LineDataPoint[];
+  totalXpInRange: number;
+  focusSeries: LineDataPoint[];
+  peakFocusHour: LineDataPoint | null;
+  categoryBreakdown: CategoryBreakdownResult['slices'];
+  customCategoryBreakdown: CategoryBreakdownResult['customSlices'];
+  categoryGradient: string | null;
+  totalCategoryCount: number;
+};
 
-export function buildXpSeries(tasks: DashboardTask[], range: AnalyticsRange) {
-  const { start, end, days } = getAnalyticsWindow(range);
+export function buildXpSeries(
+  tasks: DashboardTask[],
+  range: AnalyticsRange,
+  locale: string = DateTimeDefaults.locale,
+  timeZone: string = DateTimeDefaults.timeZone,
+) {
+  const { start, end, days } = getAnalyticsWindow(range, timeZone);
 
   if (range === '1d') {
     const buckets = new Array(24).fill(0);
@@ -47,11 +66,12 @@ export function buildXpSeries(tasks: DashboardTask[], range: AnalyticsRange) {
       if (!task.completed) continue;
       const completedAt = getEffectiveCompletionDate(task);
       if (!completedAt) continue;
-      if (completedAt < start || completedAt > end) continue;
-      buckets[completedAt.getHours()] += task.xp ?? 0;
+      if (completedAt < start || completedAt >= end) continue;
+      const parts = getDateTimeParts(completedAt, timeZone);
+      buckets[parts.hour] += task.xp ?? 0;
     }
     return buckets.map((value, hour) => ({
-      label: formatHourLabel(hour),
+      label: formatHourTick(hour),
       value,
     }));
   }
@@ -61,17 +81,17 @@ export function buildXpSeries(tasks: DashboardTask[], range: AnalyticsRange) {
     if (!task.completed) continue;
     const completedAt = getEffectiveCompletionDate(task);
     if (!completedAt) continue;
-    if (completedAt < start || completedAt > end) continue;
-    const key = toDateKey(startOfDay(completedAt));
+    if (completedAt < start || completedAt >= end) continue;
+    const key = toDateKey(startOfDay(completedAt, timeZone), timeZone);
     totals.set(key, (totals.get(key) ?? 0) + (task.xp ?? 0));
   }
 
   const series: LineDataPoint[] = [];
   for (let index = 0; index < days; index += 1) {
-    const date = addDays(start, index);
-    const key = toDateKey(date);
+    const date = addDays(start, index, timeZone);
+    const key = toDateKey(date, timeZone);
     series.push({
-      label: formatShortDayLabel(date),
+      label: formatShortDayLabel(date, locale, timeZone),
       value: totals.get(key) ?? 0,
     });
   }
@@ -81,8 +101,11 @@ export function buildXpSeries(tasks: DashboardTask[], range: AnalyticsRange) {
 export function buildFocusSeries(
   tasks: DashboardTask[],
   range: AnalyticsRange,
+  locale: string = DateTimeDefaults.locale,
+  timeZone: string = DateTimeDefaults.timeZone,
 ) {
-  const { start, end } = getAnalyticsWindow(range);
+  void locale;
+  const { start, end } = getAnalyticsWindow(range, timeZone);
   const buckets = new Array(24).fill(0);
   const dayKeys = new Set<string>();
 
@@ -90,15 +113,16 @@ export function buildFocusSeries(
     if (!task.completed) continue;
     const completedAt = getEffectiveCompletionDate(task);
     if (!completedAt) continue;
-    if (completedAt < start || completedAt > end) continue;
-    buckets[completedAt.getHours()] += task.xp ?? 0;
-    dayKeys.add(toDateKey(startOfDay(completedAt)));
+    if (completedAt < start || completedAt >= end) continue;
+    const parts = getDateTimeParts(completedAt, timeZone);
+    buckets[parts.hour] += task.xp ?? 0;
+    dayKeys.add(toDateKey(startOfDay(completedAt, timeZone), timeZone));
   }
 
   const divisor = Math.max(1, dayKeys.size || (range === '1d' ? 1 : 0));
 
   return buckets.map((value, hour) => ({
-    label: formatHourLabel(hour),
+    label: formatHourTick(hour),
     value: divisor > 0 ? value / divisor : 0,
   }));
 }
@@ -114,8 +138,9 @@ export function getPeakFocusHour(series: LineDataPoint[]) {
 export function buildCategoryBreakdown(
   tasks: DashboardTask[],
   range: AnalyticsRange,
+  timeZone: string = DateTimeDefaults.timeZone,
 ): CategoryBreakdownResult {
-  const { start, end } = getAnalyticsWindow(range);
+  const { start, end } = getAnalyticsWindow(range, timeZone);
   const coreCounts = new Map<string, number>();
   const customCounts = new Map<string, number>();
 
@@ -123,7 +148,7 @@ export function buildCategoryBreakdown(
     if (!task.completed) continue;
     const completedAt = getEffectiveCompletionDate(task);
     if (!completedAt) continue;
-    if (completedAt < start || completedAt > end) continue;
+    if (completedAt < start || completedAt >= end) continue;
 
     const rawCategory = (task.category ?? '').trim();
     const fallback = 'Uncategorized';
@@ -148,12 +173,16 @@ export function buildCategoryBreakdown(
 
 export { buildCategoryGradient } from './categories';
 
-export function getAnalyticsWindow(range: AnalyticsRange) {
-  const end = new Date();
-  const todayStart = startOfDay(end);
+export function getAnalyticsWindow(
+  range: AnalyticsRange,
+  timeZone: string = DateTimeDefaults.timeZone,
+) {
+  const now = new Date();
+  const todayStart = startOfDay(now, timeZone);
   const days = range === '1d' ? 1 : range === '7d' ? 7 : 30;
-  const start = addDays(todayStart, -(days - 1));
-  return { start, end, days };
+  const start = addDays(todayStart, -(days - 1), timeZone);
+  const exclusiveEnd = addDays(todayStart, 1, timeZone);
+  return { start, end: exclusiveEnd, days };
 }
 
 export function getEffectiveCompletionDate(task: DashboardTask) {
@@ -165,14 +194,65 @@ export function getEffectiveCompletionDate(task: DashboardTask) {
   return start;
 }
 
-export function formatShortDayLabel(date: Date) {
-  return SHORT_DAY_FORMATTER.format(date);
+export function formatShortDayLabel(
+  date: Date,
+  locale: string = DateTimeDefaults.locale,
+  timeZone: string = DateTimeDefaults.timeZone,
+) {
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+    timeZone,
+  }).format(date);
 }
 
-export function formatHourLabel(hour: number) {
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
-  return `${hour12} ${period}`;
+export function formatHourLabel(
+  hour: number,
+  locale: string = DateTimeDefaults.locale,
+  timeZone: string = DateTimeDefaults.timeZone,
+) {
+  const reference = new Date(Date.UTC(2020, 0, 1, hour, 0, 0));
+  return new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
+    hour12: true,
+    timeZone,
+  }).format(reference);
+}
+
+function formatHourTick(hour24: number) {
+  const normalized = ((hour24 % 24) + 24) % 24;
+  const hour12 = normalized % 12 === 0 ? 12 : normalized % 12;
+  const period = normalized >= 12 ? 'PM' : 'AM';
+  return `${hour12}${period}`;
+}
+
+export function buildAnalyticsSnapshot(
+  tasks: DashboardTask[],
+  range: AnalyticsRange,
+  locale: string = DateTimeDefaults.locale,
+  timeZone: string = DateTimeDefaults.timeZone,
+): AnalyticsSnapshot {
+  const xpSeries = buildXpSeries(tasks, range, locale, timeZone);
+  const totalXpInRange = xpSeries.reduce((sum, point) => sum + point.value, 0);
+  const focusSeries = buildFocusSeries(tasks, range, locale, timeZone);
+  const peakFocusHour = getPeakFocusHour(focusSeries);
+  const categoryStats = buildCategoryBreakdown(tasks, range, timeZone);
+  const categoryGradient = buildCategoryGradient(categoryStats.slices);
+  const totalCategoryCount = categoryStats.slices.reduce(
+    (sum, slice) => sum + slice.value,
+    0,
+  );
+
+  return {
+    xpSeries,
+    totalXpInRange,
+    focusSeries,
+    peakFocusHour,
+    categoryBreakdown: categoryStats.slices,
+    customCategoryBreakdown: categoryStats.customSlices,
+    categoryGradient,
+    totalCategoryCount,
+  };
 }
 
 export { createSmoothPath, createAreaPath } from './charts';

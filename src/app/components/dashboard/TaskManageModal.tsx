@@ -10,6 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '../ui/Modal';
+import { DateTimeDefaults } from '@pointwise/lib/datetime';
 
 type DeleteMode = 'single' | 'all';
 
@@ -21,6 +22,8 @@ type TaskManageModalProps = {
   onDelete?: (task: DashboardTask, mode: DeleteMode) => void;
   onComplete?: (task: DashboardTask) => Promise<void> | void;
   isCompleting?: boolean;
+  locale?: string | null;
+  timeZone?: string | null;
 };
 
 export default function TaskManageModal({
@@ -31,9 +34,13 @@ export default function TaskManageModal({
   onDelete,
   onComplete,
   isCompleting = false,
+  locale,
+  timeZone,
 }: TaskManageModalProps) {
   const isRecurring = Boolean(task?.sourceRecurringTaskId);
   const [localBusy, setLocalBusy] = useState(false);
+  const activeLocale = locale ?? DateTimeDefaults.locale;
+  const activeTimeZone = timeZone ?? DateTimeDefaults.timeZone;
 
   const handleCompleteClick = async () => {
     if (!task || !onComplete || isCompleting || localBusy) return;
@@ -66,12 +73,17 @@ export default function TaskManageModal({
         {task ? (
           <div className="space-y-8">
             <div className="pointer-events-none select-none">
-              <TaskItem task={task} showActions={false} />
+              <TaskItem
+                task={task}
+                showActions={false}
+                locale={activeLocale}
+                timeZone={activeTimeZone}
+              />
             </div>
             <div className="space-y-3 text-sm text-zinc-300">
-              {getTaskScheduleLabel(task) ? (
+              {getTaskScheduleLabel(task, activeLocale, activeTimeZone) ? (
                 <div className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3 text-xs text-indigo-200/80">
-                  {getTaskScheduleLabel(task)}
+                  {getTaskScheduleLabel(task, activeLocale, activeTimeZone)}
                 </div>
               ) : null}
               {task.context ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Navbar from '@pointwise/app/components/dashboard/Navbar';
 import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
 import TaskCreateModal, {
@@ -8,10 +8,15 @@ import TaskCreateModal, {
 } from '@pointwise/app/components/dashboard/TaskCreateModal';
 import TaskManageModal from '@pointwise/app/components/dashboard/TaskManageModal';
 import AnalyticsSection from '@pointwise/app/components/dashboard/analytics/AnalyticsSection';
-import { startOfDay } from '@pointwise/lib/datetime';
+import {
+  DateTimeDefaults,
+  formatDateLabel,
+  startOfDay,
+} from '@pointwise/lib/datetime';
 import { mergeTasks } from '@pointwise/lib/tasks';
 import TaskBoard from '@pointwise/app/components/dashboard/task-board/TaskBoard';
 import { useTaskFilters } from '@pointwise/hooks/useTaskFilters';
+import type { AnalyticsSnapshot } from '@pointwise/lib/analytics';
 
 type ProfileSnapshot = {
   level: number;
@@ -29,6 +34,11 @@ type DashboardPageClientProps = {
   initials: string;
   tasks: DashboardTask[];
   profile: ProfileSnapshot;
+  locale: string | null;
+  timeZone: string | null;
+  initialAnalytics: AnalyticsSnapshot;
+  initialSelectedDateMs: number;
+  initialNowMs: number;
 };
 
 export default function DashboardPageClient({
@@ -37,6 +47,11 @@ export default function DashboardPageClient({
   initials,
   tasks,
   profile,
+  locale,
+  timeZone,
+  initialAnalytics,
+  initialSelectedDateMs,
+  initialNowMs,
 }: DashboardPageClientProps) {
   const [xpState, setXpState] = useState({
     level: profile.level,
@@ -49,8 +64,13 @@ export default function DashboardPageClient({
     Array.isArray(tasks) ? tasks : [],
   );
   const [completingId, setCompletingId] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(() =>
-    startOfDay(new Date()),
+  const [formatSettings, setFormatSettings] = useState(() => ({
+    locale: locale ?? DateTimeDefaults.locale,
+    timeZone: timeZone ?? DateTimeDefaults.timeZone,
+  }));
+  const [displayToday, setDisplayToday] = useState(today);
+  const [selectedDate, setSelectedDate] = useState(
+    () => new Date(initialSelectedDateMs),
   );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -60,10 +80,144 @@ export default function DashboardPageClient({
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [editorVersion, setEditorVersion] = useState(0);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [referenceTimestamp, setReferenceTimestamp] = useState(initialNowMs);
+  const persistedSettingsRef = useRef({
+    locale: locale ?? DateTimeDefaults.locale,
+    timeZone: timeZone ?? DateTimeDefaults.timeZone,
+  });
+  const syncingRef = useRef(false);
+  const appliedTimeZoneRef = useRef<string | null>(null);
+  const selectedDateRef = useRef<Date | null>(new Date(initialSelectedDateMs));
+
+  const syncPreferences = useCallback(
+    async (nextLocale: string, nextTimeZone: string) => {
+      if (
+        persistedSettingsRef.current.locale === nextLocale &&
+        persistedSettingsRef.current.timeZone === nextTimeZone
+      ) {
+        return;
+      }
+      try {
+        syncingRef.current = true;
+        const response = await fetch('/api/user/preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            locale: nextLocale,
+            timeZone: nextTimeZone,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to update preferences');
+        }
+        persistedSettingsRef.current = {
+          locale: nextLocale,
+          timeZone: nextTimeZone,
+        };
+      } catch (error) {
+        console.error('Failed to update user preferences', error);
+      } finally {
+        syncingRef.current = false;
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const nextLocale = locale ?? DateTimeDefaults.locale;
+    const nextTimeZone = timeZone ?? DateTimeDefaults.timeZone;
+    persistedSettingsRef.current = {
+      locale: nextLocale,
+      timeZone: nextTimeZone,
+    };
+    setFormatSettings((prev) => {
+      if (prev.locale === nextLocale && prev.timeZone === nextTimeZone) {
+        return prev;
+      }
+      return { locale: nextLocale, timeZone: nextTimeZone };
+    });
+  }, [locale, timeZone]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const detectPreferences = () => {
+      const browserLocale =
+        navigator.language || persistedSettingsRef.current.locale;
+      const browserTimeZone =
+        Intl.DateTimeFormat().resolvedOptions().timeZone ||
+        persistedSettingsRef.current.timeZone;
+      setFormatSettings((prev) => {
+        if (
+          prev.locale === browserLocale &&
+          prev.timeZone === browserTimeZone
+        ) {
+          return prev;
+        }
+        return {
+          locale: browserLocale,
+          timeZone: browserTimeZone,
+        };
+      });
+    };
+
+    detectPreferences();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        detectPreferences();
+      }
+    };
+
+    window.addEventListener('focus', detectPreferences);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('focus', detectPreferences);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, []);
+
+  useEffect(() => {
+    const currentStart = startOfDay(new Date(), formatSettings.timeZone);
+    setDisplayToday(
+      formatDateLabel(
+        currentStart,
+        formatSettings.locale,
+        formatSettings.timeZone,
+      ),
+    );
+
+    if (
+      appliedTimeZoneRef.current !== formatSettings.timeZone ||
+      !selectedDateRef.current
+    ) {
+      appliedTimeZoneRef.current = formatSettings.timeZone;
+      setSelectedDate(currentStart);
+      selectedDateRef.current = currentStart;
+    }
+
+    syncPreferences(formatSettings.locale, formatSettings.timeZone);
+  }, [formatSettings, syncPreferences]);
+
+  useEffect(() => {
+    selectedDateRef.current = selectedDate;
+  }, [selectedDate]);
 
   const handleSubmitTask = async (values: TaskFormValues) => {
     setIsCreating(true);
     setCreateError(null);
+
+    const normalizeDateInput = (input?: string | null) => {
+      if (!input) return null;
+      const parsed = new Date(input);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return parsed.toISOString();
+    };
+
+    const payloadStartAt = normalizeDateInput(values.startAt ?? null);
+    const payloadDueAt = normalizeDateInput(values.dueAt ?? null);
+
     try {
       if (editorMode === 'edit' && values.id) {
         const response = await fetch(`/api/tasks/${values.id}`, {
@@ -74,8 +228,8 @@ export default function DashboardPageClient({
             category: values.category,
             xpValue: values.xpValue,
             context: values.context,
-            startAt: values.startAt,
-            dueAt: values.dueAt,
+            startAt: payloadStartAt,
+            dueAt: payloadDueAt,
           }),
         });
 
@@ -104,8 +258,8 @@ export default function DashboardPageClient({
             category: values.category,
             xpValue: values.xpValue,
             context: values.context,
-            startAt: values.startAt ?? null,
-            dueAt: values.dueAt ?? null,
+            startAt: payloadStartAt,
+            dueAt: payloadDueAt,
             recurrence: values.recurrence ?? 'none',
             recurrenceDays: values.recurrenceDays ?? [],
             recurrenceMonthDays: values.recurrenceMonthDays ?? [],
@@ -203,7 +357,18 @@ export default function DashboardPageClient({
     overdueTasks,
     selectedDateLabel,
     selectedDateInputValue,
-  } = useTaskFilters(taskItems, selectedDate);
+  } = useTaskFilters(
+    taskItems,
+    selectedDate,
+    formatSettings.locale,
+    formatSettings.timeZone,
+    referenceTimestamp,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setReferenceTimestamp(Date.now());
+  }, []);
 
   const handleComplete = async (task: DashboardTask) => {
     if (task.completed || completingId) return;
@@ -250,6 +415,7 @@ export default function DashboardPageClient({
         level={xpState.level}
         xpRemaining={xpState.xpRemaining}
         progress={xpState.progress}
+        locale={formatSettings.locale}
       />
 
       <TaskCreateModal
@@ -262,6 +428,8 @@ export default function DashboardPageClient({
         mode={editorMode}
         task={editorTask}
         errorMessage={createError}
+        locale={formatSettings.locale}
+        timeZone={formatSettings.timeZone}
       />
       <TaskManageModal
         open={isManageOpen}
@@ -274,13 +442,15 @@ export default function DashboardPageClient({
         onDelete={handleDeleteTask}
         onComplete={handleComplete}
         isCompleting={Boolean(completingId && manageTask?.id === completingId)}
+        locale={formatSettings.locale}
+        timeZone={formatSettings.timeZone}
       />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-              {today}
+              {displayToday}
             </p>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Welcome back, {displayName}
@@ -301,11 +471,18 @@ export default function DashboardPageClient({
             onTaskClick={handleTaskClick}
             onCompleteTask={handleComplete}
             completingTaskId={completingId}
+            locale={formatSettings.locale}
+            timeZone={formatSettings.timeZone}
           />
         </main>
 
         <div className="mt-12">
-          <AnalyticsSection tasks={taskItems} />
+          <AnalyticsSection
+            tasks={taskItems}
+            locale={formatSettings.locale}
+            timeZone={formatSettings.timeZone}
+            initialSnapshot={initialAnalytics}
+          />
         </div>
       </div>
     </>

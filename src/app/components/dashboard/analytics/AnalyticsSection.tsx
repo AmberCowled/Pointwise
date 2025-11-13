@@ -1,12 +1,13 @@
 'use client';
 
 import type { DashboardTask } from '../TaskList';
-import { useId, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import LineChart from './LineChart';
 import useAnalyticsSeries from '@pointwise/hooks/useAnalyticsSeries';
 import {
   ANALYTICS_RANGE_LABELS,
   ANALYTICS_TAB_LABELS,
+  type AnalyticsSnapshot,
   type AnalyticsRange,
   type AnalyticsTab,
 } from '@pointwise/lib/analytics';
@@ -22,14 +23,33 @@ export type { AnalyticsTab, AnalyticsRange };
 
 export default function AnalyticsSection({
   tasks,
+  locale,
+  timeZone,
+  initialSnapshot,
 }: {
   tasks: DashboardTask[];
+  locale: string;
+  timeZone: string;
+  initialSnapshot?: AnalyticsSnapshot | null;
 }) {
   const [tab, setTab] = useState<AnalyticsTab>('xp');
   const [range, setRange] = useState<AnalyticsRange>('7d');
   const gradientSeed = useId();
   const xpGradientId = `${gradientSeed}-xp`;
   const focusGradientId = `${gradientSeed}-focus`;
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(locale),
+    [locale],
+  );
+
+  const liveSnapshot = useAnalyticsSeries(tasks, range, locale, timeZone);
+  const [snapshot, setSnapshot] = useState<AnalyticsSnapshot>(
+    initialSnapshot ?? liveSnapshot,
+  );
+
+  useEffect(() => {
+    setSnapshot(liveSnapshot);
+  }, [liveSnapshot]);
 
   const {
     xpSeries,
@@ -40,7 +60,7 @@ export default function AnalyticsSection({
     customCategoryBreakdown,
     categoryGradient,
     totalCategoryCount,
-  } = useAnalyticsSeries(tasks, range);
+  } = snapshot;
 
   const tabOptions = (Object.keys(ANALYTICS_TAB_LABELS) as AnalyticsTab[]).map(
     (value) => ({ value, label: ANALYTICS_TAB_LABELS[value] }),
@@ -69,15 +89,16 @@ export default function AnalyticsSection({
         <div className="space-y-6">
           <AnalyticsSummaryMetric
             label="XP earned in range"
-            value={`+${totalXpInRange.toLocaleString()} XP`}
+            value={`+${numberFormatter.format(totalXpInRange)} XP`}
           />
           <LineChart
             data={xpSeries}
             lineColor="#a855f7"
             gradientId={xpGradientId}
             formatValue={(point) =>
-              `+${Math.round(point.value).toLocaleString()} XP`
+              `+${numberFormatter.format(Math.round(point.value))} XP`
             }
+            locale={locale}
           />
           <div className="grid grid-cols-3 text-xs text-zinc-500">
             <span>{xpSeries[0]?.label ?? ''}</span>
@@ -96,7 +117,9 @@ export default function AnalyticsSection({
             label="Peak focus window"
             value={
               peakFocusHour
-                ? `${peakFocusHour.label} · ${Math.round(peakFocusHour.value)} XP/hr`
+                ? `${peakFocusHour.label} · ${numberFormatter.format(
+                    Math.round(peakFocusHour.value),
+                  )} XP/hr`
                 : 'No peak yet'
             }
           />
@@ -105,8 +128,9 @@ export default function AnalyticsSection({
             lineColor="#22d3ee"
             gradientId={focusGradientId}
             formatValue={(point) =>
-              `${Math.round(point.value).toLocaleString()} XP/hr`
+              `${numberFormatter.format(Math.round(point.value))} XP/hr`
             }
+            locale={locale}
           />
           <div className="grid grid-cols-5 text-xs text-zinc-500">
             {[0, 6, 12, 18, 23].map((hour) => (
@@ -133,7 +157,7 @@ export default function AnalyticsSection({
             />
             <div className="absolute inset-[20%] rounded-full bg-zinc-950/90 shadow-inner shadow-black/40" />
             <div className="relative flex h-full w-full items-center justify-center text-center text-sm font-semibold text-zinc-100">
-              {totalCategoryCount} completed
+              {numberFormatter.format(totalCategoryCount)} completed
               <br />
               tasks
             </div>
@@ -160,7 +184,7 @@ export default function AnalyticsSection({
                         {Math.round(slice.percentage * 100)}%
                       </span>
                       <span className="ml-2 text-xs text-zinc-500">
-                        {slice.value} tasks
+                        {numberFormatter.format(slice.value)} tasks
                       </span>
                     </div>
                   </div>
@@ -189,7 +213,7 @@ export default function AnalyticsSection({
                               {Math.round(custom.percentage * 100)}%
                             </span>
                             <span className="ml-2 text-[10px] text-zinc-500">
-                              {custom.value} tasks
+                              {numberFormatter.format(custom.value)} tasks
                             </span>
                           </div>
                         </li>

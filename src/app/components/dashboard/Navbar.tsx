@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type NavbarProps = {
   initials: string;
   level: number;
   xpRemaining: number;
   progress: number;
+  locale?: string;
 };
 
 export default function Navbar({
@@ -16,9 +17,14 @@ export default function Navbar({
   level,
   xpRemaining,
   progress,
+  locale,
 }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(locale ?? 'en-US'),
+    [locale],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -118,7 +124,7 @@ export default function Navbar({
               Level {level}
             </span>
             <span className="text-sm text-zinc-400">
-              {xpRemaining.toLocaleString()} XP to next level
+              {numberFormatter.format(xpRemaining)} XP to next level
             </span>
           </div>
           <div className="h-2 w-full rounded-full bg-white/10">

@@ -1,7 +1,6 @@
 'use client';
 
 import type { PropsWithChildren, ReactNode } from 'react';
-import { useId } from 'react';
 
 function classNames(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
@@ -31,28 +30,35 @@ export function FormField({
   bodyClassName,
   children,
 }: FormFieldProps) {
-  const autoId = useId();
-  const fieldId = htmlFor ?? autoId;
+  const labelClasses = classNames(
+    inlineLabel
+      ? 'flex items-center justify-between text-sm font-medium text-zinc-200'
+      : 'block text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500',
+    labelClassName,
+  );
 
   return (
     <div className={classNames('space-y-2', className)}>
       {label ? (
-        <label
-          htmlFor={fieldId}
-          className={classNames(
-            inlineLabel
-              ? 'flex items-center justify-between text-sm font-medium text-zinc-200'
-              : 'block text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500',
-            labelClassName,
-          )}
-        >
-          <span>{label}</span>
-          {required ? (
-            <span className="ml-2 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-200">
-              Required
-            </span>
-          ) : null}
-        </label>
+        htmlFor ? (
+          <label htmlFor={htmlFor} className={labelClasses}>
+            <span>{label}</span>
+            {required ? (
+              <span className="ml-2 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-200">
+                Required
+              </span>
+            ) : null}
+          </label>
+        ) : (
+          <div className={labelClasses}>
+            <span>{label}</span>
+            {required ? (
+              <span className="ml-2 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-200">
+                Required
+              </span>
+            ) : null}
+          </div>
+        )
       ) : null}
       <div className={classNames('space-y-2', bodyClassName)}>
         {children}

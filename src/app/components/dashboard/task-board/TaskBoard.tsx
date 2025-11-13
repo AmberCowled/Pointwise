@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import TaskList, {
   type DashboardTask,
 } from '@pointwise/app/components/dashboard/TaskList';
@@ -18,6 +19,8 @@ export type TaskBoardProps = {
   onTaskClick: (task: DashboardTask) => void;
   onCompleteTask: (task: DashboardTask) => void;
   completingTaskId: string | null;
+  locale: string;
+  timeZone: string;
 };
 
 export default function TaskBoard({
@@ -32,7 +35,18 @@ export default function TaskBoard({
   onTaskClick,
   onCompleteTask,
   completingTaskId,
+  locale,
+  timeZone,
 }: TaskBoardProps) {
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      setHasHydrated(true);
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <section className="space-y-6">
       <TaskSectionCard
@@ -53,27 +67,34 @@ export default function TaskBoard({
           selectedDateLabel={selectedDateLabel}
           selectedDateInputValue={selectedDateInputValue}
           onDateChange={onSelectedDateChange}
+          timeZone={timeZone}
         />
-        {scheduledTasks.length > 0 ? (
-          <div className="mt-5">
+        <div className="mt-5" suppressHydrationWarning>
+          {!hasHydrated ? (
+            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
+              Loading schedule…
+            </div>
+          ) : scheduledTasks.length > 0 ? (
             <TaskList
               tasks={scheduledTasks}
               onComplete={onCompleteTask}
               completingTaskId={completingTaskId}
               onTaskClick={onTaskClick}
+              locale={locale}
+              timeZone={timeZone}
             />
-          </div>
-        ) : (
-          <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
-            No tasks scheduled for{' '}
-            <span className="font-medium text-zinc-200">
-              {selectedDateLabel}
-            </span>
-            . Add one with{' '}
-            <span className="font-medium text-zinc-200">Create Task</span> or
-            set up a recurring routine.
-          </div>
-        )}
+          ) : (
+            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
+              No tasks scheduled for{' '}
+              <span className="font-medium text-zinc-200">
+                {selectedDateLabel}
+              </span>
+              . Add one with{' '}
+              <span className="font-medium text-zinc-200">Create Task</span> or
+              set up a recurring routine.
+            </div>
+          )}
+        </div>
       </TaskSectionCard>
 
       {overdueTasks.length > 0 ? (
@@ -86,6 +107,8 @@ export default function TaskBoard({
             onComplete={onCompleteTask}
             completingTaskId={completingTaskId}
             onTaskClick={onTaskClick}
+            locale={locale}
+            timeZone={timeZone}
           />
         </TaskSectionCard>
       ) : null}
@@ -97,6 +120,8 @@ export default function TaskBoard({
             onComplete={onCompleteTask}
             completingTaskId={completingTaskId}
             onTaskClick={onTaskClick}
+            locale={locale}
+            timeZone={timeZone}
           />
         </TaskSectionCard>
       ) : null}

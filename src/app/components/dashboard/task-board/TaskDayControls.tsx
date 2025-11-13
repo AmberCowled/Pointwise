@@ -13,6 +13,7 @@ export type TaskDayControlsProps = {
   selectedDateInputValue: string;
   onDateChange: (next: Date) => void;
   className?: string;
+  timeZone: string;
 };
 
 export default function TaskDayControls({
@@ -21,6 +22,7 @@ export default function TaskDayControls({
   selectedDateInputValue,
   onDateChange,
   className,
+  timeZone,
 }: TaskDayControlsProps) {
   const dateInputId = useId();
 
@@ -38,21 +40,21 @@ export default function TaskDayControls({
         <button
           type="button"
           className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
-          onClick={() => onDateChange(addDays(selectedDate, -1))}
+          onClick={() => onDateChange(addDays(selectedDate, -1, timeZone))}
         >
           ⟨ Prev
         </button>
         <button
           type="button"
           className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
-          onClick={() => onDateChange(startOfDay(new Date()))}
+          onClick={() => onDateChange(startOfDay(new Date(), timeZone))}
         >
           Today
         </button>
         <button
           type="button"
           className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
-          onClick={() => onDateChange(addDays(selectedDate, 1))}
+          onClick={() => onDateChange(addDays(selectedDate, 1, timeZone))}
         >
           Next ⟩
         </button>
@@ -68,10 +70,8 @@ export default function TaskDayControls({
           onChange={(event) => {
             const value = event.target.value;
             if (!value) return;
-            const next = new Date(value);
-            if (!Number.isNaN(next.getTime())) {
-              onDateChange(startOfDay(next));
-            }
+            const nextStart = startOfDay(value, timeZone);
+            onDateChange(nextStart);
           }}
         />
       </label>

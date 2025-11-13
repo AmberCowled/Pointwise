@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { LineDataPoint } from '@pointwise/lib/analytics';
 import { createAreaPath, createSmoothPath } from '@pointwise/lib/charts';
 
@@ -10,6 +10,7 @@ type LineChartProps = {
   lineColor: string;
   height?: number;
   formatValue?: (point: LineDataPoint) => string;
+  locale?: string;
 };
 
 export default function LineChart({
@@ -18,6 +19,7 @@ export default function LineChart({
   lineColor,
   height = 160,
   formatValue,
+  locale,
 }: LineChartProps) {
   const chartHeight = 100;
   const topPadding = 12;
@@ -39,6 +41,11 @@ export default function LineChart({
     : [];
   const linePath = createSmoothPath(linePoints);
   const areaPath = createAreaPath(corePoints, chartHeight, bottomPadding);
+
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(locale ?? 'en-US'),
+    [locale],
+  );
 
   const [hover, setHover] = useState<{
     index: number;
@@ -158,7 +165,7 @@ export default function LineChart({
           <p className="mt-1 text-sm font-semibold text-white">
             {formatValue
               ? formatValue(hover.dataPoint)
-              : hover.dataPoint.value.toLocaleString()}
+              : numberFormatter.format(hover.dataPoint.value)}
           </p>
         </div>
       ) : null}
