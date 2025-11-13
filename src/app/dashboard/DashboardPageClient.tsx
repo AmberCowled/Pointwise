@@ -1,23 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Navbar from '@pointwise/app/components/dashboard/Navbar';
-import TaskList, {
-  type DashboardTask,
-} from '@pointwise/app/components/dashboard/TaskList';
+import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
 import TaskCreateModal, {
   type TaskFormValues,
 } from '@pointwise/app/components/dashboard/TaskCreateModal';
 import TaskManageModal from '@pointwise/app/components/dashboard/TaskManageModal';
 import AnalyticsSection from '@pointwise/app/components/dashboard/analytics/AnalyticsSection';
-import {
-  addDays,
-  formatDateLabel,
-  startOfDay,
-  toDate,
-  toDateKey,
-} from '@pointwise/lib/datetime';
+import { startOfDay } from '@pointwise/lib/datetime';
 import { mergeTasks } from '@pointwise/lib/tasks';
+import TaskBoard from '@pointwise/app/components/dashboard/task-board/TaskBoard';
+import { useTaskFilters } from '@pointwise/hooks/useTaskFilters';
 
 type ProfileSnapshot = {
   level: number;
@@ -191,61 +185,13 @@ export default function DashboardPageClient({
     }
   };
 
-  const filteredTasks = useMemo(() => {
-    const dayStart = startOfDay(selectedDate);
-    const dayKey = dayStart.getTime();
-    return taskItems.filter((task) => {
-      if (task.completed) return false;
-      const rawStart = toDate(task.startAt);
-      const rawEnd = toDate(task.dueAt);
-      const start = rawStart
-        ? startOfDay(rawStart)
-        : rawEnd
-          ? startOfDay(rawEnd)
-          : null;
-      const end = rawEnd
-        ? startOfDay(rawEnd)
-        : rawStart && !task.completed
-          ? null
-          : start;
-      if (!start && !end) return false;
-      const startTime = start?.getTime() ?? Number.NEGATIVE_INFINITY;
-      const endTime = end ? end.getTime() : Number.POSITIVE_INFINITY;
-      return startTime <= dayKey && endTime >= dayKey;
-    });
-  }, [selectedDate, taskItems]);
-
-  const optionalTasks = useMemo(
-    () =>
-      taskItems.filter(
-        (task) => !task.completed && !task.startAt && !task.dueAt,
-      ),
-    [taskItems],
-  );
-
-  const overdueTasks = useMemo(() => {
-    const now = Date.now();
-    return taskItems
-      .filter((task) => {
-        if (task.completed) return false;
-        const due = toDate(task.dueAt);
-        if (!due) return false;
-        return due.getTime() < now;
-      })
-      .sort((a, b) => {
-        const aDue = toDate(a.dueAt)!.getTime();
-        const bDue = toDate(b.dueAt)!.getTime();
-        return aDue - bDue;
-      });
-  }, [taskItems]);
-
-  const selectedDateLabel = useMemo(() => {
-    return formatDateLabel(selectedDate);
-  }, [selectedDate]);
-
-  const selectedDateInputValue = useMemo(() => {
-    return toDateKey(selectedDate);
-  }, [selectedDate]);
+  const {
+    scheduledTasks,
+    optionalTasks,
+    overdueTasks,
+    selectedDateLabel,
+    selectedDateInputValue,
+  } = useTaskFilters(taskItems, selectedDate);
 
   const handleComplete = async (task: DashboardTask) => {
     if (task.completed || completingId) return;
@@ -331,127 +277,19 @@ export default function DashboardPageClient({
         </header>
 
         <main className="flex-1 space-y-6">
-          <section className="space-y-6">
-            <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                    Overview
-                  </p>
-                  <h2 className="mt-2 text-xl font-semibold">Task list</h2>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-200 transition hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white"
-                    onClick={() => openCreateModal('create')}
-                  >
-                    Create Task
-                  </button>
-                </div>
-              </div>
-              <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-zinc-400">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium text-zinc-200">
-                  {selectedDateLabel}
-                </div>
-                <div className="inline-flex items-center gap-1">
-                  <button
-                    className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
-                    onClick={() => setSelectedDate((prev) => addDays(prev, -1))}
-                  >
-                    ⟨ Prev
-                  </button>
-                  <button
-                    className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
-                    onClick={() => setSelectedDate(startOfDay(new Date()))}
-                  >
-                    Today
-                  </button>
-                  <button
-                    className="rounded-full border border-white/10 px-2 py-1 font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
-                    onClick={() => setSelectedDate((prev) => addDays(prev, 1))}
-                  >
-                    Next ⟩
-                  </button>
-                </div>
-                <label className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium text-zinc-200">
-                  <span className="text-xs text-zinc-400">Jump to</span>
-                  <input
-                    className="cursor-pointer border-0 bg-transparent text-sm text-zinc-100 focus:outline-none"
-                    type="date"
-                    value={selectedDateInputValue}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      if (!value) return;
-                      const next = new Date(value);
-                      if (!Number.isNaN(next.getTime())) {
-                        setSelectedDate(startOfDay(next));
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-              {filteredTasks.length > 0 ? (
-                <TaskList
-                  tasks={filteredTasks}
-                  onComplete={handleComplete}
-                  completingTaskId={completingId}
-                  onTaskClick={handleTaskClick}
-                />
-              ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
-                  No tasks scheduled for{' '}
-                  <span className="font-medium text-zinc-200">
-                    {selectedDateLabel}
-                  </span>
-                  . Add one with{' '}
-                  <span className="font-medium text-zinc-200">Create Task</span>{' '}
-                  or set up a recurring routine.
-                </div>
-              )}
-            </div>
-
-            {overdueTasks.length > 0 ? (
-              <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-rose-400/70">
-                      Needs attention
-                    </p>
-                    <h2 className="mt-2 text-xl font-semibold text-rose-200">
-                      Overdue tasks
-                    </h2>
-                  </div>
-                </div>
-                <TaskList
-                  tasks={overdueTasks}
-                  onComplete={handleComplete}
-                  completingTaskId={completingId}
-                  onTaskClick={handleTaskClick}
-                />
-              </div>
-            ) : null}
-
-            {optionalTasks.length > 0 ? (
-              <div className="rounded-3xl border border-white/5 bg-zinc-900/60 p-6 backdrop-blur">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                      Backlog
-                    </p>
-                    <h2 className="mt-2 text-xl font-semibold">
-                      Optional tasks
-                    </h2>
-                  </div>
-                </div>
-                <TaskList
-                  tasks={optionalTasks}
-                  onComplete={handleComplete}
-                  completingTaskId={completingId}
-                  onTaskClick={handleTaskClick}
-                />
-              </div>
-            ) : null}
-          </section>
+          <TaskBoard
+            scheduledTasks={scheduledTasks}
+            optionalTasks={optionalTasks}
+            overdueTasks={overdueTasks}
+            selectedDate={selectedDate}
+            selectedDateLabel={selectedDateLabel}
+            selectedDateInputValue={selectedDateInputValue}
+            onSelectedDateChange={setSelectedDate}
+            onCreateTask={() => openCreateModal('create')}
+            onTaskClick={handleTaskClick}
+            onCompleteTask={handleComplete}
+            completingTaskId={completingId}
+          />
         </main>
 
         <div className="mt-12">
