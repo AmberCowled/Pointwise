@@ -454,7 +454,9 @@ export default function DashboardPageClient({
           </section>
         </main>
 
-        <AnalyticsSection tasks={taskItems} />
+        <div className="mt-12">
+          <AnalyticsSection tasks={taskItems} />
+        </div>
       </div>
     </>
   );

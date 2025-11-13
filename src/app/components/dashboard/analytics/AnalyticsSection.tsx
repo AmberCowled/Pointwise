@@ -3,7 +3,6 @@
 import type { DashboardTask } from '../TaskList';
 import { useId, useState } from 'react';
 import LineChart from './LineChart';
-import EmptyState from './EmptyState';
 import useAnalyticsSeries from './useAnalyticsSeries';
 import {
   ANALYTICS_RANGE_LABELS,
@@ -96,79 +95,67 @@ export default function AnalyticsSection({
 
       <div className="mt-8">
         {tab === 'xp' ? (
-          xpSeries.some((point) => point.value > 0) ? (
-            <div className="space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-400">
-                <span>XP earned in range</span>
-                <span className="text-lg font-semibold text-zinc-100">
-                  +{totalXpInRange.toLocaleString()} XP
-                </span>
-              </div>
-              <LineChart
-                data={xpSeries}
-                lineColor="#a855f7"
-                gradientId={xpGradientId}
-                formatValue={(point) =>
-                  `+${Math.round(point.value).toLocaleString()} XP`
-                }
-              />
-              <div className="grid grid-cols-3 text-xs text-zinc-500">
-                <span>{xpSeries[0]?.label ?? ''}</span>
-                <span className="text-center">
-                  {xpSeries[Math.max(0, Math.floor((xpSeries.length - 1) / 2))]
-                    ?.label ?? ''}
-                </span>
-                <span className="text-right">
-                  {xpSeries[xpSeries.length - 1]?.label ?? ''}
-                </span>
-              </div>
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-400">
+              <span>XP earned in range</span>
+              <span className="text-lg font-semibold text-zinc-100">
+                +{totalXpInRange.toLocaleString()} XP
+              </span>
             </div>
-          ) : (
-            <EmptyState message="No XP recorded in this window yet. Complete tasks to populate your trendline." />
-          )
+            <LineChart
+              data={xpSeries}
+              lineColor="#a855f7"
+              gradientId={xpGradientId}
+              formatValue={(point) =>
+                `+${Math.round(point.value).toLocaleString()} XP`
+              }
+            />
+            <div className="grid grid-cols-3 text-xs text-zinc-500">
+              <span>{xpSeries[0]?.label ?? ''}</span>
+              <span className="text-center">
+                {xpSeries[Math.max(0, Math.floor((xpSeries.length - 1) / 2))]
+                  ?.label ?? ''}
+              </span>
+              <span className="text-right">
+                {xpSeries[xpSeries.length - 1]?.label ?? ''}
+              </span>
+            </div>
+          </div>
         ) : tab === 'focus' ? (
-          focusSeries.some((point) => point.value > 0) ? (
-            <div className="space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-400">
-                <span>Peak focus window</span>
-                {peakFocusHour ? (
-                  <span className="text-lg font-semibold text-cyan-200">
-                    {peakFocusHour.label} · {Math.round(peakFocusHour.value)}{' '}
-                    XP/hr
-                  </span>
-                ) : (
-                  <span className="text-zinc-500">No peak yet</span>
-                )}
-              </div>
-              <LineChart
-                data={focusSeries}
-                lineColor="#22d3ee"
-                gradientId={focusGradientId}
-                formatValue={(point) =>
-                  `${Math.round(point.value).toLocaleString()} XP/hr`
-                }
-              />
-              <div className="grid grid-cols-5 text-xs text-zinc-500">
-                {[0, 6, 12, 18, 23].map((hour) => (
-                  <span
-                    key={hour}
-                    className={
-                      hour === 0
-                        ? ''
-                        : hour === 23
-                          ? 'text-right'
-                          : 'text-center'
-                    }
-                  >
-                    {focusSeries[hour]?.label ?? ''}
-                  </span>
-                ))}
-              </div>
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-400">
+              <span>Peak focus window</span>
+              {peakFocusHour ? (
+                <span className="text-lg font-semibold text-cyan-200">
+                  {peakFocusHour.label} · {Math.round(peakFocusHour.value)}{' '}
+                  XP/hr
+                </span>
+              ) : (
+                <span className="text-zinc-500">No peak yet</span>
+              )}
             </div>
-          ) : (
-            <EmptyState message="No focus data yet. Completing tasks will reveal your daily energy curve." />
-          )
-        ) : categoryBreakdown.length > 0 ? (
+            <LineChart
+              data={focusSeries}
+              lineColor="#22d3ee"
+              gradientId={focusGradientId}
+              formatValue={(point) =>
+                `${Math.round(point.value).toLocaleString()} XP/hr`
+              }
+            />
+            <div className="grid grid-cols-5 text-xs text-zinc-500">
+              {[0, 6, 12, 18, 23].map((hour) => (
+                <span
+                  key={hour}
+                  className={
+                    hour === 0 ? '' : hour === 23 ? 'text-right' : 'text-center'
+                  }
+                >
+                  {focusSeries[hour]?.label ?? ''}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
           <div className="grid gap-8 lg:grid-cols-[240px,1fr]">
             <div className="relative mx-auto h-48 w-48">
               <div
@@ -186,34 +173,38 @@ export default function AnalyticsSection({
               </div>
             </div>
             <ul className="flex flex-1 flex-col gap-3 text-sm">
-              {categoryBreakdown.map((slice) => (
-                <li
-                  key={slice.category}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-4 py-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ background: slice.color }}
-                    />
-                    <span className="font-medium text-zinc-100">
-                      {slice.category}
-                    </span>
-                  </div>
-                  <div className="text-right text-sm text-zinc-300">
-                    <span className="font-semibold text-zinc-100">
-                      {Math.round(slice.percentage * 100)}%
-                    </span>
-                    <span className="ml-2 text-xs text-zinc-500">
-                      {slice.value} tasks
-                    </span>
-                  </div>
+              {categoryBreakdown.length > 0 ? (
+                categoryBreakdown.map((slice) => (
+                  <li
+                    key={slice.category}
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ background: slice.color }}
+                      />
+                      <span className="font-medium text-zinc-100">
+                        {slice.category}
+                      </span>
+                    </div>
+                    <div className="text-right text-sm text-zinc-300">
+                      <span className="font-semibold text-zinc-100">
+                        {Math.round(slice.percentage * 100)}%
+                      </span>
+                      <span className="ml-2 text-xs text-zinc-500">
+                        {slice.value} tasks
+                      </span>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-zinc-400">
+                  Complete tasks to see your category mix.
                 </li>
-              ))}
+              )}
             </ul>
           </div>
-        ) : (
-          <EmptyState message="Complete at least one task to unlock your category mix." />
         )}
       </div>
     </section>
