@@ -1,15 +1,15 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { DashboardTask } from '../TaskList';
+import type { DashboardTask } from '../app/components/dashboard/TaskList';
 import {
   buildXpSeries,
   buildFocusSeries,
   buildCategoryBreakdown,
-  buildCategoryGradient,
   getPeakFocusHour,
   type AnalyticsRange,
 } from '@pointwise/lib/analytics';
+import { buildCategoryGradient } from '@pointwise/lib/categories';
 
 export default function useAnalyticsSeries(
   tasks: DashboardTask[],
@@ -40,10 +40,13 @@ export default function useAnalyticsSeries(
     [focusSeries],
   );
 
-  const categoryBreakdown = useMemo(
+  const categoryStats = useMemo(
     () => buildCategoryBreakdown(stableTasks, range),
     [stableTasks, range],
   );
+
+  const categoryBreakdown = categoryStats.slices;
+  const customCategoryBreakdown = categoryStats.customSlices;
 
   const categoryGradient = useMemo(
     () => buildCategoryGradient(categoryBreakdown),
@@ -61,6 +64,7 @@ export default function useAnalyticsSeries(
     focusSeries,
     peakFocusHour,
     categoryBreakdown,
+    customCategoryBreakdown,
     categoryGradient,
     totalCategoryCount,
   };

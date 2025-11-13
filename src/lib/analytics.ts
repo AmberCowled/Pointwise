@@ -1,5 +1,12 @@
 import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
 import { addDays, startOfDay, toDate, toDateKey } from './datetime';
+import {
+  createCategorySlices,
+  normalizeCoreTaskCategory,
+  type CategoryBreakdownResult,
+} from './categories';
+
+export type { CategorySlice, CategoryBreakdownResult } from './categories';
 
 export const ANALYTICS_TAB_LABELS = {
   xp: 'XP Trend',
@@ -21,26 +28,10 @@ export type LineDataPoint = {
   value: number;
 };
 
-export type CategorySlice = {
-  category: string;
-  value: number;
-  percentage: number;
-  color: string;
-};
-
 export type ChartPoint = {
   x: number;
   y: number;
 };
-
-const CATEGORY_COLORS = [
-  '#6366f1',
-  '#a855f7',
-  '#ec4899',
-  '#f97316',
-  '#22d3ee',
-  '#10b981',
-];
 
 const SHORT_DAY_FORMATTER = new Intl.DateTimeFormat('en-US', {
   month: 'short',
@@ -123,40 +114,39 @@ export function getPeakFocusHour(series: LineDataPoint[]) {
 export function buildCategoryBreakdown(
   tasks: DashboardTask[],
   range: AnalyticsRange,
-) {
+): CategoryBreakdownResult {
   const { start, end } = getAnalyticsWindow(range);
-  const counts = new Map<string, number>();
+  const coreCounts = new Map<string, number>();
+  const customCounts = new Map<string, number>();
+
   for (const task of tasks) {
     if (!task.completed) continue;
     const completedAt = getEffectiveCompletionDate(task);
     if (!completedAt) continue;
     if (completedAt < start || completedAt > end) continue;
-    const key = (task.category ?? 'Uncategorized').trim() || 'Uncategorized';
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+
+    const rawCategory = (task.category ?? '').trim();
+    const fallback = 'Uncategorized';
+    const resolvedCore = normalizeCoreTaskCategory(rawCategory);
+    if (resolvedCore) {
+      coreCounts.set(resolvedCore, (coreCounts.get(resolvedCore) ?? 0) + 1);
+    } else {
+      const label = rawCategory || fallback;
+      customCounts.set(label, (customCounts.get(label) ?? 0) + 1);
+    }
   }
-  const entries = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
-  const total = entries.reduce((sum, [, value]) => sum + value, 0);
-  if (total === 0) return [];
-  return entries.map(([category, value], index) => ({
-    category,
-    value,
-    percentage: value / total,
-    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
-  }));
+
+  const coreEntries = Array.from(coreCounts.entries()).sort(
+    (a, b) => b[1] - a[1],
+  );
+  const customEntries = Array.from(customCounts.entries()).sort(
+    (a, b) => b[1] - a[1],
+  );
+
+  return createCategorySlices(coreEntries, customEntries);
 }
 
-export function buildCategoryGradient(slices: CategorySlice[]) {
-  if (!slices.length) return null;
-  let cumulative = 0;
-  const segments: string[] = [];
-  for (const slice of slices) {
-    const start = cumulative * 360;
-    cumulative += slice.percentage;
-    const end = cumulative * 360;
-    segments.push(`${slice.color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`);
-  }
-  return `conic-gradient(${segments.join(', ')})`;
-}
+export { buildCategoryGradient } from './categories';
 
 export function getAnalyticsWindow(range: AnalyticsRange) {
   const end = new Date();

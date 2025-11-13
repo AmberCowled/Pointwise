@@ -6,6 +6,11 @@ import TaskItem from './TaskItem';
 import type { DashboardTask } from './TaskList';
 import GradientButton from '../ui/GradientButton';
 import { extractTime, toLocalDateTimeString } from '@pointwise/lib/datetime';
+import {
+  CORE_TASK_CATEGORIES,
+  CUSTOM_CATEGORY_LABEL,
+  isCoreTaskCategory,
+} from '@pointwise/lib/categories';
 
 export type TaskFormValues = {
   id?: string;
@@ -32,7 +37,18 @@ type TaskCreateModalProps = {
   errorMessage?: string | null;
 };
 
-const CATEGORIES = ['Focus', 'Planning', 'Communication', 'Health', 'Custom'];
+const CUSTOM_CATEGORY_OPTION_VALUE = '__custom__';
+
+const CATEGORY_OPTIONS = [
+  ...CORE_TASK_CATEGORIES.map((category) => ({
+    label: category,
+    value: category,
+  })),
+  {
+    label: CUSTOM_CATEGORY_LABEL,
+    value: CUSTOM_CATEGORY_OPTION_VALUE,
+  },
+];
 
 const REPEAT_OPTIONS: Array<{
   label: string;
@@ -62,28 +78,41 @@ export default function TaskCreateModal({
     [defaultDate],
   );
 
-  const isEditMode = mode === 'edit' && task;
-  const defaultStartValue =
-    isEditMode && task?.startAt
-      ? toLocalDateTimeString(
-          new Date(task.startAt as string),
-          extractTime(task.startAt, DEFAULT_TIME_OF_DAY),
-        )
-      : undefined;
-  const defaultDueValue =
-    isEditMode && task?.dueAt
-      ? toLocalDateTimeString(
-          new Date(task.dueAt as string),
-          extractTime(task.dueAt, DEFAULT_TIME_OF_DAY),
-        )
-      : initialDate;
+  const editingTask = mode === 'edit' && task ? task : null;
+
+  const initialCategoryValue = editingTask?.category ?? CORE_TASK_CATEGORIES[0];
+  const initialCategorySelection = isCoreTaskCategory(initialCategoryValue)
+    ? initialCategoryValue
+    : CUSTOM_CATEGORY_OPTION_VALUE;
+
+  const defaultStartValue = editingTask?.startAt
+    ? toLocalDateTimeString(
+        new Date(editingTask.startAt as string),
+        extractTime(editingTask.startAt, DEFAULT_TIME_OF_DAY),
+      )
+    : undefined;
+  const defaultDueValue = editingTask?.dueAt
+    ? toLocalDateTimeString(
+        new Date(editingTask.dueAt as string),
+        extractTime(editingTask.dueAt, DEFAULT_TIME_OF_DAY),
+      )
+    : initialDate;
+
+  const [customCategory, setCustomCategory] = useState<string>(() =>
+    initialCategorySelection === CUSTOM_CATEGORY_OPTION_VALUE
+      ? initialCategoryValue
+      : '',
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    initialCategorySelection,
+  );
 
   const [form, setForm] = useState<TaskFormValues>(() => ({
-    id: isEditMode ? task?.id : undefined,
-    title: isEditMode ? task!.title : '',
-    category: isEditMode ? (task!.category ?? CATEGORIES[0]) : CATEGORIES[0],
-    xpValue: isEditMode ? task!.xp : 50,
-    context: isEditMode ? (task!.context ?? '') : '',
+    id: editingTask?.id,
+    title: editingTask?.title ?? '',
+    category: initialCategoryValue,
+    xpValue: editingTask?.xp ?? 50,
+    context: editingTask?.context ?? '',
     startAt: defaultStartValue,
     dueAt: defaultDueValue,
     recurrence: 'none',
@@ -96,14 +125,18 @@ export default function TaskCreateModal({
   const [hasStart, setHasStart] = useState(Boolean(defaultStartValue));
   const [hasDue, setHasDue] = useState(Boolean(defaultDueValue));
 
-  const clearDateOrderError = useCallback(() => {
+  const clearError = useCallback((key: string) => {
     setErrors((prev) => {
-      if (!prev.dateOrder) return prev;
-      const { dateOrder, ...rest } = prev;
-      void dateOrder;
-      return rest;
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
     });
   }, []);
+
+  const clearDateOrderError = useCallback(() => {
+    clearError('dateOrder');
+  }, [clearError]);
 
   const updateStartAt = useCallback(
     (value?: string) => {
@@ -156,6 +189,23 @@ export default function TaskCreateModal({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleCategorySelect = (value: string) => {
+    setSelectedCategory(value);
+    clearError('category');
+    setForm((prev) => ({
+      ...prev,
+      category: value === CUSTOM_CATEGORY_OPTION_VALUE ? customCategory : value,
+    }));
+  };
+
+  const handleCustomCategoryChange = (value: string) => {
+    setCustomCategory(value);
+    if (selectedCategory === CUSTOM_CATEGORY_OPTION_VALUE) {
+      setForm((prev) => ({ ...prev, category: value }));
+    }
+    clearError('category');
+  };
+
   const toggleWeekday = (index: number) => {
     setForm((prev) => {
       const days = new Set(prev.recurrenceDays);
@@ -199,6 +249,15 @@ export default function TaskCreateModal({
       nextErrors.title = 'Title is required';
     }
 
+    const trimmedCategory = (form.category ?? '').trim();
+    if (selectedCategory === CUSTOM_CATEGORY_OPTION_VALUE) {
+      if (!trimmedCategory) {
+        nextErrors.category = 'Enter a custom category name';
+      }
+    } else if (!trimmedCategory) {
+      nextErrors.category = 'Choose a category';
+    }
+
     if (form.recurrence === 'weekly' && !(form.recurrenceDays?.length ?? 0)) {
       nextErrors.recurrenceDays = 'Select at least one weekday';
     }
@@ -220,13 +279,16 @@ export default function TaskCreateModal({
     if (Object.keys(nextErrors).length > 0) return;
 
     try {
-      await onSubmit?.({
+      const submission: TaskFormValues = {
         ...form,
+        category: trimmedCategory,
         id: form.id,
         startAt: hasStart ? (form.startAt ?? null) : null,
         dueAt: hasDue ? (form.dueAt ?? null) : null,
         recurrence: form.recurrence ?? 'none',
-      });
+      };
+
+      await onSubmit?.(submission);
       onClose();
     } catch (error) {
       console.error('Failed to create task', error);
@@ -332,14 +394,17 @@ export default function TaskCreateModal({
                             Category
                           </label>
                           <Listbox
-                            value={form.category}
-                            onChange={(value: string) =>
-                              handleChange('category', value)
-                            }
+                            value={selectedCategory}
+                            onChange={handleCategorySelect}
                           >
                             <div className="relative">
                               <Listbox.Button className="relative w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm text-zinc-100 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
-                                <span>{form.category}</span>
+                                <span>
+                                  {selectedCategory ===
+                                  CUSTOM_CATEGORY_OPTION_VALUE
+                                    ? customCategory || CUSTOM_CATEGORY_LABEL
+                                    : selectedCategory}
+                                </span>
                                 <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-zinc-500">
                                   ▾
                                 </span>
@@ -351,10 +416,10 @@ export default function TaskCreateModal({
                                 leaveTo="opacity-0"
                               >
                                 <Listbox.Options className="absolute z-10 mt-2 max-h-60 w-full overflow-auto rounded-2xl border border-white/10 bg-zinc-900/95 p-2 text-sm shadow-lg shadow-indigo-500/20 focus:outline-none">
-                                  {CATEGORIES.map((category) => (
+                                  {CATEGORY_OPTIONS.map((option) => (
                                     <Listbox.Option
-                                      key={category}
-                                      value={category}
+                                      key={option.value}
+                                      value={option.value}
                                       className={({ active, selected }) => {
                                         const base =
                                           'cursor-pointer rounded-xl px-3 py-2';
@@ -365,13 +430,29 @@ export default function TaskCreateModal({
                                         return `${base} text-zinc-300`;
                                       }}
                                     >
-                                      {category}
+                                      {option.label}
                                     </Listbox.Option>
                                   ))}
                                 </Listbox.Options>
                               </Transition>
                             </div>
                           </Listbox>
+                          {selectedCategory === CUSTOM_CATEGORY_OPTION_VALUE ? (
+                            <input
+                              className="mt-2 w-full rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                              placeholder="Name your category"
+                              value={customCategory}
+                              onChange={(event) =>
+                                handleCustomCategoryChange(event.target.value)
+                              }
+                              maxLength={60}
+                            />
+                          ) : null}
+                          {errors.category ? (
+                            <p className="text-xs text-rose-400">
+                              {errors.category}
+                            </p>
+                          ) : null}
                         </div>
                         <div className="space-y-2">
                           <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
@@ -665,7 +746,7 @@ export default function TaskCreateModal({
                               context:
                                 form.context ||
                                 'Add context to describe what success looks like.',
-                              category: form.category,
+                              category: selectedCategory,
                               xp: form.xpValue,
                               status: 'scheduled',
                               startAt: hasStart ? (form.startAt ?? null) : null,

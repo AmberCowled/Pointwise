@@ -3,13 +3,14 @@
 import type { DashboardTask } from '../TaskList';
 import { useId, useState } from 'react';
 import LineChart from './LineChart';
-import useAnalyticsSeries from './useAnalyticsSeries';
+import useAnalyticsSeries from '@pointwise/hooks/useAnalyticsSeries';
 import {
   ANALYTICS_RANGE_LABELS,
   ANALYTICS_TAB_LABELS,
   type AnalyticsRange,
   type AnalyticsTab,
 } from '@pointwise/lib/analytics';
+import { CUSTOM_CATEGORY_LABEL } from '@pointwise/lib/categories';
 
 export type { AnalyticsTab, AnalyticsRange };
 
@@ -30,6 +31,7 @@ export default function AnalyticsSection({
     focusSeries,
     peakFocusHour,
     categoryBreakdown,
+    customCategoryBreakdown,
     categoryGradient,
     totalCategoryCount,
   } = useAnalyticsSeries(tasks, range);
@@ -177,25 +179,59 @@ export default function AnalyticsSection({
                 categoryBreakdown.map((slice) => (
                   <li
                     key={slice.category}
-                    className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-4 py-3"
+                    className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ background: slice.color }}
-                      />
-                      <span className="font-medium text-zinc-100">
-                        {slice.category}
-                      </span>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ background: slice.color }}
+                        />
+                        <span className="font-medium text-zinc-100">
+                          {slice.category}
+                        </span>
+                      </div>
+                      <div className="text-right text-sm text-zinc-300">
+                        <span className="font-semibold text-zinc-100">
+                          {Math.round(slice.percentage * 100)}%
+                        </span>
+                        <span className="ml-2 text-xs text-zinc-500">
+                          {slice.value} tasks
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right text-sm text-zinc-300">
-                      <span className="font-semibold text-zinc-100">
-                        {Math.round(slice.percentage * 100)}%
-                      </span>
-                      <span className="ml-2 text-xs text-zinc-500">
-                        {slice.value} tasks
-                      </span>
-                    </div>
+                    {slice.category === CUSTOM_CATEGORY_LABEL &&
+                    customCategoryBreakdown.length > 0 ? (
+                      <ul className="mt-3 space-y-2 border-l border-white/10 pl-4 text-xs text-zinc-400">
+                        {customCategoryBreakdown.map((custom) => (
+                          <li
+                            key={`custom-${custom.category}`}
+                            className="flex items-center justify-between gap-3"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span
+                                className="h-1.5 w-1.5 rounded-full"
+                                style={{
+                                  background: custom.color,
+                                  opacity: 0.8,
+                                }}
+                              />
+                              <span className="font-medium text-zinc-300">
+                                {custom.category}
+                              </span>
+                            </div>
+                            <div className="text-right text-[11px] text-zinc-400">
+                              <span className="font-semibold text-zinc-200">
+                                {Math.round(custom.percentage * 100)}%
+                              </span>
+                              <span className="ml-2 text-[10px] text-zinc-500">
+                                {custom.value} tasks
+                              </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </li>
                 ))
               ) : (
