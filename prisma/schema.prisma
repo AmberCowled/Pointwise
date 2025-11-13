@@ -24,6 +24,10 @@ model User {
 
   accounts      Account[]
   sessions      Session[]
+  tasks         Task[]
+  recurring     RecurringTask[]
+
+  xp            Int      @default(0)
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -62,4 +66,60 @@ model VerificationToken {
   expires    DateTime
 
   @@index([identifier])
+}
+
+model Task {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String    @db.ObjectId
+  title         String
+  description   String?
+  category      String
+  xpValue       Int       @default(0)
+  startAt       DateTime?
+  dueAt         DateTime?
+  completedAt   DateTime?
+  sourceRecurringTaskId String? @db.ObjectId
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceRecurringTask RecurringTask? @relation("RecurringSource", fields: [sourceRecurringTaskId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([sourceRecurringTaskId])
+  @@index([startAt])
+}
+
+enum RecurrenceType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+model RecurringTask {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String    @db.ObjectId
+  title          String
+  description    String?
+  category       String
+  xpValue        Int       @default(0)
+  startAt        DateTime?
+  endAt          DateTime?
+
+  recurrenceType RecurrenceType
+  timesOfDay     String[]  @default([])
+  daysOfWeek     Int[]     @default([]) // 0 (Sun) - 6 (Sat)
+  monthDays      Int[]     @default([]) // 1 - 31
+
+  nextOccurrence DateTime?
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedTasks Task[]    @relation("RecurringSource")
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([nextOccurrence])
 }
