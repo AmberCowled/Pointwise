@@ -25,24 +25,24 @@ export function InputHeader({
   if (!hasContent) return null;
 
   const baseClasses =
-    'flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500';
+    'flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500';
 
   const left = (
-    <span className="flex items-center gap-2">
+    <>
       {label ? <span>{label}</span> : null}
       {required ? (
         <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-200">
           Required
         </span>
       ) : null}
-    </span>
+    </>
   );
 
   if (htmlFor && label) {
     return (
       <label htmlFor={htmlFor} className={clsx(baseClasses, className)}>
         {left}
-        {hasRight ? rightSlot : null}
+        {hasRight ? <span className="ml-auto">{rightSlot}</span> : null}
       </label>
     );
   }
@@ -50,7 +50,7 @@ export function InputHeader({
   return (
     <div className={clsx(baseClasses, className)} {...props}>
       {left}
-      {hasRight ? rightSlot : null}
+      {hasRight ? <span className="ml-auto">{rightSlot}</span> : null}
     </div>
   );
 }
