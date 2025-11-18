@@ -3,6 +3,8 @@
 import clsx from 'clsx';
 import React from 'react';
 
+import { Tag } from './Tag';
+
 export interface InputHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   htmlFor?: string;
   label?: React.ReactNode;
@@ -31,9 +33,9 @@ export function InputHeader({
     <>
       {label ? <span>{label}</span> : null}
       {required ? (
-        <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-200">
+        <Tag variant="danger" size="xs">
           Required
-        </span>
+        </Tag>
       ) : null}
     </>
   );
