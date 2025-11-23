@@ -150,6 +150,34 @@ export default function ProfilePage() {
           </div>
         </section>
 
+        {/* Loading Types */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-zinc-200">Loading Types</h2>
+          <p className="text-xs text-zinc-500">
+            Different spinner types for loading states
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Button variant="primary" size="md" loading loadingType="circular">
+              Circular
+            </Button>
+            <Button variant="primary" size="md" loading loadingType="dots">
+              Dots
+            </Button>
+            <Button variant="primary" size="md" loading loadingType="bars">
+              Bars
+            </Button>
+            <Button variant="secondary" size="md" loading loadingType="circular">
+              Circular
+            </Button>
+            <Button variant="secondary" size="md" loading loadingType="dots">
+              Dots
+            </Button>
+            <Button variant="secondary" size="md" loading loadingType="bars">
+              Bars
+            </Button>
+          </div>
+        </section>
+
         {/* Full Width */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-zinc-200">Full Width</h2>

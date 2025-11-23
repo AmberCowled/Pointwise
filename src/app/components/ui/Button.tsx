@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import React from 'react';
 
-import { Spinner } from './Spinner';
+import { Spinner, type SpinnerType } from './Spinner';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -15,6 +15,11 @@ export interface ButtonProps
   fullWidth?: boolean;
   stack?: boolean;
   loading?: boolean;
+  /**
+   * Type of spinner to display when loading
+   * @default 'circular'
+   */
+  loadingType?: SpinnerType;
   hideChildrenWhenLoading?: boolean;
   children?: React.ReactNode;
 }
@@ -67,6 +72,7 @@ export function Button({
   fullWidth = false,
   stack = false,
   loading = false,
+  loadingType = 'circular',
   hideChildrenWhenLoading = false,
   className,
   ...props
@@ -96,7 +102,20 @@ export function Button({
         )}
       >
         {hideChildrenWhenLoading && loading ? null : children}
-        {loading && <Spinner size={size} />}
+        {loading && (
+          <Spinner
+            type={loadingType}
+            size={size}
+            variant={variant === 'primary' ? 'secondary' : 'secondary'}
+            colorOverride={
+              variant === 'primary'
+                ? loadingType === 'circular'
+                  ? 'text-white'
+                  : 'bg-white'
+                : undefined
+            }
+          />
+        )}
       </span>
     </button>
   );
