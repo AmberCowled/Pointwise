@@ -15,12 +15,7 @@ import {
   MAX_CUSTOM_CATEGORY_LENGTH,
   isCoreTaskCategory,
 } from '@pointwise/lib/categories';
-import {
-  FullScreenModal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from '../ui/Modal';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '../ui/modals';
 import { FormField } from '../ui/FormField';
 import { FormSelect, type FormSelectOption } from '../ui/FormSelect';
 
@@ -354,7 +349,7 @@ export default function TaskCreateModal({
       : 'Plan a task, attach XP rewards, and optionally set recurring rules.';
 
   return (
-    <FullScreenModal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} size="fullscreen">
       <form className="flex h-full flex-col" onSubmit={handleSubmit}>
         <ModalHeader
           title={modalTitle}
@@ -749,6 +744,6 @@ export default function TaskCreateModal({
           </GradientButton>
         </ModalFooter>
       </form>
-    </FullScreenModal>
+    </Modal>
   );
 }
