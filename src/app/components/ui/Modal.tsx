@@ -1,40 +1,174 @@
 'use client';
 
-import { Dialog, Transition } from '@headlessui/react';
-import type { PropsWithChildren, ReactNode } from 'react';
+import {
+  Dialog,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
+import clsx from 'clsx';
+import type { PropsWithChildren } from 'react';
 import { Fragment } from 'react';
 
-function classNames(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
+/**
+ * Modal size variants
+ */
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
+
+/**
+ * Props for the Modal component
+ */
+export interface ModalProps extends PropsWithChildren {
+  /**
+   * Whether the modal is open
+   */
+  open: boolean;
+  /**
+   * Callback when modal should close
+   */
+  onClose: () => void;
+  /**
+   * Size of the modal
+   * @default 'md'
+   */
+  size?: ModalSize;
+  /**
+   * Element to focus when modal opens
+   */
+  initialFocusRef?: React.RefObject<HTMLElement>;
+  /**
+   * Custom className for the dialog container
+   */
+  className?: string;
+  /**
+   * Custom className for the dialog panel
+   */
+  panelClassName?: string;
+  /**
+   * Custom className for the overlay
+   */
+  overlayClassName?: string;
+  /**
+   * ID for the modal title (for accessibility)
+   */
+  titleId?: string;
+  /**
+   * ID for the modal description (for accessibility)
+   */
+  descriptionId?: string;
 }
 
-export type FullScreenModalProps = PropsWithChildren<{
-  open: boolean;
-  onClose: () => void;
-  initialFocusRef?: React.MutableRefObject<HTMLElement | null>;
-  className?: string;
-  panelClassName?: string;
-  overlayClassName?: string;
-}>;
-
-export function FullScreenModal({
+/**
+ * Modal component - supports both centered and fullscreen modes
+ *
+ * Use `size="fullscreen"` for fullscreen modals (replaces FullScreenModal).
+ *
+ * @example
+ * ```tsx
+ * // Standard centered modal
+ * <Modal open={isOpen} onClose={() => setIsOpen(false)} size="lg">
+ *   <ModalHeader title="Example Modal" />
+ *   <ModalBody>Content here</ModalBody>
+ *   <ModalFooter>Actions here</ModalFooter>
+ * </Modal>
+ *
+ * // Fullscreen modal
+ * <Modal open={isOpen} onClose={() => setIsOpen(false)} size="fullscreen">
+ *   <ModalHeader title="Full Screen Modal" />
+ *   <ModalBody>Content here</ModalBody>
+ *   <ModalFooter>Actions here</ModalFooter>
+ * </Modal>
+ * ```
+ */
+export function Modal({
   open,
   onClose,
+  size = 'md',
   initialFocusRef,
   className,
   panelClassName,
   overlayClassName,
+  titleId,
+  descriptionId,
   children,
-}: FullScreenModalProps) {
+}: ModalProps) {
+  const isFullscreen = size === 'fullscreen';
+
+  const sizeStyles: Record<ModalSize, string> = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    fullscreen: 'max-w-full h-screen',
+  };
+
+  // Fullscreen uses different layout and animations
+  if (isFullscreen) {
+    return (
+      <Transition show={open} as={Fragment}>
+        <Dialog
+          as="div"
+          className={clsx('relative z-50', className)}
+          onClose={onClose}
+          initialFocus={initialFocusRef}
+        >
+          <TransitionChild
+            as={Fragment}
+            enter="ease-out duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div
+              className={
+                overlayClassName ??
+                'fixed inset-0 bg-zinc-950/80 backdrop-blur-sm'
+              }
+              aria-hidden="true"
+            />
+          </TransitionChild>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-start justify-center">
+              <TransitionChild
+                as={Fragment}
+                enter="ease-out duration-200"
+                enterFrom="opacity-0 translate-y-6"
+                enterTo="opacity-100 translate-y-0"
+                leave="ease-in duration-150"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 translate-y-6"
+              >
+                <DialogPanel
+                  className={clsx(
+                    'relative flex h-screen w-full max-w-full flex-col bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40',
+                    panelClassName,
+                  )}
+                  aria-labelledby={titleId}
+                  aria-describedby={descriptionId}
+                >
+                  {children}
+                </DialogPanel>
+              </TransitionChild>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+    );
+  }
+
+  // Standard centered modal
   return (
-    <Transition.Root show={open} as={Fragment}>
+    <Transition show={open} as={Fragment}>
       <Dialog
         as="div"
-        className={classNames('relative z-50', className)}
+        className={clsx('relative z-50', className)}
         onClose={onClose}
         initialFocus={initialFocusRef}
       >
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -48,113 +182,36 @@ export function FullScreenModal({
               overlayClassName ??
               'fixed inset-0 bg-zinc-950/80 backdrop-blur-sm'
             }
+            aria-hidden="true"
           />
-        </Transition.Child>
+        </TransitionChild>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-start justify-center">
-            <Transition.Child
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <TransitionChild
               as={Fragment}
               enter="ease-out duration-200"
-              enterFrom="opacity-0 translate-y-6"
-              enterTo="opacity-100 translate-y-0"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
               leave="ease-in duration-150"
-              leaveFrom="opacity-100 translate-y-0"
-              leaveTo="opacity-0 translate-y-6"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel
-                className={classNames(
-                  'relative flex h-screen w-full max-w-full flex-col bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40',
+              <DialogPanel
+                className={clsx(
+                  'relative w-full transform overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40 transition-all',
+                  sizeStyles[size],
                   panelClassName,
                 )}
+                aria-labelledby={titleId}
+                aria-describedby={descriptionId}
               >
                 {children}
-              </Dialog.Panel>
-            </Transition.Child>
+              </DialogPanel>
+            </TransitionChild>
           </div>
         </div>
       </Dialog>
-    </Transition.Root>
-  );
-}
-
-export type ModalHeaderProps = PropsWithChildren<{
-  title?: ReactNode;
-  subtitle?: ReactNode;
-  actions?: ReactNode;
-  className?: string;
-}>;
-
-export function ModalHeader({
-  title,
-  subtitle,
-  actions,
-  className,
-  children,
-}: ModalHeaderProps) {
-  return (
-    <header
-      className={classNames(
-        'flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-6 py-4',
-        className,
-      )}
-    >
-      <div className="space-y-1">
-        {title ? (
-          <Dialog.Title className="text-lg font-semibold text-zinc-100">
-            {title}
-          </Dialog.Title>
-        ) : null}
-        {subtitle ? <p className="text-sm text-zinc-500">{subtitle}</p> : null}
-        {children}
-      </div>
-      {actions ? (
-        <div className="flex items-center gap-2">{actions}</div>
-      ) : null}
-    </header>
-  );
-}
-
-export type ModalBodyProps = PropsWithChildren<{
-  className?: string;
-}>;
-
-export function ModalBody({ children, className }: ModalBodyProps) {
-  return (
-    <div className={classNames('flex-1 overflow-y-auto px-6 py-8', className)}>
-      {children}
-    </div>
-  );
-}
-
-export type ModalFooterProps = PropsWithChildren<{
-  className?: string;
-  align?: 'start' | 'center' | 'end' | 'between';
-}>;
-
-export function ModalFooter({
-  children,
-  className,
-  align = 'between',
-}: ModalFooterProps) {
-  const alignmentClass =
-    align === 'start'
-      ? 'justify-start'
-      : align === 'center'
-        ? 'justify-center'
-        : align === 'end'
-          ? 'justify-end'
-          : 'justify-between';
-
-  return (
-    <footer
-      className={classNames(
-        'flex flex-wrap items-center gap-3 border-t border-white/10 px-6 py-4',
-        alignmentClass,
-        className,
-      )}
-    >
-      {children}
-    </footer>
+    </Transition>
   );
 }

@@ -4,12 +4,7 @@ import { useState } from 'react';
 import TaskItem, { getTaskScheduleLabel } from './TaskItem';
 import type { DashboardTask } from './TaskList';
 import GradientButton from '../ui/GradientButton';
-import {
-  FullScreenModal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from '../ui/Modal';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '../ui/modals';
 import { DateTimeDefaults } from '@pointwise/lib/datetime';
 
 type DeleteMode = 'single' | 'all';
@@ -54,7 +49,7 @@ export default function TaskManageModal({
   };
 
   return (
-    <FullScreenModal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} size="fullscreen">
       <ModalHeader
         title="Task details"
         subtitle={task?.category ?? undefined}
@@ -158,6 +153,6 @@ export default function TaskManageModal({
           )}
         </div>
       </ModalFooter>
-    </FullScreenModal>
+    </Modal>
   );
 }
