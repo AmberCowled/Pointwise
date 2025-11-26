@@ -1,19 +1,28 @@
 'use client';
 
-import {
-  Dialog,
-  DialogPanel,
-  Transition,
-  TransitionChild,
-} from '@headlessui/react';
+import { Dialog, Transition } from '@headlessui/react';
 import clsx from 'clsx';
 import type { PropsWithChildren } from 'react';
-import { Fragment } from 'react';
+import { Fragment, useEffect, useId } from 'react';
+
+import {
+  ModalContextProvider,
+  type ModalContextValue,
+  useModalContext,
+} from './ModalContext';
+import { ModalOverlay } from './ModalOverlay';
+import { ModalPanel } from './ModalPanel';
+import { Spinner } from './Spinner';
 
 /**
  * Modal size variants
  */
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
+
+/**
+ * Modal animation presets
+ */
+export type ModalAnimation = 'fade' | 'slide' | 'scale' | 'none';
 
 /**
  * Props for the Modal component
@@ -56,6 +65,75 @@ export interface ModalProps extends PropsWithChildren {
    * ID for the modal description (for accessibility)
    */
   descriptionId?: string;
+  /**
+   * Whether clicking the overlay should close the modal
+   * @default true
+   */
+  closeOnOverlayClick?: boolean;
+  /**
+   * Whether pressing Escape should close the modal
+   * @default true
+   */
+  closeOnEscape?: boolean;
+  /**
+   * Custom transition durations for modal animations
+   */
+  transitionDuration?: {
+    /**
+     * Duration for enter animation in milliseconds
+     * @default 200
+     */
+    enter?: number;
+    /**
+     * Duration for leave animation in milliseconds
+     * @default 150
+     */
+    leave?: number;
+  };
+  /**
+   * Animation preset style
+   * @default 'scale' for standard modals, 'slide' for fullscreen
+   */
+  animation?: ModalAnimation;
+  /**
+   * Whether to show a loading overlay
+   * @default false
+   */
+  loading?: boolean;
+  /**
+   * Optional message to display with the loading spinner
+   */
+  loadingMessage?: string;
+  /**
+   * Callback fired when modal opens
+   */
+  onOpen?: () => void;
+  /**
+   * Callback fired after modal closes (after transition completes)
+   */
+  onAfterClose?: () => void;
+  /**
+   * Custom z-index for the modal
+   * @default 50
+   */
+  zIndex?: number;
+  /**
+   * Whether to trap focus within the modal
+   * @default true
+   */
+  focusTrap?: boolean;
+  /**
+   * Whether to return focus to the element that opened the modal
+   * Note: Headless UI automatically handles returnFocus when modal closes.
+   * This prop is kept for API consistency but behavior is controlled by focusTrap.
+   * @default true
+   */
+  returnFocus?: boolean;
+  /**
+   * Note: Headless UI Dialog automatically portals modals to document.body.
+   * Portal customization is not directly supported in Headless UI v2.
+   * If you need custom portal behavior, consider using a wrapper component.
+   */
 }
 
 /**
@@ -90,128 +168,223 @@ export function Modal({
   overlayClassName,
   titleId,
   descriptionId,
+  closeOnOverlayClick = true,
+  closeOnEscape = true,
+  transitionDuration,
+  animation,
+  loading = false,
+  loadingMessage,
+  onOpen,
+  onAfterClose,
+  zIndex = 50,
+  focusTrap = true,
+  returnFocus = true, // Note: Headless UI handles returnFocus automatically
   children,
 }: ModalProps) {
   const isFullscreen = size === 'fullscreen';
 
-  const sizeStyles: Record<ModalSize, string> = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
+  // Default animation: scale for standard, slide for fullscreen
+  const defaultAnimation = isFullscreen ? 'slide' : 'scale';
+  const finalAnimation = animation ?? defaultAnimation;
+
+  // Animation durations
+  const enterDuration = transitionDuration?.enter ?? 200;
+  const leaveDuration = transitionDuration?.leave ?? 150;
+
+  // Generate IDs for accessibility if not provided
+  const generatedTitleId = useId();
+  const generatedDescriptionId = useId();
+  const finalTitleId = titleId || generatedTitleId;
+  const finalDescriptionId = descriptionId || generatedDescriptionId;
+
+  // Get parent modal depth from context (for nested modals)
+  let parentDepth = -1;
+  try {
+    const parentContext = useModalContext();
+    parentDepth = parentContext.depth;
+  } catch {
+    // Not in a parent modal, this is top level
+  }
+
+  const currentDepth = parentDepth + 1;
+
+  // Calculate z-index based on depth (each nested modal increases z-index by 10)
+  const calculatedZIndex = zIndex + currentDepth * 10;
+
+  // Create context value for child components
+  const contextValue: ModalContextValue = {
+    open,
+    onClose,
+    titleId: finalTitleId,
+    descriptionId: finalDescriptionId,
+    size,
+    depth: currentDepth,
+  };
+
+  // Body scroll lock - prevent background scrolling when modal is open
+  useEffect(() => {
+    if (open) {
+      // Store original overflow value
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      // Call onOpen callback
+      onOpen?.();
+
+      return () => {
+        // Restore original overflow on cleanup
+        document.body.style.overflow = originalOverflow;
+      };
+    } else {
+      // Call onAfterClose after a delay to allow transition to complete
+      if (onAfterClose) {
+        const timeout = setTimeout(
+          () => {
+            onAfterClose();
+          },
+          Math.max(enterDuration, leaveDuration),
+        );
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, [open, onOpen, onAfterClose, enterDuration, leaveDuration]);
+
+  // Determine if modal should be static (non-closable via user interaction)
+  const isStatic = !closeOnOverlayClick && !closeOnEscape;
+
+  // Focus management: if focusTrap is false, make modal static (disables focus trap)
+  // Note: Headless UI automatically handles returnFocus when modal closes.
+  // Disabling focusTrap also affects returnFocus behavior.
+  // The returnFocus prop is kept for API consistency but is handled automatically.
+  const shouldDisableFocusTrap = !focusTrap;
+
+  // Suppress unused variable warning - returnFocus is for API consistency
+  void returnFocus;
+
+  // Handle Escape key - prevent if disabled
+  useEffect(() => {
+    if (!open || closeOnEscape || isStatic) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    // Capture phase to intercept before Headless UI
+    document.addEventListener('keydown', handleEscape, true);
+    return () => {
+      document.removeEventListener('keydown', handleEscape, true);
+    };
+  }, [open, closeOnEscape, isStatic]);
+
+  // Handle close from Dialog (overlay click, Escape, or programmatic)
+  const handleClose = () => {
+    // Only close if overlay click is enabled
+    // Escape is prevented in the effect above if disabled
+    if (closeOnOverlayClick) {
+      onClose();
+    }
+  };
+
+  // Responsive sizing: on mobile, modals should be full width with padding
+  // On larger screens, use the specified max-width
+  const responsiveSizeStyles: Record<ModalSize, string> = {
+    sm: 'w-full sm:max-w-sm',
+    md: 'w-full sm:max-w-md',
+    lg: 'w-full sm:max-w-lg',
+    xl: 'w-full sm:max-w-xl',
     fullscreen: 'max-w-full h-screen',
   };
 
-  // Fullscreen uses different layout and animations
-  if (isFullscreen) {
-    return (
-      <Transition show={open} as={Fragment}>
-        <Dialog
-          as="div"
-          className={clsx('relative z-50', className)}
-          onClose={onClose}
-          initialFocus={initialFocusRef}
-        >
-          <TransitionChild
-            as={Fragment}
-            enter="ease-out duration-200"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-150"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div
-              className={
-                overlayClassName ??
-                'fixed inset-0 bg-zinc-950/80 backdrop-blur-sm'
-              }
-              aria-hidden="true"
-            />
-          </TransitionChild>
+  // Shared Dialog wrapper
+  const dialogContent = (
+    <Dialog
+      as="div"
+      className={clsx('relative', className)}
+      style={{ zIndex: calculatedZIndex }}
+      onClose={isStatic ? () => {} : handleClose}
+      static={isStatic || shouldDisableFocusTrap}
+      initialFocus={initialFocusRef}
+    >
+      <ModalOverlay
+        className={overlayClassName}
+        enterDuration={enterDuration}
+        leaveDuration={leaveDuration}
+      />
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-start justify-center">
-              <TransitionChild
-                as={Fragment}
-                enter="ease-out duration-200"
-                enterFrom="opacity-0 translate-y-6"
-                enterTo="opacity-100 translate-y-0"
-                leave="ease-in duration-150"
-                leaveFrom="opacity-100 translate-y-0"
-                leaveTo="opacity-0 translate-y-6"
-              >
-                <DialogPanel
-                  className={clsx(
-                    'relative flex h-screen w-full max-w-full flex-col bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40',
-                    panelClassName,
-                  )}
-                  aria-labelledby={titleId}
-                  aria-describedby={descriptionId}
-                >
-                  {children}
-                </DialogPanel>
-              </TransitionChild>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
-    );
-  }
-
-  // Standard centered modal
-  return (
-    <Transition show={open} as={Fragment}>
-      <Dialog
-        as="div"
-        className={clsx('relative z-50', className)}
-        onClose={onClose}
-        initialFocus={initialFocusRef}
-      >
-        <TransitionChild
-          as={Fragment}
-          enter="ease-out duration-200"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-150"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div
-            className={
-              overlayClassName ??
-              'fixed inset-0 bg-zinc-950/80 backdrop-blur-sm'
-            }
-            aria-hidden="true"
-          />
-        </TransitionChild>
-
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
-            <TransitionChild
-              as={Fragment}
-              enter="ease-out duration-200"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-150"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+      {isFullscreen ? (
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-start justify-center">
+            <ModalPanel
+              isFullscreen={true}
+              className={panelClassName}
+              animation={finalAnimation}
+              enterDuration={enterDuration}
+              leaveDuration={leaveDuration}
+              titleId={finalTitleId}
+              descriptionId={finalDescriptionId}
             >
-              <DialogPanel
-                className={clsx(
-                  'relative w-full transform overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40 transition-all',
-                  sizeStyles[size],
-                  panelClassName,
-                )}
-                aria-labelledby={titleId}
-                aria-describedby={descriptionId}
-              >
-                {children}
-              </DialogPanel>
-            </TransitionChild>
+              {children}
+              {loading && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm"
+                  style={{ zIndex: calculatedZIndex + 1 }}
+                >
+                  <div className="flex flex-col items-center gap-3">
+                    <Spinner size="lg" variant="primary" />
+                    {loadingMessage && (
+                      <p className="text-sm text-zinc-300">{loadingMessage}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </ModalPanel>
           </div>
         </div>
-      </Dialog>
-    </Transition>
+      ) : (
+        <div
+          className="fixed inset-0 overflow-y-auto"
+          style={{ zIndex: calculatedZIndex }}
+        >
+          <div className="flex min-h-full items-center justify-center p-4">
+            <ModalPanel
+              isFullscreen={false}
+              className={panelClassName}
+              sizeClassName={responsiveSizeStyles[size]}
+              animation={finalAnimation}
+              enterDuration={enterDuration}
+              leaveDuration={leaveDuration}
+              titleId={finalTitleId}
+              descriptionId={finalDescriptionId}
+            >
+              {children}
+              {loading && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center rounded-2xl bg-zinc-950/80 backdrop-blur-sm"
+                  style={{ zIndex: calculatedZIndex + 1 }}
+                >
+                  <div className="flex flex-col items-center gap-3">
+                    <Spinner size="lg" variant="primary" />
+                    {loadingMessage && (
+                      <p className="text-sm text-zinc-300">{loadingMessage}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </ModalPanel>
+          </div>
+        </div>
+      )}
+    </Dialog>
+  );
+
+  return (
+    <ModalContextProvider value={contextValue}>
+      <Transition show={open} as={Fragment}>
+        {dialogContent}
+      </Transition>
+    </ModalContextProvider>
   );
 }
