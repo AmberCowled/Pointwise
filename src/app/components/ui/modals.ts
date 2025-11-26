@@ -8,3 +8,5 @@ export {
   ModalCloseButton,
   type ModalCloseButtonProps,
 } from './ModalCloseButton';
+export { useModalContext, type ModalContextValue } from './ModalContext';
+export { XIcon, type XIconProps } from './icons/XIcon';
