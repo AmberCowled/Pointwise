@@ -5,6 +5,7 @@
   --foreground: #171717;
 }
 
+/* @theme is a Tailwind CSS v4 directive - valid but not recognized by CSS linters */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -62,6 +63,20 @@ body {
     transform: scaleY(1);
     opacity: 1;
   }
+}
+
+/* Override browser autofill styles for dark theme */
+/* The -webkit-box-shadow with inset creates a background effect */
+/* Using a large shadow (30px) ensures it covers the entire input */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgb(24 24 27) inset !important;
+  box-shadow: 0 0 0 30px rgb(24 24 27) inset !important;
+  -webkit-text-fill-color: rgb(244 244 245) !important;
+  caret-color: rgb(244 244 245) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Register custom utilities WITH hover variants */

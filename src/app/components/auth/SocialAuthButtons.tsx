@@ -1,47 +1,64 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, useCallback, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
+import { Button } from '../ui/Button';
+import { getBaseUrl } from './utils/url';
 
-export default function SocialAuthButtons() {
+type Props = {
+  onLoadingChange?: (isLoading: boolean) => void;
+};
+
+export default function SocialAuthButtons({ onLoadingChange }: Props) {
   const [pending, setPending] = useState<'google' | 'github' | null>(null);
 
-  const baseUrl =
-    process.env.NEXTAUTH_URL ??
-    (typeof window !== 'undefined' ? window.location.origin : '');
-
-  const handle = (provider: 'google' | 'github') => {
+  const handle = useCallback((provider: 'google' | 'github') => {
+    const baseUrl = getBaseUrl();
     if (!baseUrl) return;
     setPending(provider);
     signIn(provider, { callbackUrl: `${baseUrl}/dashboard` }).finally(() =>
       setPending(null),
     );
-  };
+  }, []);
+
+  // Notify parent of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(!!pending);
+  }, [pending, onLoadingChange]);
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      <button
+      <Button
         type="button"
+        variant="secondary"
+        size="md"
+        stack
+        loading={pending === 'google'}
+        disabled={!!pending}
         onClick={() => handle('google')}
-        disabled={!!pending}
-        className="flex flex-col items-center justify-center rounded-lg bg-zinc-900 border border-white/10 py-2 text-sm hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed"
-        aria-busy={pending === 'google'}
       >
-        <FcGoogle className="text-2xl mb-1" />
-        Continue with Google
-      </button>
+        <FcGoogle className="text-xl sm:text-2xl shrink-0" />
+        <span className="text-xs sm:text-sm whitespace-nowrap">
+          Continue with Google
+        </span>
+      </Button>
 
-      <button
+      <Button
         type="button"
-        onClick={() => handle('github')}
+        variant="secondary"
+        size="md"
+        stack
+        loading={pending === 'github'}
         disabled={!!pending}
-        className="flex flex-col items-center justify-center rounded-lg bg-zinc-900 border border-white/10 py-2 text-sm hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed"
-        aria-busy={pending === 'github'}
+        onClick={() => handle('github')}
       >
-        <FaGithub className="text-2xl mb-1 text-white" />
-        Continue with GitHub
-      </button>
+        <FaGithub className="text-xl sm:text-2xl text-white shrink-0" />
+        <span className="text-xs sm:text-sm whitespace-nowrap">
+          Continue with GitHub
+        </span>
+      </Button>
     </div>
   );
 }

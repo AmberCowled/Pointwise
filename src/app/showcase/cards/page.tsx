@@ -2,7 +2,7 @@
 
 import { Card } from '@pointwise/app/components/ui/Card';
 import { Button } from '@pointwise/app/components/ui/Button';
-import AuthCard from '@pointwise/app/components/auth/AuthCard';
+// AuthCard has been replaced with Card component
 import TaskSectionCard from '@pointwise/app/components/dashboard/task-board/TaskSectionCard';
 import BackgroundGlow from '@pointwise/app/components/general/BackgroundGlow';
 
@@ -250,13 +250,14 @@ export default function CardsShowcasePage() {
             </div>
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-zinc-400">
-                Legacy AuthCard
+                Card (Primary with Responsive Padding)
               </h3>
-              <AuthCard>
+              <Card variant="primary" responsivePadding>
                 <p className="text-sm text-zinc-300">
-                  Legacy AuthCard component
+                  Equivalent to legacy AuthCard: Card with
+                  variant=&quot;primary&quot; and responsivePadding
                 </p>
-              </AuthCard>
+              </Card>
             </div>
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-zinc-400">
@@ -292,16 +293,17 @@ export default function CardsShowcasePage() {
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-zinc-400 mb-2">
-                AuthCard
+                Card (Primary with Responsive Padding) - Replaces AuthCard
               </h3>
-              <AuthCard>
+              <Card variant="primary" responsivePadding>
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold">Simple Content</h3>
                   <p className="text-sm text-zinc-400">
-                    Legacy AuthCard component
+                    Replaces legacy AuthCard: use Card with
+                    variant=&quot;primary&quot; and responsivePadding
                   </p>
                 </div>
-              </AuthCard>
+              </Card>
             </div>
             <div>
               <h3 className="text-sm font-medium text-zinc-400 mb-2">
