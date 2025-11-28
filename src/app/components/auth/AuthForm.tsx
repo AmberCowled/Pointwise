@@ -1,133 +1,277 @@
 'use client';
-import React from 'react';
-import GradientButton from '../ui/GradientButton';
+
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Checkbox } from '../ui/Checkbox';
+import { useNotifications } from '../ui/NotificationProvider';
 import { useSignin } from '@pointwise/hooks/useSignin';
 import { useSignup } from '@pointwise/hooks/useSignup';
+import type { AuthTab } from './types';
+import {
+  validateEmail,
+  validatePassword,
+  calculatePasswordStrength,
+  PASSWORD_STRENGTH_LABELS,
+} from './utils/validation';
+import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 
-type Props = { tab: 'signin' | 'signup' };
+type Props = {
+  tab: AuthTab;
+  onLoadingChange?: (isLoading: boolean) => void;
+};
 
-export default function AuthForm({ tab }: Props) {
+export default function AuthForm({ tab, onLoadingChange }: Props) {
   const { signup, loading: signupLoading, error: signupError } = useSignup();
   const { signin, loading: signinLoading, error: signinError } = useSignin();
+  const { showNotification } = useNotifications();
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+  // Form state management
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
 
-    if (tab === 'signup') {
-      signup({
-        name:
-          String(fd.get('firstName') || '') +
-          ' ' +
-          String(fd.get('lastName') || ''),
-        email: String(fd.get('email') || ''),
-        password: String(fd.get('password') || ''),
-      });
-    } else {
-      const remember = fd.get('remember') === 'on';
-      signin(
-        String(fd.get('email') || ''),
-        String(fd.get('password') || ''),
-        remember,
-      );
+  // Validation state
+  const [emailError, setEmailError] = useState<string | undefined>();
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const isLoading = tab === 'signup' ? signupLoading : signinLoading;
+
+  // Notify parent of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(isLoading);
+  }, [isLoading, onLoadingChange]);
+
+  // Calculate password strength for signup
+  const passwordStrength = useMemo(() => {
+    if (tab === 'signup' && password) {
+      return calculatePasswordStrength(password);
     }
-  };
+    return 0;
+  }, [password, tab]);
+
+  // Password strength description
+  const passwordStrengthText = useMemo(() => {
+    if (tab !== 'signup' || !password) return undefined;
+    return PASSWORD_STRENGTH_LABELS[passwordStrength];
+  }, [password, passwordStrength, tab]);
+
+  // Real-time email validation (only show error if touched or submit attempted)
+  const handleEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setEmail(value);
+      if (emailTouched || submitAttempted) {
+        setEmailError(validateEmail(value));
+      }
+    },
+    [emailTouched, submitAttempted],
+  );
+
+  const handleEmailBlur = useCallback(() => {
+    setEmailTouched(true);
+    setEmailError(validateEmail(email));
+  }, [email]);
+
+  // Real-time password validation (only show error if touched or submit attempted)
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setPassword(value);
+      if (passwordTouched || submitAttempted) {
+        setPasswordError(validatePassword(value, tab === 'signup'));
+      }
+    },
+    [passwordTouched, submitAttempted, tab],
+  );
+
+  const handlePasswordBlur = useCallback(() => {
+    setPasswordTouched(true);
+    setPasswordError(validatePassword(password, tab === 'signup'));
+  }, [password, tab]);
+
+  // Handlers for name fields
+  const handleFirstNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFirstName(e.target.value);
+    },
+    [],
+  );
+
+  const handleLastNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLastName(e.target.value);
+    },
+    [],
+  );
+
+  const handleRememberChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setRemember(e.target.checked);
+    },
+    [],
+  );
+
+  // Show error notifications (prevent duplicate notifications)
+  useEffect(() => {
+    const error = tab === 'signup' ? signupError : signinError;
+    if (error) {
+      showNotification({
+        message: error,
+        variant: 'error',
+      });
+    }
+  }, [signinError, signupError, tab, showNotification]);
+
+  const onSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setSubmitAttempted(true);
+
+      // Validate before submission
+      const emailErr = validateEmail(email);
+      const passwordErr = validatePassword(password, tab === 'signup');
+
+      setEmailError(emailErr);
+      setPasswordError(passwordErr);
+
+      if (emailErr || passwordErr) {
+        return;
+      }
+
+      if (tab === 'signup') {
+        signup({
+          name: `${firstName} ${lastName}`.trim() || undefined,
+          email,
+          password,
+        });
+      } else {
+        signin(email, password, remember);
+      }
+    },
+    [email, password, firstName, lastName, remember, tab, signup, signin],
+  );
 
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-4 text-left">
       {tab === 'signup' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="firstName"
-              className="block text-xs text-zinc-400 mb-1"
-            >
-              First name
-            </label>
-            <input
-              id="firstName"
-              name="firstName"
-              type="text"
-              placeholder="John"
-              className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-sm outline-none focus:border-fuchsia-500/50"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="lastName"
-              className="block text-xs text-zinc-400 mb-1"
-            >
-              Last name
-            </label>
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              placeholder="Smith"
-              className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-sm outline-none focus:border-fuchsia-500/50"
-            />
-          </div>
+          <Input
+            id="firstName"
+            name="firstName"
+            type="text"
+            label="First name"
+            placeholder="John"
+            variant="secondary"
+            size="md"
+            fullWidth
+            value={firstName}
+            onChange={handleFirstNameChange}
+            disabled={isLoading}
+          />
+          <Input
+            id="lastName"
+            name="lastName"
+            type="text"
+            label="Last name"
+            placeholder="Smith"
+            variant="secondary"
+            size="md"
+            fullWidth
+            value={lastName}
+            onChange={handleLastNameChange}
+            disabled={isLoading}
+          />
         </div>
       )}
 
-      <div>
-        <label htmlFor="email" className="block text-xs text-zinc-400 mb-1">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="you@example.com"
-          className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-sm outline-none focus:border-fuchsia-500/50"
-          autoComplete="email"
-          required
-        />
-      </div>
+      <Input
+        id="email"
+        name="email"
+        type="email"
+        label="Email"
+        placeholder="you@example.com"
+        variant="secondary"
+        size="md"
+        fullWidth
+        value={email}
+        onChange={handleEmailChange}
+        onBlur={handleEmailBlur}
+        autoComplete="email"
+        error={emailError}
+        required
+        disabled={isLoading}
+      />
 
-      <div>
-        <label htmlFor="password" className="block text-xs text-zinc-400 mb-1">
-          Password
-        </label>
-        <input
+      <div className="space-y-2">
+        <Input
           id="password"
           name="password"
           type="password"
+          label="Password"
           placeholder={tab === 'signin' ? '••••••••' : 'At least 8 characters'}
-          className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-sm outline-none focus:border-fuchsia-500/50"
+          variant="secondary"
+          size="md"
+          fullWidth
+          value={password}
+          onChange={handlePasswordChange}
+          onBlur={handlePasswordBlur}
           autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
+          showPasswordToggle
+          error={passwordError}
+          description={
+            tab === 'signup'
+              ? passwordStrengthText
+                ? `Strength: ${passwordStrengthText}`
+                : 'At least 8 characters'
+              : undefined
+          }
           required
+          disabled={isLoading}
         />
+        {tab === 'signup' && <PasswordStrengthIndicator password={password} />}
       </div>
 
       {tab === 'signin' && (
-        <div className="flex items-center justify-between text-xs text-zinc-400">
-          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              name="remember"
-              className="accent-fuchsia-500/90"
-            />
-            Remember me
-          </label>
-          <a href="#" className="hover:text-zinc-200">
+        <div className="flex items-center justify-between">
+          <Checkbox
+            name="remember"
+            label="Remember me"
+            variant="secondary"
+            size="sm"
+            checked={remember}
+            onChange={handleRememberChange}
+            disabled={isLoading}
+          />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              // TODO: Implement forgot password functionality
+            }}
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 rounded px-1"
+            aria-label="Reset your password"
+          >
             Forgot password?
-          </a>
+          </button>
         </div>
       )}
 
-      <GradientButton
+      <Button
         type="submit"
-        loading={tab === 'signup' ? signupLoading : signinLoading}
-        disabled={tab === 'signup' ? signupLoading : signinLoading}
+        variant="primary"
+        size="md"
+        fullWidth
+        loading={isLoading}
+        disabled={isLoading}
       >
         {tab === 'signin' ? 'Continue' : 'Create account'}
-      </GradientButton>
-      {(signinError || signupError) && (
-        <p className="text-red-400 text-sm mt-2">
-          {signinError || signupError}
-        </p>
-      )}
+      </Button>
     </form>
   );
 }
