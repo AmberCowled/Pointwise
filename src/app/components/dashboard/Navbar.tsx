@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { signOut } from 'next-auth/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -47,8 +48,15 @@ export default function Navbar({
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 sm:gap-6">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-rose-500 text-lg font-semibold text-white">
-              PW
+            <div className="relative h-10 w-10 flex-shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Pointwise"
+                width={40}
+                height={40}
+                className="object-contain"
+                priority
+              />
             </div>
             <div>
               <p className="hidden text-xs uppercase tracking-[0.3em] text-zinc-500 sm:block">
