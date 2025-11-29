@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import TaskItem, { getTaskScheduleLabel } from './TaskItem';
 import type { DashboardTask } from './TaskList';
-import GradientButton from '../ui/GradientButton';
+import { Button } from '../ui/Button';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../ui/modals';
 import { DateTimeDefaults } from '@pointwise/lib/datetime';
 
@@ -88,14 +88,16 @@ export default function TaskManageModal({
               ) : null}
               {!task.completed ? (
                 <div className="w-full">
-                  <GradientButton
+                  <Button
+                    variant="primary"
                     onClick={handleCompleteClick}
                     loading={isCompleting || localBusy}
                     disabled={isCompleting || localBusy}
-                    className="w-full py-3"
+                    fullWidth
+                    size="lg"
                   >
                     Mark complete
-                  </GradientButton>
+                  </Button>
                 </div>
               ) : (
                 <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-200">
