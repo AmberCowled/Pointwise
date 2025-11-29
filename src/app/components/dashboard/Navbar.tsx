@@ -48,7 +48,7 @@ export default function Navbar({
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 sm:gap-6">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative h-10 w-10 flex-shrink-0">
+            <div className="relative h-10 w-10 shrink-0">
               <Image
                 src="/logo.png"
                 alt="Pointwise"
@@ -75,7 +75,7 @@ export default function Navbar({
               placeholder="Search tasks, notes, or people"
             />
           </form>
-          <div className="ml-auto flex flex-shrink-0 sm:flex-1 sm:justify-end">
+          <div className="ml-auto flex shrink-0 sm:flex-1 sm:justify-end">
             <div ref={menuRef} className="relative">
               <button
                 onClick={() => setOpen((prev) => !prev)}
@@ -137,7 +137,7 @@ export default function Navbar({
           </div>
           <div className="h-2 w-full rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500 transition-all"
+              className="h-full rounded-full bg-linear-to-r from-indigo-500 via-fuchsia-500 to-rose-500 transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
