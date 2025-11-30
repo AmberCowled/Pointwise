@@ -4,13 +4,17 @@ import { useEffect, useState } from 'react';
 import TaskList, {
   type DashboardTask,
 } from '@pointwise/app/components/dashboard/TaskList';
+import { Button } from '@pointwise/app/components/ui/Button';
 import TaskSectionCard from './TaskSectionCard';
 import TaskDayControls from './TaskDayControls';
+import TaskBoardLoadingState from './TaskBoardLoadingState';
+import TaskBoardEmptyState from './TaskBoardEmptyState';
 
 export type TaskBoardProps = {
   scheduledTasks: DashboardTask[];
   optionalTasks: DashboardTask[];
   overdueTasks: DashboardTask[];
+  upcomingTasks: DashboardTask[];
   selectedDate: Date;
   selectedDateLabel: string;
   selectedDateInputValue: string;
@@ -27,6 +31,7 @@ export default function TaskBoard({
   scheduledTasks,
   optionalTasks,
   overdueTasks,
+  upcomingTasks,
   selectedDate,
   selectedDateLabel,
   selectedDateInputValue,
@@ -53,13 +58,15 @@ export default function TaskBoard({
         title="Task list"
         eyebrow="Overview"
         action={
-          <button
+          <Button
             type="button"
-            className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-200 transition hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white"
+            variant="secondary"
+            size="sm"
             onClick={onCreateTask}
+            className="rounded-full"
           >
             Create Task
-          </button>
+          </Button>
         }
       >
         <TaskDayControls
@@ -71,9 +78,7 @@ export default function TaskBoard({
         />
         <div className="mt-5" suppressHydrationWarning>
           {!hasHydrated ? (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
-              Loading schedule…
-            </div>
+            <TaskBoardLoadingState />
           ) : scheduledTasks.length > 0 ? (
             <TaskList
               tasks={scheduledTasks}
@@ -84,20 +89,12 @@ export default function TaskBoard({
               timeZone={timeZone}
             />
           ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
-              No tasks scheduled for{' '}
-              <span className="font-medium text-zinc-200">
-                {selectedDateLabel}
-              </span>
-              . Add one with{' '}
-              <span className="font-medium text-zinc-200">Create Task</span> or
-              set up a recurring routine.
-            </div>
+            <TaskBoardEmptyState selectedDateLabel={selectedDateLabel} />
           )}
         </div>
       </TaskSectionCard>
 
-      {overdueTasks.length > 0 ? (
+      {hasHydrated && overdueTasks.length > 0 ? (
         <TaskSectionCard
           title="Overdue tasks"
           eyebrow={<span className="text-rose-400/70">Needs attention</span>}
@@ -113,10 +110,23 @@ export default function TaskBoard({
         </TaskSectionCard>
       ) : null}
 
-      {optionalTasks.length > 0 ? (
+      {hasHydrated && optionalTasks.length > 0 ? (
         <TaskSectionCard title="Optional tasks" eyebrow="Backlog">
           <TaskList
             tasks={optionalTasks}
+            onComplete={onCompleteTask}
+            completingTaskId={completingTaskId}
+            onTaskClick={onTaskClick}
+            locale={locale}
+            timeZone={timeZone}
+          />
+        </TaskSectionCard>
+      ) : null}
+
+      {hasHydrated && upcomingTasks.length > 0 ? (
+        <TaskSectionCard title="Upcoming tasks" eyebrow="Future">
+          <TaskList
+            tasks={upcomingTasks}
             onComplete={onCompleteTask}
             completingTaskId={completingTaskId}
             onTaskClick={onTaskClick}
