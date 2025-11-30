@@ -9,6 +9,8 @@ import { FiHome, FiSettings, FiUser, FiMail, FiStar } from 'react-icons/fi';
 export default function TabsShowcasePage() {
   const [basicTab, setBasicTab] = useState('tab1');
   const [variantTab, setVariantTab] = useState('tab1');
+  const [filterTab, setFilterTab] = useState('day');
+  const [analyticsTab, setAnalyticsTab] = useState('7d');
   const [sizeTab, setSizeTab] = useState('tab1');
   const [iconTab, setIconTab] = useState('home');
   const [disabledTab, setDisabledTab] = useState('tab1');
@@ -83,6 +85,22 @@ export default function TabsShowcasePage() {
                 value={variantTab}
                 onChange={setVariantTab}
                 variant="secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-zinc-400">
+                Filter Variant (for filters/options)
+              </h3>
+              <Tabs
+                items={[
+                  { id: 'day', label: 'Day' },
+                  { id: 'week', label: 'Week' },
+                  { id: 'month', label: 'Month' },
+                ]}
+                value={filterTab}
+                onChange={setFilterTab}
+                variant="filter"
+                fullWidth={false}
               />
             </div>
           </div>
@@ -239,6 +257,128 @@ export default function TabsShowcasePage() {
           </div>
         </section>
 
+        {/* Filter Variant Use Cases */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-zinc-200">
+            Filter Variant Use Cases
+          </h2>
+          <p className="text-xs text-zinc-500">
+            The filter variant is designed for option selectors and filters,
+            similar to Analytics range selectors
+          </p>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-zinc-400">
+                TaskBoard View Mode (Day/Week/Month)
+              </h3>
+              <Card variant="primary" responsivePadding>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-400">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium text-zinc-200">
+                      Today, Dec 15
+                    </div>
+                    <div className="inline-flex items-center gap-1">
+                      <button className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-400 hover:text-white">
+                        ⟨ Prev
+                      </button>
+                      <button className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-400 hover:text-white">
+                        Today
+                      </button>
+                      <button className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-400 hover:text-white">
+                        Next ⟩
+                      </button>
+                    </div>
+                  </div>
+                  <Tabs
+                    items={[
+                      { id: 'day', label: 'Day' },
+                      { id: 'week', label: 'Week' },
+                      { id: 'month', label: 'Month' },
+                    ]}
+                    value={filterTab}
+                    onChange={setFilterTab}
+                    variant="filter"
+                    fullWidth={false}
+                  />
+                </div>
+              </Card>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-zinc-400">
+                Analytics Range Selector (7d, 14d, 30d)
+              </h3>
+              <Card variant="primary" responsivePadding>
+                <div className="flex items-center justify-end">
+                  <Tabs
+                    items={[
+                      { id: '7d', label: '7D' },
+                      { id: '14d', label: '14D' },
+                      { id: '30d', label: '30D' },
+                    ]}
+                    value={analyticsTab}
+                    onChange={setAnalyticsTab}
+                    variant="filter"
+                    size="md"
+                    fullWidth={false}
+                  />
+                </div>
+              </Card>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-zinc-400">
+                Filter Variant Sizes
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-zinc-500 mb-2">Small</p>
+                  <Tabs
+                    items={[
+                      { id: 'day', label: 'Day' },
+                      { id: 'week', label: 'Week' },
+                      { id: 'month', label: 'Month' },
+                    ]}
+                    value={filterTab}
+                    onChange={setFilterTab}
+                    variant="filter"
+                    size="sm"
+                    fullWidth={false}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 mb-2">Medium (Default)</p>
+                  <Tabs
+                    items={[
+                      { id: 'day', label: 'Day' },
+                      { id: 'week', label: 'Week' },
+                      { id: 'month', label: 'Month' },
+                    ]}
+                    value={filterTab}
+                    onChange={setFilterTab}
+                    variant="filter"
+                    size="md"
+                    fullWidth={false}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 mb-2">Large</p>
+                  <Tabs
+                    items={[
+                      { id: 'day', label: 'Day' },
+                      { id: 'week', label: 'Week' },
+                      { id: 'month', label: 'Month' },
+                    ]}
+                    value={filterTab}
+                    onChange={setFilterTab}
+                    variant="filter"
+                    size="lg"
+                    fullWidth={false}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Real-world Example */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-zinc-200">
@@ -294,6 +434,7 @@ export default function TabsShowcasePage() {
               <code>{`import { Tabs } from '@pointwise/app/components/ui/Tabs';
 import { useState } from 'react';
 
+// Standard tabs (primary/secondary variants)
 function MyComponent() {
   const [activeTab, setActiveTab] = useState('tab1');
 
@@ -309,6 +450,26 @@ function MyComponent() {
       variant="primary"
       size="md"
       fullWidth
+    />
+  );
+}
+
+// Filter variant (for options/filters)
+function FilterComponent() {
+  const [viewMode, setViewMode] = useState('day');
+
+  return (
+    <Tabs
+      items={[
+        { id: 'day', label: 'Day' },
+        { id: 'week', label: 'Week' },
+        { id: 'month', label: 'Month' },
+      ]}
+      value={viewMode}
+      onChange={setViewMode}
+      variant="filter"
+      size="md"
+      fullWidth={false}
     />
   );
 }`}</code>

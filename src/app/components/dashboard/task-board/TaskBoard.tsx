@@ -1,32 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import TaskList, {
-  type DashboardTask,
-} from '@pointwise/app/components/dashboard/TaskList';
+import { useEffect, useRef, useState } from 'react';
+import TaskList from '@pointwise/app/components/dashboard/TaskList';
+import { Button } from '@pointwise/app/components/ui/Button';
 import TaskSectionCard from './TaskSectionCard';
 import TaskDayControls from './TaskDayControls';
+import TaskBoardLoadingState from './TaskBoardLoadingState';
+import TaskBoardEmptyState from './TaskBoardEmptyState';
+import type { TaskBoardProps, TaskBoardViewMode } from './types';
+import { addDays, startOfDay } from '@pointwise/lib/datetime';
 
-export type TaskBoardProps = {
-  scheduledTasks: DashboardTask[];
-  optionalTasks: DashboardTask[];
-  overdueTasks: DashboardTask[];
-  selectedDate: Date;
-  selectedDateLabel: string;
-  selectedDateInputValue: string;
-  onSelectedDateChange: (next: Date) => void;
-  onCreateTask: () => void;
-  onTaskClick: (task: DashboardTask) => void;
-  onCompleteTask: (task: DashboardTask) => void;
-  completingTaskId: string | null;
-  locale: string;
-  timeZone: string;
-};
+export type { TaskBoardProps };
 
 export default function TaskBoard({
   scheduledTasks,
   optionalTasks,
   overdueTasks,
+  upcomingTasks,
   selectedDate,
   selectedDateLabel,
   selectedDateInputValue,
@@ -37,8 +27,18 @@ export default function TaskBoard({
   completingTaskId,
   locale,
   timeZone,
+  viewMode: externalViewMode,
+  onViewModeChange: externalOnViewModeChange,
 }: TaskBoardProps) {
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [internalViewMode, setInternalViewMode] =
+    useState<TaskBoardViewMode>('day');
+  const [isFocused, setIsFocused] = useState(false);
+  const boardRef = useRef<HTMLElement>(null);
+
+  // Use external viewMode if provided, otherwise use internal state
+  const effectiveViewMode = externalViewMode ?? internalViewMode;
+  const effectiveSetViewMode = externalOnViewModeChange ?? setInternalViewMode;
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -47,19 +47,111 @@ export default function TaskBoard({
     return () => cancelAnimationFrame(id);
   }, []);
 
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't handle shortcuts if user is typing in an input, textarea, or select
+      const target = event.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Prevent default for our shortcuts
+      if (
+        event.key === 'ArrowLeft' ||
+        event.key === 'ArrowRight' ||
+        event.key === 't' ||
+        event.key === 'T' ||
+        event.key === 'd' ||
+        event.key === 'D' ||
+        event.key === 'w' ||
+        event.key === 'W' ||
+        event.key === 'm' ||
+        event.key === 'M'
+      ) {
+        event.preventDefault();
+      }
+
+      // Handle shortcuts
+      if (event.key === 'ArrowLeft') {
+        // Previous
+        if (effectiveViewMode === 'week') {
+          onSelectedDateChange(addDays(selectedDate, -7, timeZone));
+        } else if (effectiveViewMode === 'month') {
+          onSelectedDateChange(addDays(selectedDate, -30, timeZone));
+        } else {
+          onSelectedDateChange(addDays(selectedDate, -1, timeZone));
+        }
+      } else if (event.key === 'ArrowRight') {
+        // Next
+        if (effectiveViewMode === 'week') {
+          onSelectedDateChange(addDays(selectedDate, 7, timeZone));
+        } else if (effectiveViewMode === 'month') {
+          onSelectedDateChange(addDays(selectedDate, 30, timeZone));
+        } else {
+          onSelectedDateChange(addDays(selectedDate, 1, timeZone));
+        }
+      } else if (event.key === 't' || event.key === 'T') {
+        // Today
+        onSelectedDateChange(startOfDay(new Date(), timeZone));
+      } else if (event.key === 'd' || event.key === 'D') {
+        // Day view
+        effectiveSetViewMode('day');
+      } else if (event.key === 'w' || event.key === 'W') {
+        // Week view
+        effectiveSetViewMode('week');
+      } else if (event.key === 'm' || event.key === 'M') {
+        // Month view
+        effectiveSetViewMode('month');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [
+    isFocused,
+    effectiveViewMode,
+    selectedDate,
+    timeZone,
+    onSelectedDateChange,
+    effectiveSetViewMode,
+  ]);
+
   return (
-    <section className="space-y-6">
+    <section
+      ref={boardRef}
+      tabIndex={0}
+      onFocus={() => setIsFocused(true)}
+      onBlur={(e) => {
+        // Only blur if focus is moving outside the TaskBoard
+        if (!boardRef.current?.contains(e.relatedTarget as Node)) {
+          setIsFocused(false);
+        }
+      }}
+      className="space-y-6 outline-none md:hover:ring-2 md:hover:ring-indigo-500/30 md:hover:ring-offset-2 md:hover:ring-offset-zinc-950 md:focus:ring-2 md:focus:ring-indigo-500/50 md:focus:ring-offset-2 md:focus:ring-offset-zinc-950 rounded-3xl transition-all cursor-pointer"
+    >
       <TaskSectionCard
         title="Task list"
         eyebrow="Overview"
         action={
-          <button
+          <Button
             type="button"
-            className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-zinc-200 transition hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white"
+            variant="secondary"
+            size="sm"
             onClick={onCreateTask}
+            className="rounded-full"
           >
             Create Task
-          </button>
+          </Button>
         }
       >
         <TaskDayControls
@@ -67,13 +159,13 @@ export default function TaskBoard({
           selectedDateLabel={selectedDateLabel}
           selectedDateInputValue={selectedDateInputValue}
           onDateChange={onSelectedDateChange}
+          viewMode={effectiveViewMode}
+          onViewModeChange={effectiveSetViewMode}
           timeZone={timeZone}
         />
         <div className="mt-5" suppressHydrationWarning>
           {!hasHydrated ? (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
-              Loading schedule…
-            </div>
+            <TaskBoardLoadingState />
           ) : scheduledTasks.length > 0 ? (
             <TaskList
               tasks={scheduledTasks}
@@ -84,23 +176,18 @@ export default function TaskBoard({
               timeZone={timeZone}
             />
           ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-zinc-400">
-              No tasks scheduled for{' '}
-              <span className="font-medium text-zinc-200">
-                {selectedDateLabel}
-              </span>
-              . Add one with{' '}
-              <span className="font-medium text-zinc-200">Create Task</span> or
-              set up a recurring routine.
-            </div>
+            <TaskBoardEmptyState selectedDateLabel={selectedDateLabel} />
           )}
         </div>
       </TaskSectionCard>
 
-      {overdueTasks.length > 0 ? (
+      {hasHydrated && overdueTasks.length > 0 ? (
         <TaskSectionCard
           title="Overdue tasks"
           eyebrow={<span className="text-rose-400/70">Needs attention</span>}
+          collapsible
+          itemCount={overdueTasks.length}
+          storageKey="overdue"
         >
           <TaskList
             tasks={overdueTasks}
@@ -113,10 +200,35 @@ export default function TaskBoard({
         </TaskSectionCard>
       ) : null}
 
-      {optionalTasks.length > 0 ? (
-        <TaskSectionCard title="Optional tasks" eyebrow="Backlog">
+      {hasHydrated && optionalTasks.length > 0 ? (
+        <TaskSectionCard
+          title="Optional tasks"
+          eyebrow="Backlog"
+          collapsible
+          itemCount={optionalTasks.length}
+          storageKey="optional"
+        >
           <TaskList
             tasks={optionalTasks}
+            onComplete={onCompleteTask}
+            completingTaskId={completingTaskId}
+            onTaskClick={onTaskClick}
+            locale={locale}
+            timeZone={timeZone}
+          />
+        </TaskSectionCard>
+      ) : null}
+
+      {hasHydrated && upcomingTasks.length > 0 ? (
+        <TaskSectionCard
+          title="Upcoming tasks"
+          eyebrow="Future"
+          collapsible
+          itemCount={upcomingTasks.length}
+          storageKey="upcoming"
+        >
+          <TaskList
+            tasks={upcomingTasks}
             onComplete={onCompleteTask}
             completingTaskId={completingTaskId}
             onTaskClick={onTaskClick}

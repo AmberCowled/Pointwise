@@ -2,9 +2,11 @@
 
 import { useMemo } from 'react';
 import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
+import type { TaskBoardViewMode } from '@pointwise/app/components/dashboard/task-board/types';
 import {
   addDays,
   formatDateLabel,
+  getDateTimeParts,
   startOfDay,
   toDate,
   toDateKey,
@@ -16,16 +18,41 @@ export function useTaskFilters(
   locale: string,
   timeZone: string,
   referenceTimestamp: number,
+  viewMode: TaskBoardViewMode = 'day',
 ) {
   const stableTasks = useMemo(
     () => (Array.isArray(tasks) ? tasks : []),
     [tasks],
   );
+  // Calculate date range based on view mode
+  const { rangeStart, rangeEnd } = useMemo(() => {
+    const baseStart = startOfDay(selectedDate, timeZone);
+
+    if (viewMode === 'day') {
+      return {
+        rangeStart: baseStart,
+        rangeEnd: addDays(baseStart, 1, timeZone),
+      };
+    }
+
+    if (viewMode === 'week') {
+      // 7 days starting from selected date (like Analytics 7d)
+      return {
+        rangeStart: baseStart,
+        rangeEnd: addDays(baseStart, 7, timeZone),
+      };
+    }
+
+    // viewMode === 'month' - 30 days starting from selected date (like Analytics 30d)
+    return {
+      rangeStart: baseStart,
+      rangeEnd: addDays(baseStart, 30, timeZone),
+    };
+  }, [selectedDate, timeZone, viewMode]);
+
   const scheduledTasks = useMemo(() => {
-    const dayStart = startOfDay(selectedDate, timeZone);
-    const dayEnd = addDays(dayStart, 1, timeZone);
-    const dayStartMs = dayStart.getTime();
-    const dayEndMs = dayEnd.getTime();
+    const rangeStartMs = rangeStart.getTime();
+    const rangeEndMs = rangeEnd.getTime();
     return stableTasks.filter((task) => {
       if (task.completed) return false;
       const rawStart = toDate(task.startAt);
@@ -38,12 +65,15 @@ export function useTaskFilters(
         rawEnd?.getTime() ??
         (rawStart ? rawStart.getTime() : Number.POSITIVE_INFINITY);
 
-      if (taskStartMs >= dayEndMs) return false;
-      if (taskEndMs < dayStartMs) return false;
+      // Task overlaps with range if:
+      // - Task starts before range ends AND
+      // - Task ends after range starts
+      if (taskStartMs >= rangeEndMs) return false;
+      if (taskEndMs < rangeStartMs) return false;
 
       return true;
     });
-  }, [selectedDate, stableTasks, timeZone]);
+  }, [rangeStart, rangeEnd, stableTasks]);
 
   const optionalTasks = useMemo(
     () =>
@@ -68,10 +98,49 @@ export function useTaskFilters(
       });
   }, [referenceTimestamp, stableTasks]);
 
-  const selectedDateLabel = useMemo(
-    () => formatDateLabel(selectedDate, locale, timeZone),
-    [locale, selectedDate, timeZone],
-  );
+  const selectedDateLabel = useMemo(() => {
+    if (viewMode === 'day') {
+      return formatDateLabel(selectedDate, locale, timeZone);
+    }
+
+    if (viewMode === 'week') {
+      const endDate = addDays(rangeStart, 6, timeZone);
+      // Format dates without weekday for cleaner range display
+      const startParts = getDateTimeParts(rangeStart, timeZone);
+      const endParts = getDateTimeParts(endDate, timeZone);
+      const formatter = new Intl.DateTimeFormat(locale, {
+        month: 'short',
+        day: 'numeric',
+        timeZone,
+      });
+      const startFormatted = formatter.format(
+        new Date(
+          Date.UTC(startParts.year, startParts.month - 1, startParts.day),
+        ),
+      );
+      const endFormatted = formatter.format(
+        new Date(Date.UTC(endParts.year, endParts.month - 1, endParts.day)),
+      );
+      return `${startFormatted} - ${endFormatted}`;
+    }
+
+    // viewMode === 'month' - 30 days, show range
+    const endDate = addDays(rangeStart, 29, timeZone);
+    const startParts = getDateTimeParts(rangeStart, timeZone);
+    const endParts = getDateTimeParts(endDate, timeZone);
+    const formatter = new Intl.DateTimeFormat(locale, {
+      month: 'short',
+      day: 'numeric',
+      timeZone,
+    });
+    const startFormatted = formatter.format(
+      new Date(Date.UTC(startParts.year, startParts.month - 1, startParts.day)),
+    );
+    const endFormatted = formatter.format(
+      new Date(Date.UTC(endParts.year, endParts.month - 1, endParts.day)),
+    );
+    return `${startFormatted} - ${endFormatted}`;
+  }, [selectedDate, rangeStart, locale, timeZone, viewMode]);
 
   const selectedDateInputValue = useMemo(
     () => toDateKey(selectedDate, timeZone),
