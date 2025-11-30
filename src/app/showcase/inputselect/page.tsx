@@ -287,15 +287,13 @@ export default function InputSelectShowcasePage() {
           />
         </section>
 
-        {/* Comparison with FormSelect */}
+        {/* Features */}
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-zinc-200">
-            Comparison with FormSelect
-          </h2>
+          <h2 className="text-xl font-semibold text-zinc-200">Features</h2>
           <div className="space-y-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
               <h3 className="text-sm font-semibold text-zinc-300">
-                InputSelect (New)
+                InputSelect
               </h3>
               <InputSelect
                 label="Category"
@@ -308,7 +306,7 @@ export default function InputSelectShowcasePage() {
                 ✅ Integrated label/error/description handling
                 <br />
                 ✅ Consistent variant/size system
-                <br />✅ No FormField wrapper needed
+                <br />✅ Self-contained component
               </p>
             </div>
           </div>
