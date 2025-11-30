@@ -185,6 +185,9 @@ export default function TaskBoard({
         <TaskSectionCard
           title="Overdue tasks"
           eyebrow={<span className="text-rose-400/70">Needs attention</span>}
+          collapsible
+          itemCount={overdueTasks.length}
+          storageKey="overdue"
         >
           <TaskList
             tasks={overdueTasks}
@@ -198,7 +201,13 @@ export default function TaskBoard({
       ) : null}
 
       {hasHydrated && optionalTasks.length > 0 ? (
-        <TaskSectionCard title="Optional tasks" eyebrow="Backlog">
+        <TaskSectionCard
+          title="Optional tasks"
+          eyebrow="Backlog"
+          collapsible
+          itemCount={optionalTasks.length}
+          storageKey="optional"
+        >
           <TaskList
             tasks={optionalTasks}
             onComplete={onCompleteTask}
@@ -211,7 +220,13 @@ export default function TaskBoard({
       ) : null}
 
       {hasHydrated && upcomingTasks.length > 0 ? (
-        <TaskSectionCard title="Upcoming tasks" eyebrow="Future">
+        <TaskSectionCard
+          title="Upcoming tasks"
+          eyebrow="Future"
+          collapsible
+          itemCount={upcomingTasks.length}
+          storageKey="upcoming"
+        >
           <TaskList
             tasks={upcomingTasks}
             onComplete={onCompleteTask}
