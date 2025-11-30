@@ -8,7 +8,7 @@ import {
   Transition,
 } from '@headlessui/react';
 import clsx from 'clsx';
-import React, { Fragment, useId } from 'react';
+import React, { Fragment, useId, useRef, useEffect, useState } from 'react';
 
 import { InputHeader } from './InputHeader';
 
@@ -110,12 +110,34 @@ export function InputSelect<TValue>({
   const generatedId = useId();
   const selectId = id || generatedId;
   const errorMessage = typeof error === 'string' ? error : undefined;
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [buttonWidth, setButtonWidth] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const activeOption = options.find((option) =>
     by ? by(option.value, value) : option.value === value,
   );
 
   const hasHeader = !!label || !!required;
+
+  // Measure button width for dropdown matching and detect mobile
+  useEffect(() => {
+    if (!buttonRef.current) return;
+
+    const updateWidth = () => {
+      if (buttonRef.current) {
+        setButtonWidth(buttonRef.current.offsetWidth);
+        setIsMobile(window.innerWidth < 640);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, []);
 
   return (
     <div className="space-y-2">
@@ -132,9 +154,13 @@ export function InputSelect<TValue>({
             by={by}
           >
             <ListboxButton
+              ref={buttonRef}
               id={selectId}
               className={clsx(
-                baseButtonStyle,
+                // Remove w-full if className contains a width class
+                className?.match(/\bw-\d+\b/)
+                  ? baseButtonStyle.replace('w-full', '').trim()
+                  : baseButtonStyle,
                 'border',
                 variantStyles[variant],
                 sizeStyles[size],
@@ -163,7 +189,16 @@ export function InputSelect<TValue>({
               leaveTo="opacity-0"
             >
               <ListboxOptions
+                anchor="bottom start"
+                portal={true}
                 className={clsx(listBaseStyle, listVariantStyles[variant])}
+                style={
+                  buttonWidth
+                    ? {
+                        width: isMobile ? '100%' : `${buttonWidth}px`,
+                      }
+                    : { width: '100%' }
+                }
               >
                 {options.map((option, index) => (
                   <ListboxOption
@@ -172,9 +207,9 @@ export function InputSelect<TValue>({
                     disabled={option.disabled}
                     className={({ focus, selected, disabled: isDisabled }) =>
                       clsx(
-                        'cursor-pointer rounded-xl px-3 py-2 transition',
+                        'cursor-pointer rounded-xl px-3 py-2 transition text-zinc-100',
                         selected && 'bg-indigo-500/20 text-white',
-                        focus && !selected && 'bg-indigo-500/10 text-zinc-100',
+                        focus && !selected && 'bg-indigo-500/10 text-white',
                         isDisabled && 'cursor-not-allowed opacity-50',
                       )
                     }
