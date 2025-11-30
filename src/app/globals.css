@@ -39,6 +39,16 @@ body {
   }
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
 /* Spinner animations */
 @keyframes bounce-dot {
   0%,
@@ -94,5 +104,18 @@ input:-webkit-autofill:active {
 
   .animate-scale-bar {
     animation: scale-bar 1.2s ease-in-out infinite;
+  }
+
+  /* Screen reader only - visually hidden but accessible to assistive tech */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }
