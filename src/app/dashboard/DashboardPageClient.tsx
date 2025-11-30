@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '@pointwise/app/components/dashboard/Navbar';
 import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
 import TaskCreateModal, {
@@ -12,6 +12,7 @@ import {
   DateTimeDefaults,
   formatDateLabel,
   startOfDay,
+  toDate,
 } from '@pointwise/lib/datetime';
 import { mergeTasks } from '@pointwise/lib/tasks';
 import TaskBoard from '@pointwise/app/components/dashboard/task-board/TaskBoard';
@@ -365,6 +366,29 @@ export default function DashboardPageClient({
     referenceTimestamp,
   );
 
+  // Calculate upcoming tasks (next 10 tasks after current day)
+  // Exclude tasks that are already in the scheduled tasks list
+  const upcomingTasks = useMemo(() => {
+    const today = startOfDay(new Date(), formatSettings.timeZone);
+    const scheduledTaskIds = new Set(scheduledTasks.map((task) => task.id));
+    return taskItems
+      .filter((task) => {
+        if (task.completed) return false;
+        // Exclude tasks already in scheduled tasks
+        if (scheduledTaskIds.has(task.id)) return false;
+        const taskDate = toDate(task.dueAt) || toDate(task.startAt);
+        if (!taskDate) return false;
+        return taskDate > today;
+      })
+      .sort((a, b) => {
+        const dateA = toDate(a.dueAt) || toDate(a.startAt);
+        const dateB = toDate(b.dueAt) || toDate(b.startAt);
+        if (!dateA || !dateB) return 0;
+        return dateA.getTime() - dateB.getTime();
+      })
+      .slice(0, 10); // Limit to next 10 tasks
+  }, [taskItems, scheduledTasks, formatSettings.timeZone]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     setReferenceTimestamp(Date.now());
@@ -463,6 +487,7 @@ export default function DashboardPageClient({
             scheduledTasks={scheduledTasks}
             optionalTasks={optionalTasks}
             overdueTasks={overdueTasks}
+            upcomingTasks={upcomingTasks}
             selectedDate={selectedDate}
             selectedDateLabel={selectedDateLabel}
             selectedDateInputValue={selectedDateInputValue}
