@@ -16,6 +16,7 @@ import {
 } from '@pointwise/lib/datetime';
 import { mergeTasks } from '@pointwise/lib/tasks';
 import TaskBoard from '@pointwise/app/components/dashboard/task-board/TaskBoard';
+import type { TaskBoardViewMode } from '@pointwise/app/components/dashboard/task-board/types';
 import { useTaskFilters } from '@pointwise/hooks/useTaskFilters';
 import type { AnalyticsSnapshot } from '@pointwise/lib/analytics';
 
@@ -82,6 +83,7 @@ export default function DashboardPageClient({
   const [editorVersion, setEditorVersion] = useState(0);
   const [createError, setCreateError] = useState<string | null>(null);
   const [referenceTimestamp, setReferenceTimestamp] = useState(initialNowMs);
+  const [viewMode, setViewMode] = useState<TaskBoardViewMode>('day');
   const persistedSettingsRef = useRef({
     locale: locale ?? DateTimeDefaults.locale,
     timeZone: timeZone ?? DateTimeDefaults.timeZone,
@@ -364,6 +366,7 @@ export default function DashboardPageClient({
     formatSettings.locale,
     formatSettings.timeZone,
     referenceTimestamp,
+    viewMode,
   );
 
   // Calculate upcoming tasks (next 10 tasks after current day)
@@ -498,6 +501,8 @@ export default function DashboardPageClient({
             completingTaskId={completingId}
             locale={formatSettings.locale}
             timeZone={formatSettings.timeZone}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
         </main>
 

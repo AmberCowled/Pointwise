@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import React from 'react';
 
-export type TabsVariant = 'primary' | 'secondary';
+export type TabsVariant = 'primary' | 'secondary' | 'filter';
 export type TabsSize = 'sm' | 'md' | 'lg';
 
 export interface TabItem {
@@ -62,12 +62,25 @@ export interface TabsProps {
 const variantStyles: Record<TabsVariant, string> = {
   primary: 'bg-zinc-800/60',
   secondary: 'bg-zinc-900/40',
+  filter: '', // No container background for filter variant
 };
 
-const sizeStyles: Record<TabsSize, string> = {
-  sm: 'p-0.5',
-  md: 'p-1',
-  lg: 'p-1.5',
+const sizeStyles: Record<TabsSize, Record<TabsVariant, string>> = {
+  sm: {
+    primary: 'p-0.5',
+    secondary: 'p-0.5',
+    filter: '', // No padding for filter variant
+  },
+  md: {
+    primary: 'p-1',
+    secondary: 'p-1',
+    filter: '', // No padding for filter variant
+  },
+  lg: {
+    primary: 'p-1.5',
+    secondary: 'p-1.5',
+    filter: '', // No padding for filter variant
+  },
 };
 
 const tabSizeStyles: Record<TabsSize, string> = {
@@ -76,14 +89,24 @@ const tabSizeStyles: Record<TabsSize, string> = {
   lg: 'py-2.5 text-base',
 };
 
+const filterTabSizeStyles: Record<TabsSize, string> = {
+  sm: 'px-2 py-1 text-xs',
+  md: 'px-3 py-1 text-xs',
+  lg: 'px-4 py-1.5 text-sm',
+};
+
 const activeTabStyles: Record<TabsVariant, string> = {
   primary: 'bg-zinc-950 text-white',
   secondary: 'bg-zinc-800 text-white',
+  filter:
+    'border-indigo-400/80 bg-indigo-500/20 text-white shadow-inner shadow-indigo-500/30',
 };
 
 const inactiveTabStyles: Record<TabsVariant, string> = {
   primary: 'text-zinc-400 hover:text-zinc-200',
   secondary: 'text-zinc-500 hover:text-zinc-300',
+  filter:
+    'border-white/10 text-zinc-400 hover:border-indigo-400/60 hover:text-white',
 };
 
 export function Tabs({
@@ -95,13 +118,20 @@ export function Tabs({
   fullWidth = true,
   className,
 }: TabsProps) {
+  const isFilterVariant = variant === 'filter';
+
   return (
     <div
       className={clsx(
-        'flex rounded-xl',
-        variantStyles[variant],
-        sizeStyles[size],
-        fullWidth ? 'w-full' : 'inline-flex',
+        'flex',
+        isFilterVariant
+          ? 'flex-wrap items-center gap-2'
+          : clsx(
+              'rounded-xl',
+              variantStyles[variant],
+              sizeStyles[size][variant],
+              fullWidth ? 'w-full' : 'inline-flex',
+            ),
         className,
       )}
       role="tablist"
@@ -122,8 +152,15 @@ export function Tabs({
             disabled={isDisabled}
             onClick={() => !isDisabled && onChange(item.id)}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40',
-              tabSizeStyles[size],
+              isFilterVariant
+                ? clsx(
+                    'rounded-full border font-semibold tracking-wide transition focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40',
+                    filterTabSizeStyles[size],
+                  )
+                : clsx(
+                    'flex-1 flex items-center justify-center gap-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40',
+                    tabSizeStyles[size],
+                  ),
               isDisabled && 'opacity-50 cursor-not-allowed',
               !isDisabled &&
                 (isActive

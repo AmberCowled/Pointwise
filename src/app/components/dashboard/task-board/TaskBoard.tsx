@@ -1,31 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import TaskList, {
-  type DashboardTask,
-} from '@pointwise/app/components/dashboard/TaskList';
+import TaskList from '@pointwise/app/components/dashboard/TaskList';
 import { Button } from '@pointwise/app/components/ui/Button';
 import TaskSectionCard from './TaskSectionCard';
 import TaskDayControls from './TaskDayControls';
 import TaskBoardLoadingState from './TaskBoardLoadingState';
 import TaskBoardEmptyState from './TaskBoardEmptyState';
+import type { TaskBoardProps, TaskBoardViewMode } from './types';
 
-export type TaskBoardProps = {
-  scheduledTasks: DashboardTask[];
-  optionalTasks: DashboardTask[];
-  overdueTasks: DashboardTask[];
-  upcomingTasks: DashboardTask[];
-  selectedDate: Date;
-  selectedDateLabel: string;
-  selectedDateInputValue: string;
-  onSelectedDateChange: (next: Date) => void;
-  onCreateTask: () => void;
-  onTaskClick: (task: DashboardTask) => void;
-  onCompleteTask: (task: DashboardTask) => void;
-  completingTaskId: string | null;
-  locale: string;
-  timeZone: string;
-};
+export type { TaskBoardProps };
 
 export default function TaskBoard({
   scheduledTasks,
@@ -42,8 +26,16 @@ export default function TaskBoard({
   completingTaskId,
   locale,
   timeZone,
+  viewMode: externalViewMode,
+  onViewModeChange: externalOnViewModeChange,
 }: TaskBoardProps) {
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [internalViewMode, setInternalViewMode] =
+    useState<TaskBoardViewMode>('day');
+
+  // Use external viewMode if provided, otherwise use internal state
+  const effectiveViewMode = externalViewMode ?? internalViewMode;
+  const effectiveSetViewMode = externalOnViewModeChange ?? setInternalViewMode;
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -74,6 +66,8 @@ export default function TaskBoard({
           selectedDateLabel={selectedDateLabel}
           selectedDateInputValue={selectedDateInputValue}
           onDateChange={onSelectedDateChange}
+          viewMode={effectiveViewMode}
+          onViewModeChange={effectiveSetViewMode}
           timeZone={timeZone}
         />
         <div className="mt-5" suppressHydrationWarning>
