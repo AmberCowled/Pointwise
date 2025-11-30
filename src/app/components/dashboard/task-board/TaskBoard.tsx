@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import TaskList from '@pointwise/app/components/dashboard/TaskList';
 import { Button } from '@pointwise/app/components/ui/Button';
 import TaskSectionCard from './TaskSectionCard';
@@ -8,6 +8,7 @@ import TaskDayControls from './TaskDayControls';
 import TaskBoardLoadingState from './TaskBoardLoadingState';
 import TaskBoardEmptyState from './TaskBoardEmptyState';
 import type { TaskBoardProps, TaskBoardViewMode } from './types';
+import { addDays, startOfDay } from '@pointwise/lib/datetime';
 
 export type { TaskBoardProps };
 
@@ -32,6 +33,8 @@ export default function TaskBoard({
   const [hasHydrated, setHasHydrated] = useState(false);
   const [internalViewMode, setInternalViewMode] =
     useState<TaskBoardViewMode>('day');
+  const [isFocused, setIsFocused] = useState(false);
+  const boardRef = useRef<HTMLElement>(null);
 
   // Use external viewMode if provided, otherwise use internal state
   const effectiveViewMode = externalViewMode ?? internalViewMode;
@@ -44,8 +47,98 @@ export default function TaskBoard({
     return () => cancelAnimationFrame(id);
   }, []);
 
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't handle shortcuts if user is typing in an input, textarea, or select
+      const target = event.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Prevent default for our shortcuts
+      if (
+        event.key === 'ArrowLeft' ||
+        event.key === 'ArrowRight' ||
+        event.key === 't' ||
+        event.key === 'T' ||
+        event.key === 'd' ||
+        event.key === 'D' ||
+        event.key === 'w' ||
+        event.key === 'W' ||
+        event.key === 'm' ||
+        event.key === 'M'
+      ) {
+        event.preventDefault();
+      }
+
+      // Handle shortcuts
+      if (event.key === 'ArrowLeft') {
+        // Previous
+        if (effectiveViewMode === 'week') {
+          onSelectedDateChange(addDays(selectedDate, -7, timeZone));
+        } else if (effectiveViewMode === 'month') {
+          onSelectedDateChange(addDays(selectedDate, -30, timeZone));
+        } else {
+          onSelectedDateChange(addDays(selectedDate, -1, timeZone));
+        }
+      } else if (event.key === 'ArrowRight') {
+        // Next
+        if (effectiveViewMode === 'week') {
+          onSelectedDateChange(addDays(selectedDate, 7, timeZone));
+        } else if (effectiveViewMode === 'month') {
+          onSelectedDateChange(addDays(selectedDate, 30, timeZone));
+        } else {
+          onSelectedDateChange(addDays(selectedDate, 1, timeZone));
+        }
+      } else if (event.key === 't' || event.key === 'T') {
+        // Today
+        onSelectedDateChange(startOfDay(new Date(), timeZone));
+      } else if (event.key === 'd' || event.key === 'D') {
+        // Day view
+        effectiveSetViewMode('day');
+      } else if (event.key === 'w' || event.key === 'W') {
+        // Week view
+        effectiveSetViewMode('week');
+      } else if (event.key === 'm' || event.key === 'M') {
+        // Month view
+        effectiveSetViewMode('month');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [
+    isFocused,
+    effectiveViewMode,
+    selectedDate,
+    timeZone,
+    onSelectedDateChange,
+    effectiveSetViewMode,
+  ]);
+
   return (
-    <section className="space-y-6">
+    <section
+      ref={boardRef}
+      tabIndex={0}
+      onFocus={() => setIsFocused(true)}
+      onBlur={(e) => {
+        // Only blur if focus is moving outside the TaskBoard
+        if (!boardRef.current?.contains(e.relatedTarget as Node)) {
+          setIsFocused(false);
+        }
+      }}
+      className="space-y-6 outline-none md:hover:ring-2 md:hover:ring-indigo-500/30 md:hover:ring-offset-2 md:hover:ring-offset-zinc-950 md:focus:ring-2 md:focus:ring-indigo-500/50 md:focus:ring-offset-2 md:focus:ring-offset-zinc-950 rounded-3xl transition-all cursor-pointer"
+    >
       <TaskSectionCard
         title="Task list"
         eyebrow="Overview"
