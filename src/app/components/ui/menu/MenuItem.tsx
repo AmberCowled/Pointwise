@@ -2,19 +2,19 @@
 
 import { MenuItem as HeadlessMenuItem } from '@headlessui/react';
 import clsx from 'clsx';
-import Link from 'next/link';
-import { type ReactNode } from 'react';
-import { Spinner } from './Spinner';
+import React, { type ReactNode } from 'react';
+import { IoChevronForward, IoChevronBack } from 'react-icons/io5';
+import { Spinner } from '../Spinner';
+import { iconSizeStyles, useMenuContext } from './MenuContext';
+import { SubMenuItem } from './SubMenuItem';
 import {
-  baseItemStyle,
-  dangerItemStyle,
-  disabledItemStyle,
-  iconSizeStyles,
-  itemVariantStyles,
-  selectedItemStyle,
-  sizeStyles,
-  useMenuContext,
-} from './MenuContext';
+  detectNestedMenu,
+  getLinkProps,
+  getMenuItemClassName,
+  isButtonProps,
+  isLinkProps,
+  renderBadge,
+} from './utils';
 
 export interface MenuItemProps {
   /**
@@ -78,9 +78,14 @@ export interface MenuItemProps {
    */
   className?: string;
   /**
-   * Children - custom content for the menu item
+   * Children - custom content for the menu item or a nested Menu for submenus
    */
   children?: ReactNode;
+  /**
+   * Which side the submenu should open to (if this item has a nested Menu)
+   * @default 'right'
+   */
+  submenuPlacement?: 'left' | 'right';
 }
 
 export function MenuItem({
@@ -100,6 +105,7 @@ export function MenuItem({
   danger,
   className,
   children,
+  submenuPlacement = 'right',
 }: MenuItemProps) {
   const menuContext = useMenuContext();
   const { variant, size, itemClassName } = menuContext;
@@ -108,17 +114,16 @@ export function MenuItem({
   const isSelected = Boolean(selected);
   const isDanger = Boolean(danger);
 
-  const badgeContent =
-    badge ??
-    (badgeCount !== undefined && badgeCount > 0 ? (
-      <span className="inline-flex items-center justify-center rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-200">
-        {badgeCount > 99 ? '99+' : badgeCount}
-      </span>
-    ) : null);
+  // Check if children contains a nested Menu
+  const { hasNestedMenu, nestedMenu, customContent } =
+    detectNestedMenu(children);
 
-  // If custom content is provided, use it; otherwise use default layout
-  const menuItemContent = children ? (
-    children
+  const badgeContent = renderBadge(badge, badgeCount);
+
+  // If custom content is provided (and no nested menu), use it; otherwise use default layout
+  const hasCustomContent = customContent && !hasNestedMenu;
+  const menuItemContent = hasCustomContent ? (
+    customContent
   ) : (
     <>
       {loading ? (
@@ -148,30 +153,57 @@ export function MenuItem({
             {trailingIcon}
           </span>
         )}
+        {hasNestedMenu && (
+          <span className={clsx('shrink-0', iconSizeStyles[size])}>
+            {submenuPlacement === 'right' ? (
+              <IoChevronForward className="h-4 w-4 text-zinc-400" />
+            ) : (
+              <IoChevronBack className="h-4 w-4 text-zinc-400" />
+            )}
+          </span>
+        )}
       </div>
     </>
   );
 
-  // Render menu item
-  if (href) {
+  // Render submenu item if nested menu exists
+  if (hasNestedMenu && nestedMenu) {
+    return (
+      <SubMenuItem
+        menuItemContent={menuItemContent}
+        nestedMenu={nestedMenu}
+        isDisabled={isDisabled}
+        isSelected={isSelected}
+        isDanger={isDanger}
+        href={href}
+        external={external}
+        onClick={onClick}
+        className={className}
+        submenuPlacement={submenuPlacement}
+      />
+    );
+  }
+
+  // Render regular menu item
+  const linkProps = getLinkProps({ href, external, onClick });
+  const isLink = href !== undefined;
+
+  if (isLink && isLinkProps(linkProps)) {
     return (
       <HeadlessMenuItem
         disabled={isDisabled}
-        as={Link}
-        href={href}
-        target={external ? '_blank' : undefined}
-        rel={external ? 'noopener noreferrer' : undefined}
-        className={({ focus: isFocused }) =>
-          clsx(
-            baseItemStyle,
-            sizeStyles[size],
-            isSelected && selectedItemStyle,
-            !isSelected && itemVariantStyles[variant],
-            isDisabled && disabledItemStyle,
-            isFocused && !isDisabled && !isSelected && 'bg-white/10',
+        {...linkProps}
+        className={({ focus: isFocused }: { focus: boolean }) =>
+          getMenuItemClassName({
+            variant,
+            size,
+            isSelected,
+            isDanger: false, // Links don't use danger styling
+            isDisabled,
+            isFocused,
             itemClassName,
             className,
-          )
+          })
         }
       >
         {menuItemContent}
@@ -179,26 +211,29 @@ export function MenuItem({
     );
   }
 
-  return (
-    <HeadlessMenuItem
-      disabled={isDisabled}
-      as="button"
-      onClick={onClick}
-      className={({ focus: isFocused }) =>
-        clsx(
-          baseItemStyle,
-          sizeStyles[size],
-          isSelected && selectedItemStyle,
-          !isSelected &&
-            (isDanger ? dangerItemStyle : itemVariantStyles[variant]),
-          isDisabled && disabledItemStyle,
-          isFocused && !isDisabled && !isSelected && 'bg-white/10',
-          itemClassName,
-          className,
-        )
-      }
-    >
-      {menuItemContent}
-    </HeadlessMenuItem>
-  );
+  if (isButtonProps(linkProps)) {
+    return (
+      <HeadlessMenuItem
+        disabled={isDisabled}
+        {...linkProps}
+        className={({ focus: isFocused }) =>
+          getMenuItemClassName({
+            variant,
+            size,
+            isSelected,
+            isDanger,
+            isDisabled,
+            isFocused,
+            itemClassName,
+            className,
+          })
+        }
+      >
+        {menuItemContent}
+      </HeadlessMenuItem>
+    );
+  }
+
+  // Fallback (should never happen)
+  return null;
 }

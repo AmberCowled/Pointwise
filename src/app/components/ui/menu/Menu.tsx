@@ -22,6 +22,7 @@ import {
   type MenuVariant,
   variantStyles,
 } from './MenuContext';
+import { formatBadgeCount } from './utils';
 
 // Menu Props
 export interface MenuProps {
@@ -157,7 +158,7 @@ export function Menu({
         onClose();
       }
     }
-  });
+  }, [onOpenChange, onClose]);
 
   const contextValue: MenuContextValue = {
     variant,
@@ -215,7 +216,7 @@ export function Menu({
                     <span className="shrink-0">
                       {triggerBadge ?? (
                         <span className="inline-flex items-center justify-center rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-200">
-                          {triggerBadgeCount! > 99 ? '99+' : triggerBadgeCount}
+                          {formatBadgeCount(triggerBadgeCount!)}
                         </span>
                       )}
                     </span>

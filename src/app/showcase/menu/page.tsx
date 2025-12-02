@@ -337,6 +337,80 @@ export default function MenuShowcasePage() {
             </div>
           </Card>
 
+          {/* Submenus */}
+          <Card variant="primary" responsivePadding>
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-zinc-300">Submenus</h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Menu triggerLabel="Opens Right (default)">
+                  <MenuItem label="Settings" icon={<FiSettings />}>
+                    <Menu>
+                      <MenuItem
+                        label="Account"
+                        icon={<FiUser />}
+                        href="/settings/account"
+                      />
+                      <MenuItem
+                        label="Preferences"
+                        icon={<FiSettings />}
+                        href="/settings/preferences"
+                      />
+                    </Menu>
+                  </MenuItem>
+                  <MenuItem label="More Options" icon={<FiMoreVertical />}>
+                    <Menu>
+                      <MenuItem
+                        label="Option 1"
+                        icon={<FiStar />}
+                        onClick={() => setSelectedAction('Option 1')}
+                      />
+                      <MenuItem
+                        label="Option 2"
+                        icon={<FiEdit />}
+                        onClick={() => setSelectedAction('Option 2')}
+                      />
+                    </Menu>
+                  </MenuItem>
+                </Menu>
+                <Menu triggerLabel="Opens Left">
+                  <MenuItem
+                    label="Settings"
+                    icon={<FiSettings />}
+                    submenuPlacement="left"
+                  >
+                    <Menu>
+                      <MenuItem
+                        label="Account"
+                        icon={<FiUser />}
+                        href="/settings/account"
+                      />
+                      <MenuItem
+                        label="Preferences"
+                        icon={<FiSettings />}
+                        href="/settings/preferences"
+                      />
+                    </Menu>
+                  </MenuItem>
+                </Menu>
+              </div>
+              <pre className="text-xs bg-zinc-900/50 rounded-lg p-4 overflow-x-auto">
+                <code>{`<Menu triggerLabel="Menu">
+  <MenuItem label="Settings" icon={<FiSettings />}>
+    <Menu>
+      <MenuItem label="Account" href="/settings/account" />
+      <MenuItem label="Preferences" href="/settings/preferences" />
+    </Menu>
+  </MenuItem>
+</Menu>
+
+// Opens to the left instead
+<MenuItem label="Settings" submenuPlacement="left">
+  <Menu>...</Menu>
+</MenuItem>`}</code>
+              </pre>
+            </div>
+          </Card>
+
           {/* Custom Rendering */}
           <Card variant="primary" responsivePadding>
             <div className="space-y-4">
