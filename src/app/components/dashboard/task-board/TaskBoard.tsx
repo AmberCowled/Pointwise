@@ -29,6 +29,7 @@ export default function TaskBoard({
   timeZone,
   viewMode: externalViewMode,
   onViewModeChange: externalOnViewModeChange,
+  searchQuery,
 }: TaskBoardProps) {
   const [hasHydrated, setHasHydrated] = useState(false);
   const [internalViewMode, setInternalViewMode] =
@@ -176,7 +177,10 @@ export default function TaskBoard({
               timeZone={timeZone}
             />
           ) : (
-            <TaskBoardEmptyState selectedDateLabel={selectedDateLabel} />
+            <TaskBoardEmptyState
+              selectedDateLabel={selectedDateLabel}
+              searchQuery={searchQuery}
+            />
           )}
         </div>
       </TaskSectionCard>

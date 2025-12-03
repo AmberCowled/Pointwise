@@ -9,6 +9,7 @@ import {
 } from '@headlessui/react';
 import clsx from 'clsx';
 import React, { Fragment, useId, useRef, useEffect, useState } from 'react';
+import { IoChevronDown } from 'react-icons/io5';
 
 import { InputHeader } from './InputHeader';
 
@@ -81,7 +82,7 @@ const variantErrorStyles: Record<InputSelectVariants, string> = {
 };
 
 const listBaseStyle =
-  'absolute z-10 mt-2 max-h-60 w-full overflow-auto border bg-zinc-900/95 p-2 text-sm shadow-lg focus:outline-none';
+  'absolute z-50 mt-2 max-h-60 w-full overflow-auto border bg-zinc-900/95 p-2 text-sm shadow-lg focus:outline-none';
 
 const listVariantStyles: Record<InputSelectVariants, string> = {
   primary: 'rounded-2xl border-white/10 shadow-indigo-500/20',
@@ -171,15 +172,15 @@ export function InputSelect<TValue>({
                 className,
               )}
             >
-              <span className="block truncate">
+              <span className="block truncate pr-8">
                 {activeOption
                   ? renderValue
                     ? renderValue(activeOption)
                     : activeOption.label
                   : (placeholder ?? 'Select...')}
               </span>
-              <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-zinc-500">
-                ▾
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                <IoChevronDown className="h-4 w-4" aria-hidden="true" />
               </span>
             </ListboxButton>
             <Transition
@@ -191,13 +192,16 @@ export function InputSelect<TValue>({
               <ListboxOptions
                 anchor="bottom start"
                 portal={true}
+                modal={false}
                 className={clsx(listBaseStyle, listVariantStyles[variant])}
                 style={
                   buttonWidth
                     ? {
-                        width: isMobile ? '100%' : `${buttonWidth}px`,
+                        width: isMobile
+                          ? '100%'
+                          : `${Math.max(buttonWidth, 160)}px`,
                       }
-                    : { width: '100%' }
+                    : { width: '100%', minWidth: '160px' }
                 }
               >
                 {options.map((option, index) => (

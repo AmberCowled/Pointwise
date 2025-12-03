@@ -1,6 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  IoMail,
+  IoNotifications,
+  IoPersonAdd,
+  IoStar,
+  IoHeart,
+} from 'react-icons/io5';
 import GradientButton from '@pointwise/app/components/ui/GradientButton';
 import { Button } from '@pointwise/app/components/ui/Button';
 import BackgroundGlow from '@pointwise/app/components/general/BackgroundGlow';
@@ -166,7 +173,12 @@ export default function ProfilePage() {
             <Button variant="primary" size="md" loading loadingType="bars">
               Bars
             </Button>
-            <Button variant="secondary" size="md" loading loadingType="circular">
+            <Button
+              variant="secondary"
+              size="md"
+              loading
+              loadingType="circular"
+            >
               Circular
             </Button>
             <Button variant="secondary" size="md" loading loadingType="dots">
@@ -216,6 +228,135 @@ export default function ProfilePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Icon Buttons with Badges */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-zinc-200">
+            Icon Buttons with Badges
+          </h2>
+          <p className="text-xs text-zinc-500">
+            Using the <code className="text-zinc-400">icon</code> and{' '}
+            <code className="text-zinc-400">badgeCount</code> props for
+            notification-style icon buttons
+          </p>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                Icon Only
+              </h3>
+              <div className="flex items-center gap-3">
+                <Button icon={IoMail} title="Messages" aria-label="Messages" />
+                <Button
+                  icon={IoNotifications}
+                  title="Notifications"
+                  aria-label="Notifications"
+                />
+                <Button
+                  icon={IoPersonAdd}
+                  title="Friend Requests"
+                  aria-label="Friend requests"
+                />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                With Badges
+              </h3>
+              <div className="flex items-center gap-3">
+                <Button
+                  icon={IoMail}
+                  badgeCount={2}
+                  title="Messages"
+                  aria-label="Messages (2 unread)"
+                />
+                <Button
+                  icon={IoNotifications}
+                  badgeCount={5}
+                  title="Notifications"
+                  aria-label="Notifications (5 unread)"
+                />
+                <Button
+                  icon={IoPersonAdd}
+                  badgeCount={1}
+                  title="Friend Requests"
+                  aria-label="Friend requests (1 pending)"
+                />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                Large Badge Counts
+              </h3>
+              <div className="flex items-center gap-3">
+                <Button
+                  icon={IoMail}
+                  badgeCount={99}
+                  title="Messages"
+                  aria-label="Messages (99 unread)"
+                />
+                <Button
+                  icon={IoNotifications}
+                  badgeCount={150}
+                  title="Notifications"
+                  aria-label="Notifications (150+ unread)"
+                />
+                <Button
+                  icon={IoStar}
+                  badgeCount={0}
+                  title="Favorites"
+                  aria-label="Favorites"
+                />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                Disabled State
+              </h3>
+              <div className="flex items-center gap-3">
+                <Button
+                  icon={IoMail}
+                  badgeCount={3}
+                  disabled
+                  title="Messages (disabled)"
+                  aria-label="Messages (disabled)"
+                />
+                <Button
+                  icon={IoHeart}
+                  badgeCount={12}
+                  disabled
+                  title="Likes (disabled)"
+                  aria-label="Likes (disabled)"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 p-4 bg-zinc-900/50 rounded-lg">
+            <pre className="text-xs text-zinc-400 overflow-x-auto">
+              <code>{`// Icon-only button
+<Button 
+  icon={IoMail} 
+  title="Messages" 
+  aria-label="Messages" 
+/>
+
+// With badge count
+<Button 
+  icon={IoNotifications} 
+  badgeCount={5}
+  title="Notifications" 
+  aria-label="Notifications (5 unread)" 
+/>
+
+// Badge automatically formats large numbers (99+)
+<Button 
+  icon={IoMail} 
+  badgeCount={150}
+  title="Messages" 
+  aria-label="Messages (150+ unread)" 
+/>`}</code>
+            </pre>
           </div>
         </section>
 

@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import React from 'react';
+import { IconType } from 'react-icons';
 
 import { Spinner, type SpinnerType } from './Spinner';
 
@@ -21,11 +22,22 @@ export interface ButtonProps
    */
   loadingType?: SpinnerType;
   hideChildrenWhenLoading?: boolean;
+  /**
+   * Icon to display (for icon-only buttons)
+   */
+  icon?: IconType;
+  /**
+   * Badge count to display in top-right corner
+   */
+  badgeCount?: number;
   children?: React.ReactNode;
 }
 
 const baseStyle =
   'relative overflow-hidden rounded-lg py-2.5 text-sm font-medium text-zinc-100 transition focus:outline-none';
+
+const notificationStyle =
+  'relative rounded-full p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200';
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
@@ -74,11 +86,44 @@ export function Button({
   loading = false,
   loadingType = 'circular',
   hideChildrenWhenLoading = false,
+  icon: Icon,
+  badgeCount,
   className,
   ...props
 }: ButtonProps) {
   const isDisabled = loading || props.disabled;
+  const isNotification = Icon !== undefined;
+  const displayBadgeCount =
+    badgeCount !== undefined && badgeCount > 0
+      ? badgeCount > 99
+        ? '99+'
+        : badgeCount
+      : null;
 
+  // If icon is provided, render as icon button with optional badge
+  if (isNotification) {
+    return (
+      <button
+        {...props}
+        disabled={isDisabled}
+        aria-busy={loading || undefined}
+        className={clsx(
+          notificationStyle,
+          isDisabled && 'opacity-50 cursor-not-allowed',
+          className,
+        )}
+      >
+        <Icon className="h-5 w-5" aria-hidden="true" />
+        {displayBadgeCount && (
+          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-semibold text-white">
+            {displayBadgeCount}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  // Standard button rendering
   return (
     <button
       {...props}
