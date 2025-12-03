@@ -70,9 +70,11 @@ export default async function DashboardPage() {
     level,
     totalXp,
     xpIntoLevel,
+    xpToNext,
     xpRemaining,
     progress,
-    streak: 7,
+    // Streak will be implemented in a future update
+    // streak: calculateStreak(tasks, timeZone),
     title: 'Momentum Builder',
   };
 

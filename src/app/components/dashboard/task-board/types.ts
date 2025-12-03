@@ -20,6 +20,7 @@ export type TaskBoardProps = {
   timeZone: string;
   viewMode?: TaskBoardViewMode;
   onViewModeChange?: (mode: TaskBoardViewMode) => void;
+  searchQuery?: string;
 };
 
 /**

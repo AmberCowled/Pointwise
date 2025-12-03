@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Navbar from '@pointwise/app/components/dashboard/Navbar';
+import Navbar from '@pointwise/app/components/dashboard/navbar/Navbar';
 import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
 import TaskCreateModal, {
   type TaskFormValues,
@@ -24,9 +24,10 @@ type ProfileSnapshot = {
   level: number;
   totalXp: number;
   xpIntoLevel: number;
+  xpToNext: number;
   xpRemaining: number;
   progress: number;
-  streak: number;
+  streak?: number; // Optional until streak calculation is implemented
   title: string;
 };
 
@@ -59,6 +60,7 @@ export default function DashboardPageClient({
     level: profile.level,
     totalXp: profile.totalXp,
     xpIntoLevel: profile.xpIntoLevel,
+    xpToNext: profile.xpToNext,
     xpRemaining: profile.xpRemaining,
     progress: profile.progress,
   });
@@ -66,6 +68,7 @@ export default function DashboardPageClient({
     Array.isArray(tasks) ? tasks : [],
   );
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formatSettings, setFormatSettings] = useState(() => ({
     locale: locale ?? DateTimeDefaults.locale,
     timeZone: timeZone ?? DateTimeDefaults.timeZone,
@@ -354,6 +357,22 @@ export default function DashboardPageClient({
     }
   };
 
+  // Filter tasks by search query (case-insensitive, partial match)
+  const filteredTasks = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return taskItems;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return taskItems.filter((task) => {
+      const titleMatch = task.title?.toLowerCase().includes(query) ?? false;
+      const categoryMatch =
+        task.category?.toLowerCase().includes(query) ?? false;
+      const contextMatch = task.context?.toLowerCase().includes(query) ?? false;
+      return titleMatch || categoryMatch || contextMatch;
+    });
+  }, [taskItems, searchQuery]);
+
   const {
     scheduledTasks,
     optionalTasks,
@@ -361,7 +380,7 @@ export default function DashboardPageClient({
     selectedDateLabel,
     selectedDateInputValue,
   } = useTaskFilters(
-    taskItems,
+    filteredTasks,
     selectedDate,
     formatSettings.locale,
     formatSettings.timeZone,
@@ -374,7 +393,7 @@ export default function DashboardPageClient({
   const upcomingTasks = useMemo(() => {
     const today = startOfDay(new Date(), formatSettings.timeZone);
     const scheduledTaskIds = new Set(scheduledTasks.map((task) => task.id));
-    return taskItems
+    return filteredTasks
       .filter((task) => {
         if (task.completed) return false;
         // Exclude tasks already in scheduled tasks
@@ -390,7 +409,7 @@ export default function DashboardPageClient({
         return dateA.getTime() - dateB.getTime();
       })
       .slice(0, 10); // Limit to next 10 tasks
-  }, [taskItems, scheduledTasks, formatSettings.timeZone]);
+  }, [filteredTasks, scheduledTasks, formatSettings.timeZone]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -424,6 +443,7 @@ export default function DashboardPageClient({
           level: xpSnapshot.level,
           totalXp: xpSnapshot.totalXp,
           xpIntoLevel,
+          xpToNext,
           xpRemaining: Math.max(0, xpToNext - xpIntoLevel),
           progress: xpSnapshot.progress ?? 0,
         });
@@ -442,7 +462,12 @@ export default function DashboardPageClient({
         level={xpState.level}
         xpRemaining={xpState.xpRemaining}
         progress={xpState.progress}
+        streak={profile.streak}
+        xpIntoLevel={xpState.xpIntoLevel}
+        xpToNext={xpState.xpToNext}
         locale={formatSettings.locale}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
       <TaskCreateModal
@@ -496,6 +521,7 @@ export default function DashboardPageClient({
             selectedDateInputValue={selectedDateInputValue}
             onSelectedDateChange={setSelectedDate}
             onCreateTask={() => openCreateModal('create')}
+            searchQuery={searchQuery}
             onTaskClick={handleTaskClick}
             onCompleteTask={handleComplete}
             completingTaskId={completingId}
