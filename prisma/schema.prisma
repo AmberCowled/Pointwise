@@ -8,9 +8,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Connection URL configuration:
+// - Prisma 6: `url` is required here for migrations (keep this)
+// - Prisma 7+: `url` can be removed, connection comes from prisma.config.ts
+// Runtime queries use prisma.config.ts via PrismaClient datasources
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") // Required for Prisma 6 migrations
 }
 
 model User {
@@ -92,6 +96,10 @@ model Task {
   @@index([userId])
   @@index([sourceRecurringTaskId])
   @@index([startAt])
+  @@index([userId, startAt])
+  @@index([userId, completedAt])
+  @@index([userId, dueAt])
+  @@index([userId, category])
 }
 
 enum RecurrenceType {

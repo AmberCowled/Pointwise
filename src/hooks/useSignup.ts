@@ -1,10 +1,12 @@
 'use client';
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { useApi } from '@pointwise/lib/api';
 
 export function useSignup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const api = useApi();
 
   const signup = async (values: {
     name?: string;
@@ -14,13 +16,9 @@ export function useSignup() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Signup failed');
+      // API client handles error notifications automatically
+      // We still set local error state for form display
+      await api.auth.signup(values);
 
       // auto-login after signup
       const result = await signIn('credentials', {
@@ -32,6 +30,7 @@ export function useSignup() {
       // result will redirect on success
       return result;
     } catch (e: unknown) {
+      // Set error for form display (API client already shows notification)
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
       setLoading(false);
