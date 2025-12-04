@@ -82,7 +82,7 @@ const variantErrorStyles: Record<InputSelectVariants, string> = {
 };
 
 const listBaseStyle =
-  'absolute z-50 mt-2 max-h-60 w-full overflow-auto border bg-zinc-900/95 p-2 text-sm shadow-lg focus:outline-none';
+  'absolute z-[100] mt-2 max-h-60 w-full overflow-auto border bg-zinc-900/95 p-2 text-sm shadow-lg focus:outline-none';
 
 const listVariantStyles: Record<InputSelectVariants, string> = {
   primary: 'rounded-2xl border-white/10 shadow-indigo-500/20',

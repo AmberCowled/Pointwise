@@ -625,7 +625,7 @@ export function Pagination({
                 options={pageSizeOptions ?? DEFAULT_PAGE_SIZE_OPTIONS}
                 variant={inputSelectVariant}
                 size={size}
-                className="w-16"
+                className="w-20"
                 disabled={isLoading}
               />
             </>

@@ -100,7 +100,7 @@ export default function TaskSectionCard({
         'transition-all duration-300 ease-in-out',
         isCollapsed && collapsible
           ? 'max-h-0 overflow-hidden opacity-0'
-          : 'max-h-[5000px] opacity-100',
+          : 'opacity-100',
         contentClassName,
       )}
     >

@@ -274,6 +274,132 @@ export function isSameDay(
   return toDateKey(a, timeZone) === toDateKey(b, timeZone);
 }
 
+/**
+ * Merge a date with a specific time in a given timezone
+ * Returns a UTC Date that represents the given local time on the given date
+ *
+ * @param date - The base date (will use its date part, ignoring time)
+ * @param time - Time string in format "HH:MM" (24-hour)
+ * @param timeZone - IANA timezone string (e.g., "America/New_York")
+ * @returns UTC Date representing the local time on the given date
+ */
+export function mergeDateAndTime(
+  date: DateInput,
+  time: string,
+  timeZone: string = DEFAULT_TIME_ZONE,
+): Date {
+  const baseDate = toDate(date) ?? new Date();
+  const [hours, minutes] = time.split(':').map((value) => Number(value));
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return new Date(baseDate);
+  }
+
+  // Get the target date key (YYYY-MM-DD) in user's timezone
+  const targetDateKey = toDateKey(baseDate, timeZone);
+  const [targetYear, targetMonth, targetDay] = targetDateKey
+    .split('-')
+    .map(Number);
+
+  // Use a more direct approach: try different UTC times until we find one that
+  // gives us the desired local time. We'll use a binary search-like approach.
+
+  // Start with a reasonable guess: assume timezone offset is between -12 and +14 hours
+  // We'll try UTC times around the target time and see which one gives us the right local time
+
+  // First, try creating UTC date at the target time
+  let utcDate = new Date(
+    Date.UTC(targetYear, targetMonth - 1, targetDay, hours, minutes, 0),
+  );
+
+  let userParts = getDateTimeParts(utcDate, timeZone);
+  let currentDateKey = toDateKey(utcDate, timeZone);
+  let hourDiff = hours - userParts.hour;
+  let minuteDiff = minutes - userParts.minute;
+
+  // If date is wrong, we need to adjust significantly
+  if (currentDateKey !== targetDateKey) {
+    // Date shifted - try adjusting by a full day
+    // If currentDateKey > targetDateKey, we're too far ahead, subtract a day
+    // If currentDateKey < targetDateKey, we're too far behind, add a day
+    const currentKeyNum = parseInt(currentDateKey.replace(/-/g, ''), 10);
+    const targetKeyNum = parseInt(targetDateKey.replace(/-/g, ''), 10);
+    const dayDiff = currentKeyNum - targetKeyNum;
+
+    if (dayDiff !== 0) {
+      // Adjust by the day difference
+      utcDate = new Date(
+        Date.UTC(targetYear, targetMonth - 1, targetDay, hours, minutes, 0),
+      );
+      // Adjust by approximately the timezone offset (try common offsets)
+      // For UTC+11 (Sydney), we need to subtract 11 hours from local time to get UTC
+      // So if we want 23:00 local, we need 12:00 UTC (23 - 11 = 12)
+      // But we don't know the exact offset, so we'll calculate it
+
+      // Get the timezone offset by checking what UTC noon shows as in local time
+      const noonUtc = new Date(
+        Date.UTC(targetYear, targetMonth - 1, targetDay, 12, 0, 0),
+      );
+      const noonLocal = getDateTimeParts(noonUtc, timeZone);
+
+      // Calculate UTC time: if UTC noon shows as X local, then to get Y local, we need:
+      // UTC = Y - X + 12
+      // Example: If UTC noon = 23:00 local (X=23), and we want 23:00 local (Y=23):
+      // UTC = 23 - 23 + 12 = 12:00 UTC ✓
+      const localTimeAtNoon = noonLocal.hour;
+      let utcHour = hours - localTimeAtNoon + 12;
+      const utcMinute = minutes;
+
+      // Handle overflow
+      while (utcHour < 0) {
+        utcHour += 24;
+      }
+      while (utcHour >= 24) {
+        utcHour -= 24;
+      }
+
+      utcDate = new Date(
+        Date.UTC(targetYear, targetMonth - 1, targetDay, utcHour, utcMinute, 0),
+      );
+      userParts = getDateTimeParts(utcDate, timeZone);
+      currentDateKey = toDateKey(utcDate, timeZone);
+      hourDiff = hours - userParts.hour;
+      minuteDiff = minutes - userParts.minute;
+    }
+  }
+
+  // Fine-tune the time if needed (date should be correct now)
+  let iterations = 0;
+  const maxIterations = 5;
+
+  while (
+    currentDateKey === targetDateKey &&
+    (hourDiff !== 0 || minuteDiff !== 0) &&
+    iterations < maxIterations
+  ) {
+    const adjustmentMs = (hourDiff * 60 + minuteDiff) * 60 * 1000;
+    const newUtcDate = new Date(utcDate.getTime() + adjustmentMs);
+    const newUserParts = getDateTimeParts(newUtcDate, timeZone);
+    const newDateKey = toDateKey(newUtcDate, timeZone);
+
+    // Only apply if date doesn't change
+    if (newDateKey === targetDateKey) {
+      utcDate = newUtcDate;
+      userParts = newUserParts;
+      currentDateKey = newDateKey;
+      hourDiff = hours - userParts.hour;
+      minuteDiff = minutes - userParts.minute;
+    } else {
+      // Adjustment would shift date - stop here
+      break;
+    }
+
+    iterations++;
+  }
+
+
+  return utcDate;
+}
+
 export const DateTimeDefaults = {
   locale: DEFAULT_LOCALE,
   timeZone: DEFAULT_TIME_ZONE,

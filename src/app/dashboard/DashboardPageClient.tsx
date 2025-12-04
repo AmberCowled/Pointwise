@@ -19,6 +19,7 @@ import TaskBoard from '@pointwise/app/components/dashboard/task-board/TaskBoard'
 import type { TaskBoardViewMode } from '@pointwise/app/components/dashboard/task-board/types';
 import { useTaskFilters } from '@pointwise/hooks/useTaskFilters';
 import type { AnalyticsSnapshot } from '@pointwise/lib/analytics';
+import { useApi } from '@pointwise/lib/api';
 
 type ProfileSnapshot = {
   level: number;
@@ -69,6 +70,7 @@ export default function DashboardPageClient({
   );
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const api = useApi();
   const [formatSettings, setFormatSettings] = useState(() => ({
     locale: locale ?? DateTimeDefaults.locale,
     timeZone: timeZone ?? DateTimeDefaults.timeZone,
@@ -105,28 +107,25 @@ export default function DashboardPageClient({
       }
       try {
         syncingRef.current = true;
-        const response = await fetch('/api/user/preferences', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            locale: nextLocale,
-            timeZone: nextTimeZone,
-          }),
+        await api.user.updatePreferences({
+          locale: nextLocale,
+          timeZone: nextTimeZone,
         });
-        if (!response.ok) {
-          throw new Error('Failed to update preferences');
-        }
         persistedSettingsRef.current = {
           locale: nextLocale,
           timeZone: nextTimeZone,
         };
       } catch (error) {
-        console.error('Failed to update user preferences', error);
+        // API client handles error notifications automatically
+        // Only log in dev for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to update user preferences', error);
+        }
       } finally {
         syncingRef.current = false;
       }
     },
-    [],
+    [api],
   );
 
   useEffect(() => {
@@ -226,65 +225,33 @@ export default function DashboardPageClient({
 
     try {
       if (editorMode === 'edit' && values.id) {
-        const response = await fetch(`/api/tasks/${values.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: values.title,
-            category: values.category,
-            xpValue: values.xpValue,
-            context: values.context,
-            startAt: payloadStartAt,
-            dueAt: payloadDueAt,
-          }),
+        const payload = await api.tasks.update(values.id, {
+          title: values.title,
+          category: values.category,
+          xpValue: values.xpValue,
+          context: values.context,
+          startAt: payloadStartAt,
+          dueAt: payloadDueAt,
         });
 
-        if (!response.ok) {
-          const errorPayload = await response.json().catch(() => null);
-          const message =
-            typeof errorPayload === 'object' &&
-            errorPayload &&
-            'error' in errorPayload
-              ? String((errorPayload as Record<string, unknown>).error)
-              : 'Task update failed';
-          throw new Error(message);
-        }
-
-        const payload = await response.json();
         if (payload.task) {
           setTaskItems((prev) => mergeTasks(prev, [payload.task]));
           setEditorTask(payload.task);
         }
       } else {
-        const response = await fetch('/api/tasks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: values.title,
-            category: values.category,
-            xpValue: values.xpValue,
-            context: values.context,
-            startAt: payloadStartAt,
-            dueAt: payloadDueAt,
-            recurrence: values.recurrence ?? 'none',
-            recurrenceDays: values.recurrenceDays ?? [],
-            recurrenceMonthDays: values.recurrenceMonthDays ?? [],
-            timesOfDay: (values.timesOfDay ?? []).filter(Boolean),
-          }),
+        const payload = await api.tasks.create({
+          title: values.title,
+          category: values.category,
+          xpValue: values.xpValue,
+          context: values.context,
+          startAt: payloadStartAt,
+          dueAt: payloadDueAt,
+          recurrence: values.recurrence ?? 'none',
+          recurrenceDays: values.recurrenceDays ?? [],
+          recurrenceMonthDays: values.recurrenceMonthDays ?? [],
+          timesOfDay: (values.timesOfDay ?? []).filter(Boolean),
         });
 
-        if (!response.ok) {
-          const errorPayload = await response.json().catch(() => null);
-          const message =
-            typeof errorPayload === 'object' &&
-            errorPayload &&
-            'error' in errorPayload
-              ? String((errorPayload as Record<string, unknown>).error)
-              : 'Task creation failed';
-          throw new Error(message);
-        }
-
-        const payload = await response.json();
         if (Array.isArray(payload.tasks)) {
           setTaskItems((prev) => mergeTasks(prev, payload.tasks));
         }
@@ -295,12 +262,14 @@ export default function DashboardPageClient({
       setManageTask(null);
       setIsManageOpen(false);
     } catch (error) {
+      // API client handles error notifications automatically
+      // Only set createError for modal inline display if needed
+      // (API client already shows user-facing notifications)
       const fallback =
         editorMode === 'edit'
           ? 'Failed to update task'
           : 'Failed to create task';
       const message = error instanceof Error ? error.message : fallback;
-      console.error(fallback, error);
       setCreateError(message);
     } finally {
       setIsCreating(false);
@@ -335,25 +304,16 @@ export default function DashboardPageClient({
     scope: 'single' | 'all',
   ) => {
     try {
-      const url =
-        scope === 'all'
-          ? `/api/tasks/${task.id}?scope=series`
-          : `/api/tasks/${task.id}`;
-      const response = await fetch(url, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Task deletion failed');
-      }
-      const payload = await response.json();
+      const deleteScope = scope === 'all' ? 'series' : 'single';
+      const payload = await api.tasks.delete(task.id, deleteScope);
       const deletedIds: string[] = payload.deletedIds ?? [task.id];
       setTaskItems((prev) =>
         prev.filter((item) => !deletedIds.includes(item.id)),
       );
       setIsManageOpen(false);
       setManageTask(null);
-    } catch (error) {
-      console.error('Failed to delete task', error);
+    } catch {
+      // API client handles error notifications automatically
     }
   };
 
@@ -388,7 +348,7 @@ export default function DashboardPageClient({
     viewMode,
   );
 
-  // Calculate upcoming tasks (next 10 tasks after current day)
+  // Calculate upcoming tasks (all tasks after current day)
   // Exclude tasks that are already in the scheduled tasks list
   const upcomingTasks = useMemo(() => {
     const today = startOfDay(new Date(), formatSettings.timeZone);
@@ -407,8 +367,8 @@ export default function DashboardPageClient({
         const dateB = toDate(b.dueAt) || toDate(b.startAt);
         if (!dateA || !dateB) return 0;
         return dateA.getTime() - dateB.getTime();
-      })
-      .slice(0, 10); // Limit to next 10 tasks
+      });
+    // Removed .slice(0, 10) limit - let pagination handle all upcoming tasks
   }, [filteredTasks, scheduledTasks, formatSettings.timeZone]);
 
   useEffect(() => {
@@ -420,16 +380,7 @@ export default function DashboardPageClient({
     if (task.completed || completingId) return;
     setCompletingId(task.id);
     try {
-      const response = await fetch(`/api/tasks/${task.id}/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!response.ok) {
-        throw new Error('Task completion failed');
-      }
-
-      const payload = await response.json();
+      const payload = await api.tasks.complete(task.id);
 
       if (payload.task) {
         setTaskItems((prev) => mergeTasks(prev, [payload.task]));
@@ -448,8 +399,8 @@ export default function DashboardPageClient({
           progress: xpSnapshot.progress ?? 0,
         });
       }
-    } catch (error) {
-      console.error('Failed to complete task', error);
+    } catch {
+      // API client handles error notifications automatically
     } finally {
       setCompletingId(null);
     }
