@@ -34,14 +34,27 @@ export class DailyRecurrenceStrategy implements RecurrenceStrategy {
         continue;
       }
 
-      for (const time of config.timesOfDay) {
+      if (config.timesOfDay.length > 0) {
+        // Generate occurrences for each specified time
+        for (const time of config.timesOfDay) {
+          if (occurrenceCount >= maxOccurrences) break;
+
+          // For today, only include future times
+          if (!isTimeInFuture(time, dayKey, todayKey, timeZone)) continue;
+
+          const occurrence = mergeDateAndTime(currentDay, time, timeZone);
+          occurrences.push(occurrence);
+          occurrenceCount++;
+        }
+      } else {
+        // No times specified - generate one occurrence per day (optional recurring task)
         if (occurrenceCount >= maxOccurrences) break;
 
-        // For today, only include future times
-        if (!isTimeInFuture(time, dayKey, todayKey, timeZone)) continue;
+        // For today, only include if it's not past
+        if (dayKey < todayKey) continue;
 
-        const occurrence = mergeDateAndTime(currentDay, time, timeZone);
-        occurrences.push(occurrence);
+        // For optional tasks, use the start of day
+        occurrences.push(currentDay);
         occurrenceCount++;
       }
     }
@@ -58,11 +71,12 @@ export class DailyRecurrenceStrategy implements RecurrenceStrategy {
     const bufferDate = new Date(now.getTime() + 29 * MS_PER_DAY); // 30th day including today
     const bufferDateStart = startOfDay(bufferDate, timeZone);
 
-    // Return the first time of day for that date
+    // Return the first time of day for that date, or the date itself for optional tasks
     if (timesOfDay.length > 0) {
       return mergeDateAndTime(bufferDateStart, timesOfDay[0], timeZone);
+    } else {
+      // For optional recurring tasks, return the date
+      return bufferDateStart;
     }
-
-    return null;
   }
 }

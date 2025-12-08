@@ -6,8 +6,10 @@ const basePayload = {
   category: 'Work',
   xpValue: 50,
   context: 'Review the past week and plan ahead.',
-  startAt: '2025-01-01T09:00:00.000Z',
-  dueAt: '2025-01-01T10:00:00.000Z',
+  startDate: '2025-01-01',
+  startTime: '09:00',
+  dueDate: '2025-01-01',
+  dueTime: '10:00',
   recurrence: 'none',
   recurrenceDays: [],
   recurrenceMonthDays: [],
@@ -22,8 +24,10 @@ describe('parseCreateTaskBody', () => {
     expect(result.data.title).toBe('Weekly Review');
     expect(result.data.category).toBe('Work');
     expect(result.data.xpValue).toBe(50);
-    expect(result.data.startAt?.toISOString()).toBe('2025-01-01T09:00:00.000Z');
-    expect(result.data.dueAt?.toISOString()).toBe('2025-01-01T10:00:00.000Z');
+    expect(result.data.startDate).toBe('2025-01-01');
+    expect(result.data.startTime).toBe('09:00');
+    expect(result.data.dueDate).toBe('2025-01-01');
+    expect(result.data.dueTime).toBe('10:00');
   });
 
   it('rejects missing title', () => {
@@ -56,11 +60,12 @@ describe('parseCreateTaskBody', () => {
   it('rejects start after due date', () => {
     const result = parseCreateTaskBody({
       ...basePayload,
-      startAt: '2025-01-02T09:00:00.000Z',
+      startDate: '2025-01-02',
+      startTime: '09:00',
     });
     expect(result.success).toBe(false);
     if (result.success) throw new Error('Should be failure');
-    expect(result.error).toContain('Start date cannot be after due date');
+    expect(result.error).toContain('Start date/time cannot be after due date/time');
   });
 
   it('requires weekly recurrence to specify at least one weekday', () => {
@@ -99,12 +104,14 @@ describe('parseUpdateTaskBody', () => {
 
   it('rejects start date after due date', () => {
     const result = parseUpdateTaskBody({
-      startAt: '2025-01-03T09:00:00.000Z',
-      dueAt: '2025-01-02T09:00:00.000Z',
+      startDate: '2025-01-03',
+      startTime: '09:00',
+      dueDate: '2025-01-02',
+      dueTime: '09:00',
     });
     expect(result.success).toBe(false);
     if (result.success) throw new Error('Should be failure');
-    expect(result.error).toContain('Start date cannot be after due date');
+    expect(result.error).toContain('Start date/time cannot be after due date/time');
   });
 
   it('rejects payload with no updatable fields', () => {

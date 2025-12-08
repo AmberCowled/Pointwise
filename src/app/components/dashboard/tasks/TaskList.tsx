@@ -15,10 +15,34 @@ export type DashboardTask = {
   xp: number;
   status: TaskStatus;
   completed?: boolean;
-  startAt?: string | Date | null;
-  dueAt?: string | Date | null;
+  startDate?: string | Date | null;
+  startTime?: string | null;
+  dueDate?: string | Date | null;
+  dueTime?: string | null;
   completedAt?: string | Date | null;
+  
+  // Assignment (for Phase 3)
+  assignedUserIds?: string[];
+  acceptedUserIds?: string[];
+  
+  // Recurring pattern (if this is a recurring task template)
+  recurrencePattern?: {
+    type: 'daily' | 'weekly' | 'monthly';
+    interval?: number;
+    daysOfWeek?: number[];
+    daysOfMonth?: number[];
+    timesOfDay?: string[];
+    startDate: string;
+    endDate?: string;
+    maxOccurrences?: number;
+  };
+  
+  // Recurring instance tracking
+  isRecurringInstance?: boolean;
   sourceRecurringTaskId?: string | null;
+  recurrenceInstanceKey?: string | null;
+  isEditedInstance?: boolean;
+  editedInstanceKeys?: string[];
 };
 
 type TaskListProps = {
@@ -97,6 +121,7 @@ export default function TaskList({
             onComplete={onComplete}
             isProcessing={completingTaskId === task.id}
             onOpen={onTaskClick}
+            showActions={true}
             locale={locale}
             timeZone={timeZone}
           />

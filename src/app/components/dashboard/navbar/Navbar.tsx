@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { signOut } from 'next-auth/react';
+import BrandHeader from '@pointwise/app/components/general/BrandHeader';
 import { useMemo, useState } from 'react';
 import {
   IoFlame,
@@ -10,11 +10,16 @@ import {
   IoNotifications,
   IoPersonAdd,
   IoStar,
+  IoFolder,
+  IoPerson,
+  IoSettings,
+  IoLogOut,
 } from 'react-icons/io5';
 import {
   Menu,
   MenuItem,
   MenuDivider,
+  MenuSection,
 } from '@pointwise/app/components/ui/menus';
 import { Input } from '@pointwise/app/components/ui/Input';
 import { InputSelect } from '@pointwise/app/components/ui/InputSelect';
@@ -43,9 +48,9 @@ const SEARCH_FILTER_OPTIONS = [
 
 export interface NavbarProps {
   initials: string;
-  level: number;
-  xpRemaining: number;
-  progress: number;
+  level?: number;
+  xpRemaining?: number;
+  progress?: number;
   streak?: number;
   xpIntoLevel?: number;
   xpToNext?: number;
@@ -56,9 +61,9 @@ export interface NavbarProps {
 
 export default function Navbar({
   initials,
-  level,
-  xpRemaining,
-  progress,
+  level = 1,
+  xpRemaining = 0,
+  progress = 0,
   streak,
   xpIntoLevel = 0,
   xpToNext = 1000,
@@ -79,30 +84,13 @@ export default function Navbar({
     <div className="sticky top-0 z-40 w-full border-b border-white/5 bg-zinc-950/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 sm:gap-6">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 sm:gap-3 transition-opacity hover:opacity-80"
-            aria-label="Go to dashboard"
-          >
-            <div className="relative h-10 w-10 shrink-0">
-              <Image
-                src="/logo.png"
-                alt="Pointwise"
-                width={40}
-                height={40}
-                className="object-contain"
-                priority
-              />
-            </div>
-            <div>
-              <p className="hidden text-xs uppercase tracking-[0.3em] text-zinc-500 sm:block">
-                Pointwise
-              </p>
-              <p className="hidden text-sm font-medium text-zinc-200 sm:block">
-                Productivity Dashboard
-              </p>
-            </div>
-          </Link>
+          <BrandHeader
+            asLink
+            size="small"
+            align="left"
+            showText={true}
+            showEyebrow={true}
+          />
           <form className="flex flex-1 items-center gap-2 min-w-[140px]">
             <div className={`flex-1 min-w-0 ${INPUT_WRAPPER_CLASS}`}>
               <Input
@@ -131,6 +119,7 @@ export default function Navbar({
           <div className="ml-auto flex shrink-0">
             <Menu
               placement="bottom end"
+              width="w-64"
               trigger={
                 <button
                   className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:border-indigo-400/60 hover:bg-indigo-500/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
@@ -142,14 +131,42 @@ export default function Navbar({
                 </button>
               }
             >
-              <MenuItem label="Profile" href="/profile" />
-              <MenuItem label="Settings" href="/settings" />
+              <MenuSection title="Navigation">
+                <MenuItem
+                  label="Projects"
+                  icon={<IoFolder />}
+                  href="/dashboard"
+                  description="View all projects"
+                />
+              </MenuSection>
+              
               <MenuDivider />
-              <MenuItem
-                label="Sign out"
-                onClick={() => signOut({ callbackUrl: '/' })}
-                danger
-              />
+              
+              <MenuSection title="Account">
+                <MenuItem
+                  label="Profile"
+                  icon={<IoPerson />}
+                  href="/profile"
+                  description="View and edit your profile"
+                />
+                <MenuItem
+                  label="Settings"
+                  icon={<IoSettings />}
+                  href="/settings"
+                  description="Manage preferences"
+                />
+              </MenuSection>
+              
+              <MenuDivider />
+              
+              <MenuSection>
+                <MenuItem
+                  label="Sign out"
+                  icon={<IoLogOut />}
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  danger
+                />
+              </MenuSection>
             </Menu>
           </div>
         </div>
@@ -157,12 +174,14 @@ export default function Navbar({
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <StatIndicator
-                icon={IoStar}
-                label="Level"
-                value={level}
-                colorClass="text-indigo-400"
-              />
+              {level > 0 && (
+                <StatIndicator
+                  icon={IoStar}
+                  label="Level"
+                  value={level}
+                  colorClass="text-indigo-400"
+                />
+              )}
               {streak !== undefined && streak > 0 && (
                 <StatIndicator
                   icon={IoFlame}
@@ -227,28 +246,30 @@ export default function Navbar({
               </Menu>
             </div>
           </div>
-          <div
-            className="relative"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-          >
-            <ProgressBar
-              value={progressPercent}
-              maxValue={100}
-              heightClass="h-2"
-              overwriteColorClass={() =>
-                'bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500'
-              }
-            />
-            <ProgressTooltip
-              xpIntoLevel={xpIntoLevel}
-              xpToNext={xpToNext}
-              xpRemaining={xpRemaining}
-              nextLevel={level + 1}
-              formatter={numberFormatter}
-              show={showTooltip}
-            />
-          </div>
+          {progress > 0 && (
+            <div
+              className="relative"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <ProgressBar
+                value={progressPercent}
+                maxValue={100}
+                heightClass="h-2"
+                overwriteColorClass={() =>
+                  'bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500'
+                }
+              />
+              <ProgressTooltip
+                xpIntoLevel={xpIntoLevel}
+                xpToNext={xpToNext}
+                xpRemaining={xpRemaining}
+                nextLevel={level + 1}
+                formatter={numberFormatter}
+                show={showTooltip}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

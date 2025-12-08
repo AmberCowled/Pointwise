@@ -27,17 +27,21 @@ export const tasksApi = {
 
   /**
    * Update an existing task
+   *
+   * @param taskId - Task ID to update
+   * @param data - Task update data (including optional recurrence fields)
+   * @param scope - 'single' to update one task, 'series' to update entire recurring series
+   * @param options - Additional request options
+   * @returns Promise resolving to updated task(s)
    */
   async update(
     taskId: string,
     data: UpdateTaskRequest,
+    scope: 'single' | 'series' = 'single',
     options: ApiRequestOptions = {},
   ): Promise<UpdateTaskResponse> {
-    return apiClient.patch<UpdateTaskResponse>(
-      `/api/tasks/${taskId}`,
-      data,
-      options,
-    );
+    const url = `/api/tasks/${taskId}?scope=${scope}`;
+    return apiClient.patch<UpdateTaskResponse>(url, data, options);
   },
 
   /**
@@ -68,6 +72,35 @@ export const tasksApi = {
     return apiClient.post<CompleteTaskResponse>(
       `/api/tasks/${taskId}/complete`,
       undefined,
+      options,
+    );
+  },
+
+  /**
+   * Get RecurringTask data for a task (if it's part of a recurring series)
+   *
+   * @returns Promise resolving to recurring task data or null if not recurring
+   */
+  async getRecurring(
+    taskId: string,
+    options: ApiRequestOptions = {},
+  ): Promise<{
+    isRecurring: boolean;
+    recurringTask: {
+      id: string;
+      title: string;
+      description: string | null;
+      category: string;
+      xpValue: number;
+      startAt: string | null;
+      recurrence: 'daily' | 'weekly' | 'monthly';
+      recurrenceDays: number[];
+      recurrenceMonthDays: number[];
+      timesOfDay: string[];
+    } | null;
+  }> {
+    return apiClient.get(
+      `/api/tasks/${taskId}/recurring`,
       options,
     );
   },

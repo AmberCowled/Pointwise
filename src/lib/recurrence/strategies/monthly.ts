@@ -59,15 +59,27 @@ export class MonthlyRecurrenceStrategy implements RecurrenceStrategy {
         if (candidateKey < todayKey) continue;
         if (candidate < base) continue;
 
-        // Generate tasks for all times on this day
-        for (const time of config.timesOfDay) {
+        if (config.timesOfDay.length > 0) {
+          // Generate tasks for all specified times on this day
+          for (const time of config.timesOfDay) {
+            if (occurrenceCount >= maxOccurrences) break;
+
+            // For today, only include future times
+            if (!isTimeInFuture(time, candidateKey, todayKey, timeZone)) continue;
+
+            const occurrence = mergeDateAndTime(candidate, time, timeZone);
+            occurrences.push(occurrence);
+            occurrenceCount++;
+          }
+        } else {
+          // No times specified - generate one occurrence per matching day (optional recurring task)
           if (occurrenceCount >= maxOccurrences) break;
 
-          // For today, only include future times
-          if (!isTimeInFuture(time, candidateKey, todayKey, timeZone)) continue;
+          // For today, only include if it's not past
+          if (candidateKey < todayKey) continue;
 
-          const occurrence = mergeDateAndTime(candidate, time, timeZone);
-          occurrences.push(occurrence);
+          // For optional tasks, use the start of day
+          occurrences.push(candidate);
           occurrenceCount++;
         }
       }

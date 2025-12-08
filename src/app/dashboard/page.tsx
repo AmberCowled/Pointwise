@@ -2,17 +2,15 @@ import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import BackgroundGlow from '@pointwise/app/components/general/BackgroundGlow';
-import DashboardPageClient from './DashboardPageClient';
-import { type DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
+import { ProjectsOverview } from '@pointwise/app/components/dashboard/ProjectsOverview';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
-import { levelFromXp } from '@pointwise/lib/xp';
-import { buildAnalyticsSnapshot } from '@pointwise/lib/analytics';
 import {
   DateTimeDefaults,
   formatDateLabel,
   startOfDay,
 } from '@pointwise/lib/datetime';
+import { levelFromXp } from '@pointwise/lib/xp';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +20,6 @@ export default async function DashboardPage() {
   if (!session) {
     redirect('/');
   }
-
-  const headerStore = await headers();
-  const cookieStore = await cookies();
 
   const displayName =
     session.user?.name?.split(' ')[0] ?? session.user?.email ?? 'Adventurer';
@@ -45,8 +40,10 @@ export default async function DashboardPage() {
     redirect('/');
   }
 
+  // Get locale and timezone for date formatting
   const headerLocale =
-    headerStore.get('accept-language')?.split(',')[0]?.trim() ?? undefined;
+    (await headers()).get('accept-language')?.split(',')[0]?.trim() ?? undefined;
+  const cookieStore = await cookies();
   const cookieLocale = cookieStore.get('pw-locale')?.value;
   const cookieTimeZone = cookieStore.get('pw-timezone')?.value;
 
@@ -62,49 +59,38 @@ export default async function DashboardPage() {
   const todayStart = startOfDay(now, timeZone);
   const today = formatDateLabel(todayStart, locale, timeZone);
 
+  // Calculate XP and level
   const totalXp = userRecord.xp ?? 0;
   const { level, progress, xpIntoLevel, xpToNext } = levelFromXp(totalXp);
   const xpRemaining = Math.max(0, xpToNext - xpIntoLevel);
 
-  const profile = {
-    level,
-    totalXp,
-    xpIntoLevel,
-    xpToNext,
-    xpRemaining,
-    progress,
-    // Streak will be implemented in a future update
-    // streak: calculateStreak(tasks, timeZone),
-    title: 'Momentum Builder',
-  };
-
-  const tasksFromDb = await prisma.task.findMany({
+  // Fetch all projects user has access to (including public ones)
+  const projects = await (prisma as any).project.findMany({
     where: {
-      userId: userRecord.id,
+      OR: [
+        { adminUserIds: { has: userRecord.id } },
+        { projectUserIds: { has: userRecord.id } },
+        { viewerUserIds: { has: userRecord.id } },
+        { visibility: 'PUBLIC' },
+      ],
     },
-    orderBy: [{ startAt: 'asc' }, { dueAt: 'asc' }, { createdAt: 'asc' }],
+    orderBy: [
+      { createdAt: 'desc' },
+    ],
   });
 
-  const tasks: DashboardTask[] = tasksFromDb.map((task) => ({
-    id: task.id,
-    title: task.title,
-    context: task.description,
-    category: task.category,
-    xp: task.xpValue ?? 0,
-    status: task.completedAt ? 'completed' : 'scheduled',
-    completed: Boolean(task.completedAt),
-    startAt: task.startAt ? task.startAt.toISOString() : null,
-    dueAt: task.dueAt ? task.dueAt.toISOString() : null,
-    completedAt: task.completedAt ? task.completedAt.toISOString() : null,
-    sourceRecurringTaskId: task.sourceRecurringTaskId,
-  }));
-
-  const initialAnalytics = buildAnalyticsSnapshot(
-    tasks,
-    '7d',
-    locale,
-    timeZone,
-  );
+  // Get task counts for each project
+  const taskCounts: Record<string, number> = {};
+  
+  for (const project of projects) {
+    const count = await prisma.task.count({
+      where: {
+        projectId: project.id,
+        completedAt: null, // Only count incomplete tasks
+      } as any, // Type assertion needed due to Prisma type issues
+    });
+    taskCounts[project.id] = count;
+  }
 
   const initials =
     session.user?.name
@@ -115,20 +101,34 @@ export default async function DashboardPage() {
       .join('')
       .toUpperCase() ?? 'PW';
 
+  // Serialize projects for client component
+  const serializedProjects = projects.map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    description: p.description ?? undefined,
+    visibility: p.visibility,
+    adminUserIds: p.adminUserIds,
+    projectUserIds: p.projectUserIds,
+    viewerUserIds: p.viewerUserIds ?? [],
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  }));
+
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
       <BackgroundGlow />
-      <DashboardPageClient
-        today={today}
+      <ProjectsOverview
+        projects={serializedProjects}
+        userId={userRecord.id}
         displayName={displayName}
         initials={initials}
-        tasks={tasks}
-        profile={profile}
-        locale={locale}
-        timeZone={timeZone}
-        initialAnalytics={initialAnalytics}
-        initialSelectedDateMs={todayStart.getTime()}
-        initialNowMs={now.getTime()}
+        taskCounts={taskCounts}
+        today={today}
+        level={level}
+        xpRemaining={xpRemaining}
+        progress={progress}
+        xpIntoLevel={xpIntoLevel}
+        xpToNext={xpToNext}
       />
     </div>
   );

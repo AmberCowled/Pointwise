@@ -30,44 +30,86 @@ export async function POST(
       const ownership = await verifyTaskOwnershipWithSelect(tx, taskId, email, {
         id: true,
         userId: true,
+        projectId: true, // NEW: Get projectId for access check
         title: true,
         description: true,
         category: true,
         xpValue: true,
-        startAt: true,
-        dueAt: true,
+        startDate: true,
+        startTime: true,
+        dueDate: true,
+        dueTime: true,
         completedAt: true,
+        status: true,
         sourceRecurringTaskId: true,
+        isRecurringInstance: true,
+        createdBy: true, // NEW: Include createdBy
       });
 
       if (!ownership.success) {
         return {
           status: ownership.status as 404 | 403,
+          task: null,
+          xpSnapshot: null,
+          totalXp: 0,
         };
       }
 
       const task = ownership.task;
-      const user = await tx.user.findUnique({
+
+      // Get user for XP update
+      const currentUser = await tx.user.findUnique({
         where: { email },
         select: { id: true, xp: true },
       });
 
-      if (!user) {
-        return { status: 403 as const };
+      if (!currentUser) {
+        return {
+          status: 403 as const,
+          task: null,
+          xpSnapshot: null,
+          totalXp: 0,
+        };
+      }
+
+      // NEW: Verify user has access to the project and can edit tasks
+      const projectAccess = await verifyProjectAccess(tx, task.projectId, currentUser.id);
+      
+      if (!projectAccess.success) {
+        return {
+          status: 403 as const,
+          task: null,
+          xpSnapshot: null,
+          totalXp: 0,
+        };
+      }
+
+      // Check if user can edit tasks (admins and users can, viewers cannot)
+      if (!userCanEditTasks(projectAccess.project, currentUser.id)) {
+        return {
+          status: 403 as const,
+          task: null,
+          xpSnapshot: null,
+          totalXp: 0,
+          error: 'Viewers cannot complete tasks',
+        };
       }
 
       let updatedTask = task;
-      let nextXp = user.xp ?? 0;
+      let nextXp = currentUser.xp ?? 0;
       const xpIncrement = Math.max(0, task.xpValue ?? 0);
 
       if (!task.completedAt) {
         updatedTask = await tx.task.update({
           where: { id: task.id },
-          data: { completedAt: new Date() },
+          data: {
+            completedAt: new Date(),
+            status: 'completed' as any,
+          } as any,
         });
         nextXp = nextXp + xpIncrement;
         await tx.user.update({
-          where: { id: user.id },
+          where: { id: currentUser.id },
           data: { xp: nextXp },
         });
       }
@@ -76,7 +118,7 @@ export async function POST(
 
       return {
         status: 200 as const,
-        task: updatedTask,
+        task: serializeTask(updatedTask as any),
         xpSnapshot,
         totalXp: nextXp,
       };
@@ -88,7 +130,7 @@ export async function POST(
     }
 
     return jsonResponse({
-      task: serializeTask(result.task),
+      task: result.task,
       xp: {
         totalXp: result.totalXp,
         ...result.xpSnapshot,

@@ -119,3 +119,40 @@ export function buildCategoryGradient(slices: CategorySlice[]) {
   }
   return `conic-gradient(${segments.join(', ')})`;
 }
+
+/**
+ * Get a consistent color for a category name.
+ * Core categories get their index-based color, custom categories get a hash-based color.
+ * Same category name always returns the same color.
+ */
+export function getCategoryColor(categoryName: string | null | undefined): string {
+  if (!categoryName) {
+    // Default to first color if no category
+    return CATEGORY_COLORS[0];
+  }
+
+  const normalized = categoryName.trim();
+  
+  // Check if it's a core category
+  const coreIndex = CORE_TASK_CATEGORIES.findIndex(
+    (cat) => cat.toLowerCase() === normalized.toLowerCase()
+  );
+  
+  if (coreIndex >= 0) {
+    // Core category: use its index in the array
+    return CATEGORY_COLORS[coreIndex % CATEGORY_COLORS.length];
+  }
+
+  // Custom category: use hash-based color assignment for consistency
+  // Simple hash function to convert string to number
+  let hash = 0;
+  for (let i = 0; i < normalized.length; i++) {
+    const char = normalized.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Use absolute value and modulo to get color index
+  const colorIndex = Math.abs(hash) % CATEGORY_COLORS.length;
+  return CATEGORY_COLORS[colorIndex];
+}

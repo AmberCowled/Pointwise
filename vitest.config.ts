@@ -13,11 +13,19 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'node',
+    environment: 'happy-dom', // Use happy-dom for React component testing (lighter than jsdom)
     include: ['src/**/*.test.{ts,tsx}'],
-    setupFiles: [],
+    setupFiles: ['src/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/__tests__/',
+        '**/*.test.{ts,tsx}',
+        '**/*.config.{ts,js}',
+        '**/types.ts',
+      ],
     },
   },
 });

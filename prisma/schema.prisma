@@ -18,26 +18,25 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
-  email         String?  @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
 
-  passwordHash  String?
+  passwordHash String?
 
   preferredLocale   String?
   preferredTimeZone String?
 
-  accounts      Account[]
-  sessions      Session[]
-  tasks         Task[]
-  recurring     RecurringTask[]
+  accounts Account[]
+  sessions Session[]
+  tasks    Task[] // Temporary - will be removed after migration to projects
 
-  xp            Int      @default(0)
+  xp Int @default(0)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -54,7 +53,8 @@ model Account {
   id_token          String?
   session_state     String?
 
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
 
@@ -76,61 +76,85 @@ model VerificationToken {
 }
 
 model Task {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String    @db.ObjectId
-  title         String
-  description   String?
-  category      String
-  xpValue       Int       @default(0)
-  startAt       DateTime?
-  dueAt         DateTime?
-  completedAt   DateTime?
-  sourceRecurringTaskId String? @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  projectId   String  @db.ObjectId // Tasks belong to projects
+  userId      String  @db.ObjectId // Temporary for migration, will be removed later
+  title       String
+  description String?
+  category    String
+  xpValue     Int     @default(0)
 
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sourceRecurringTask RecurringTask? @relation("RecurringSource", fields: [sourceRecurringTaskId], references: [id], onDelete: SetNull)
+  // Date/time (separate fields for optional times)
+  startDate DateTime? // Date part in UTC (null = no start date)
+  startTime String? // Time part as "HH:MM" string (null = no specific time, date-only)
+  dueDate   DateTime? // Date part in UTC (null = no due date)
+  dueTime   String? // Time part as "HH:MM" string (null = no specific time, date-only)
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  // Status
+  completedAt DateTime?
+  status      String    @default("pending") // 'pending' | 'in_progress' | 'completed' | 'cancelled'
 
-  @@index([userId])
+  // Assignment
+  assignedUserIds String[] @default([]) @db.ObjectId // Users assigned to this task
+  acceptedUserIds String[] @default([]) @db.ObjectId // Users who accepted/claimed this task
+
+  // Recurring pattern (stored as JSON for flexibility)
+  recurrencePattern Json? // Optional recurrence pattern for template tasks
+
+  // Recurring instance tracking
+  isRecurringInstance   Boolean  @default(false)
+  sourceRecurringTaskId String?  @db.ObjectId // Reference to template task
+  recurrenceInstanceKey String? // Unique key for this occurrence (e.g., "2025-01-15T09:00:00Z")
+  isEditedInstance      Boolean  @default(false) // True if user edited this specific occurrence
+  editedInstanceKeys    String[] @default([]) // Array of instance keys that were edited (for template tasks)
+
+  // Creator tracking
+  createdBy String @db.ObjectId // User who created the task
+
+  user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project             Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceRecurringTask Task?   @relation("RecurringSource", fields: [sourceRecurringTaskId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  generatedTasks      Task[]  @relation("RecurringSource")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId]) // Temporary index, will be removed
+  @@index([projectId])
   @@index([sourceRecurringTaskId])
-  @@index([startAt])
-  @@index([userId, startAt])
-  @@index([userId, completedAt])
-  @@index([userId, dueAt])
-  @@index([userId, category])
+  @@index([startDate])
+  @@index([projectId, startDate])
+  @@index([projectId, completedAt])
+  @@index([projectId, dueDate])
+  @@index([projectId, category])
+  @@index([projectId, status])
+  @@index([isRecurringInstance])
+  @@index([projectId, isRecurringInstance])
+  @@index([createdBy])
 }
 
-enum RecurrenceType {
-  DAILY
-  WEEKLY
-  MONTHLY
+enum ProjectVisibility {
+  PRIVATE
+  PUBLIC
 }
 
-model RecurringTask {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String    @db.ObjectId
-  title          String
-  description    String?
-  category       String
-  xpValue        Int       @default(0)
-  startAt        DateTime?
-  endAt          DateTime?
+model Project {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  visibility  ProjectVisibility @default(PRIVATE)
 
-  recurrenceType RecurrenceType
-  timesOfDay     String[]  @default([])
-  daysOfWeek     Int[]     @default([]) // 0 (Sun) - 6 (Sat)
-  monthDays      Int[]     @default([]) // 1 - 31
+  // User roles (using arrays for flexibility)
+  adminUserIds       String[] @default([]) @db.ObjectId // Users with admin access
+  projectUserIds     String[] @default([]) @db.ObjectId // Users with standard access
+  viewerUserIds      String[] @default([]) @db.ObjectId // Users with read-only access
+  joinRequestUserIds String[] @default([]) @db.ObjectId // Pending join requests for public projects
 
-  nextOccurrence DateTime?
+  tasks Task[]
 
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  generatedTasks Task[]    @relation("RecurringSource")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([nextOccurrence])
+  @@index([name])
+  @@index([visibility])
 }

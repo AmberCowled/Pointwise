@@ -25,16 +25,20 @@ export function createTaskDataFromRecurring(
     description?: string;
     category: string;
     xpValue: number;
-    startAt: Date;
-    dueAt: Date;
+    startDate: Date;
+    startTime: string | null;
+    dueDate: Date | null;
+    dueTime: string | null;
     sourceRecurringTaskId: string;
   } = {
     userId: taskInfo.userId,
     title: taskInfo.title,
     category: taskInfo.category || '', // Default to empty string if null
     xpValue: taskInfo.xpValue,
-    startAt: occurrence,
-    dueAt: occurrence,
+    startDate: occurrence, // Set date to occurrence date
+    startTime: null, // No specific time = optional task
+    dueDate: null, // Optional recurring tasks don't have due dates
+    dueTime: null,
     sourceRecurringTaskId: taskInfo.recurringTaskId,
   };
 
@@ -50,16 +54,41 @@ export function createTaskDataFromRecurring(
  */
 export type SerializedTask = {
   id: string;
+  projectId: string; // NEW: Tasks belong to projects
   title: string;
   context: string | null;
   category: string | null;
   xp: number;
-  status: 'scheduled' | 'completed';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   completed: boolean;
-  startAt: string | null;
-  dueAt: string | null;
+  startDate: string | null;
+  startTime: string | null;
+  dueDate: string | null;
+  dueTime: string | null;
   completedAt: string | null;
+  
+  // Assignment (for Phase 3)
+  assignedUserIds?: string[];
+  acceptedUserIds?: string[];
+  
+  // Recurring pattern (if this is a recurring task template)
+  recurrencePattern?: {
+    type: 'daily' | 'weekly' | 'monthly';
+    interval?: number;
+    daysOfWeek?: number[];
+    daysOfMonth?: number[];
+    timesOfDay?: string[];
+    startDate: string;
+    endDate?: string;
+    maxOccurrences?: number;
+  };
+  
+  // Recurring instance tracking
+  isRecurringInstance: boolean;
   sourceRecurringTaskId: string | null;
+  recurrenceInstanceKey?: string | null;
+  isEditedInstance?: boolean;
+  editedInstanceKeys?: string[];
 };
 
 /**
@@ -67,14 +96,36 @@ export type SerializedTask = {
  */
 export type TaskInput = {
   id: string;
+  projectId: string; // NEW: Tasks belong to projects
   title: string;
   description: string | null;
   category: string | null;
   xpValue: number | null;
-  startAt: Date | null;
-  dueAt: Date | null;
+  startDate: Date | null;
+  startTime: string | null;
+  dueDate: Date | null;
+  dueTime: string | null;
   completedAt?: Date | null;
+  status?: string;
+  
+  // Assignment (for Phase 3)
+  assignedUserIds?: string[];
+  acceptedUserIds?: string[];
+  
+  // Recurring pattern (JSON from Prisma)
+  recurrencePattern?: any;
+  
+  // Recurring instance tracking
+  isRecurringInstance?: boolean;
   sourceRecurringTaskId?: string | null;
+  recurrenceInstanceKey?: string | null;
+  isEditedInstance?: boolean;
+  editedInstanceKeys?: string[];
+  
+  // Metadata
+  createdBy?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 /**
@@ -99,18 +150,52 @@ export type MergeableTask = {
  * ```
  */
 export function serializeTask(task: TaskInput): SerializedTask {
+  // Parse recurrencePattern from JSON if it exists
+  let recurrencePattern: SerializedTask['recurrencePattern'] = undefined;
+  if (task.recurrencePattern) {
+    try {
+      const parsed = typeof task.recurrencePattern === 'string' 
+        ? JSON.parse(task.recurrencePattern) 
+        : task.recurrencePattern;
+      recurrencePattern = parsed;
+    } catch {
+      // Invalid JSON, leave as undefined
+    }
+  }
+
   return {
     id: task.id,
+    projectId: task.projectId,
     title: task.title,
     context: task.description,
     category: task.category,
     xp: task.xpValue ?? 0,
-    status: task.completedAt ? 'completed' : 'scheduled',
+    status: (task.status as SerializedTask['status']) || (task.completedAt ? 'completed' : 'pending'),
     completed: Boolean(task.completedAt),
-    startAt: task.startAt ? task.startAt.toISOString() : null,
-    dueAt: task.dueAt ? task.dueAt.toISOString() : null,
+    startDate: task.startDate ? task.startDate.toISOString().split('T')[0] : null,
+    startTime: task.startTime ?? null,
+    dueDate: task.dueDate ? task.dueDate.toISOString().split('T')[0] : null,
+    dueTime: task.dueTime ?? null,
     completedAt: task.completedAt ? task.completedAt.toISOString() : null,
+    
+    // Assignment (for Phase 3)
+    assignedUserIds: task.assignedUserIds ?? [],
+    acceptedUserIds: task.acceptedUserIds ?? [],
+    
+    // Recurring pattern
+    recurrencePattern,
+    
+    // Recurring instance tracking
+    isRecurringInstance: task.isRecurringInstance ?? false,
     sourceRecurringTaskId: task.sourceRecurringTaskId ?? null,
+    recurrenceInstanceKey: task.recurrenceInstanceKey ?? null,
+    isEditedInstance: task.isEditedInstance ?? false,
+    editedInstanceKeys: task.editedInstanceKeys ?? [],
+    
+    // Metadata
+    createdBy: task.createdBy ?? '',
+    createdAt: task.createdAt ? task.createdAt.toISOString() : new Date().toISOString(),
+    updatedAt: task.updatedAt ? task.updatedAt.toISOString() : new Date().toISOString(),
   };
 }
 
