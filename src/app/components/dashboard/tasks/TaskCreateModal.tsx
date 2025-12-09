@@ -310,7 +310,6 @@ export default function TaskCreateModal({
                   form={form}
                   errors={errors}
                   onRecurrenceChange={(value) => handleChange('recurrence', value)}
-                  onRecurrenceDaysChange={(days) => handleChange('recurrenceDays', days)}
                   onRecurrenceMonthDaysChange={(days) => handleChange('recurrenceMonthDays', days)}
                   onToggleWeekday={toggleWeekday}
                   onAddTimeOfDay={addTimeOfDay}

@@ -168,7 +168,7 @@ export function generateRecurringInstances(
         completed: false,
         startDate: instanceDate.toISOString().split('T')[0], // YYYY-MM-DD
         startTime: time || null,
-        dueDate: dueDate ? dueDate.toISOString().split('T')[0] : null,
+        dueDate: dueDate, // dueDate is already a string in YYYY-MM-DD format
         dueTime: dueTime,
         completedAt: null,
         

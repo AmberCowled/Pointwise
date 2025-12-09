@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectCard } from './ProjectCard';
 import { ProjectManagementModal } from './ProjectManagementModal';
@@ -14,25 +14,12 @@ import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { Button } from '@pointwise/app/components/ui/Button';
 import { Card } from '@pointwise/app/components/ui/Card';
 import Navbar from '@pointwise/app/components/dashboard/navbar/Navbar';
-
-interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  visibility: 'PRIVATE' | 'PUBLIC';
-  adminUserIds: string[];
-  projectUserIds: string[];
-  viewerUserIds: string[];
-  createdAt: string;
-  updatedAt: string;
-}
+import type { ProjectWithRole } from '@pointwise/lib/api/types';
 
 interface ProjectsOverviewProps {
-  projects: Project[];
   userId: string;
   displayName: string;
   initials: string;
-  taskCounts: Record<string, number>;
   today: string;
   level: number;
   xpRemaining: number;
@@ -42,11 +29,9 @@ interface ProjectsOverviewProps {
 }
 
 export function ProjectsOverview({
-  projects,
   userId,
   displayName,
   initials,
-  taskCounts,
   today,
   level,
   xpRemaining,
@@ -55,13 +40,47 @@ export function ProjectsOverview({
   xpToNext,
 }: ProjectsOverviewProps) {
   const router = useRouter();
+  const [projects, setProjects] = useState<ProjectWithRole[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
+  // Fetch projects from API
+  const fetchProjects = async (showLoading = false) => {
+    try {
+      if (showLoading) {
+        setIsLoading(true);
+      }
+      setError(null);
+      
+      const response = await fetch('/api/projectsV2');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects');
+      }
+      
+      const data = await response.json();
+      setProjects(data.projects || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      if (showLoading) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects(true);
+  }, []);
+
+  const refetchProjects = () => fetchProjects(false);
+
   const handleProjectCreated = (projectId: string) => {
-    // Refresh the page to get updated project list
-    router.refresh();
+    // Refetch projects to get updated list
+    refetchProjects();
     // Navigate to the new project
     router.push(`/dashboard/projects/${projectId}`);
   };
@@ -72,31 +91,16 @@ export function ProjectsOverview({
   };
 
   const handleProjectUpdated = () => {
-    router.refresh();
+    refetchProjects();
     setIsSettingsModalOpen(false);
     setSelectedProjectId(null);
   };
 
   const handleProjectDeleted = () => {
-    router.refresh();
+    refetchProjects();
     setIsSettingsModalOpen(false);
     setSelectedProjectId(null);
   };
-
-  const userProjects = projects.filter(
-    (p) =>
-      p.adminUserIds.includes(userId) ||
-      p.projectUserIds.includes(userId) ||
-      p.viewerUserIds.includes(userId)
-  );
-
-  const publicProjects = projects.filter(
-    (p) =>
-      p.visibility === 'PUBLIC' &&
-      !p.adminUserIds.includes(userId) &&
-      !p.projectUserIds.includes(userId) &&
-      !p.viewerUserIds.includes(userId)
-  );
 
   return (
     <>
@@ -143,27 +147,38 @@ export function ProjectsOverview({
                   Create Project
                 </Button>
               }
+              loading={isLoading}
+              loadingMessage="Loading projects..."
             >
-              {/* Your Projects */}
-              {userProjects.length > 0 && (
-                <div className="mt-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {userProjects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        userId={userId}
-                        taskCount={taskCounts[project.id] || 0}
-                        onSettingsClick={handleSettingsClick}
-                      />
-                    ))}
-                  </div>
+              {error ? (
+                <div className="px-4 py-3 bg-rose-500/10 border border-rose-400/20 rounded-lg text-rose-400 text-sm">
+                  {error}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={refetchProjects}
+                    className="mt-2"
+                  >
+                    Try Again
+                  </Button>
                 </div>
-              )}
-
-              {/* Empty state */}
-              {userProjects.length === 0 && (
-                <div className="mt-5 text-center py-12">
+              ) : projects.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {projects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={{
+                        ...project,
+                        description: project.description ?? undefined,
+                      }}
+                      userId={userId}
+                      taskCount={0}
+                      onSettingsClick={handleSettingsClick}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800/50 flex items-center justify-center">
                     <svg
                       className="w-8 h-8 text-zinc-600"
@@ -207,26 +222,6 @@ export function ProjectsOverview({
                     </svg>
                     Create Your First Project
                   </Button>
-                </div>
-              )}
-
-              {/* Public Projects */}
-              {publicProjects.length > 0 && (
-                <div className={userProjects.length > 0 ? 'mt-8' : 'mt-5'}>
-                  <h2 className="text-sm font-medium text-zinc-400 mb-4 uppercase tracking-wide">
-                    Discover Public Projects
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {publicProjects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        userId={userId}
-                        taskCount={taskCounts[project.id] || 0}
-                        onSettingsClick={handleSettingsClick}
-                      />
-                    ))}
-                  </div>
                 </div>
               )}
             </Card>

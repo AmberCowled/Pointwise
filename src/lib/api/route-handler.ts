@@ -4,6 +4,9 @@
 
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@pointwise/lib/auth';
+import prisma from '@pointwise/lib/prisma';
 
 /**
  * Options for route handler
@@ -134,4 +137,75 @@ export function errorResponse(
   status: number = 400,
 ): NextResponse {
   return NextResponse.json({ error: message }, { status });
+}
+
+/**
+ * Authenticated user context passed to protected route handlers
+ */
+export interface AuthContext {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+}
+
+/**
+ * Handle API route that requires authentication
+ * 
+ * Automatically handles:
+ * - Session verification
+ * - User lookup from database
+ * - Returns 401 if not authenticated
+ * - Returns 404 if user not found
+ * 
+ * @example
+ * ```typescript
+ * export async function GET() {
+ *   return handleProtectedRoute(async ({ user }) => {
+ *     // user is guaranteed to exist here with id, email, and name
+ *     const projects = await prisma.project.findMany({
+ *       where: { adminUserIds: { has: user.id } }
+ *     });
+ *     return jsonResponse({ projects });
+ *   });
+ * }
+ * ```
+ */
+export async function handleProtectedRoute<T>(
+  handler: (context: AuthContext) => Promise<NextResponse<T>>,
+): Promise<NextResponse> {
+  return handleRoute(async () => {
+    // 1. Get session
+    const session = await getServerSession(authOptions);
+    const email = session?.user?.email;
+
+    if (!email) {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    // 2. Get user from database
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
+
+    if (!user || !user.email) {
+      return errorResponse('User not found', 404);
+    }
+
+    // 3. Call handler with authenticated user context
+    // Type assertion: we know email is string because we checked above
+    return handler({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    });
+  });
 }

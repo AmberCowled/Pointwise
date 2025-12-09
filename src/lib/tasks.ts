@@ -191,11 +191,6 @@ export function serializeTask(task: TaskInput): SerializedTask {
     recurrenceInstanceKey: task.recurrenceInstanceKey ?? null,
     isEditedInstance: task.isEditedInstance ?? false,
     editedInstanceKeys: task.editedInstanceKeys ?? [],
-    
-    // Metadata
-    createdBy: task.createdBy ?? '',
-    createdAt: task.createdAt ? task.createdAt.toISOString() : new Date().toISOString(),
-    updatedAt: task.updatedAt ? task.updatedAt.toISOString() : new Date().toISOString(),
   };
 }
 

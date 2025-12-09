@@ -8,7 +8,7 @@
 
 export type ProjectVisibility = 'PRIVATE' | 'PUBLIC';
 
-export type ProjectRole = 'admin' | 'user' | 'viewer';
+export type ProjectRole = 'admin' | 'user' | 'viewer' | 'none';
 
 export interface Project {
   id: string;
@@ -21,6 +21,10 @@ export interface Project {
   joinRequestUserIds: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProjectWithRole extends Project {
+  role: ProjectRole;
 }
 
 export interface CreateProjectRequest {

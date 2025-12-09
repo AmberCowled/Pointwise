@@ -229,7 +229,11 @@ export async function DELETE(
         return { error: 'Viewers cannot delete tasks', status: 403 };
       }
       
-      const isTemplate = isTaskTemplate(task);
+      // Check if task is a template (has recurrence pattern, not an instance)
+      const isTemplate = isTaskTemplate({
+        isRecurringInstance: task.isRecurringInstance ?? false,
+        recurrencePattern: task.recurrencePattern ? (task.recurrencePattern as any) : undefined,
+      });
 
       if (scope === 'series' && isTemplate) {
         // Fetch IDs to delete first

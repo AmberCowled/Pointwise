@@ -191,9 +191,6 @@ export default async function ProjectDetailPage({
       recurrenceInstanceKey: task.recurrenceInstanceKey ?? null,
       isEditedInstance: task.isEditedInstance ?? false,
       editedInstanceKeys: task.editedInstanceKeys,
-      createdBy: task.createdBy,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
     };
   });
 
@@ -209,6 +206,7 @@ export default async function ProjectDetailPage({
       .toUpperCase() ?? 'PW';
 
   // Serialize project for client
+  // Note: Project schema doesn't have createdBy, using first admin as fallback
   const serializedProject = {
     id: project.id,
     name: project.name,
@@ -217,7 +215,7 @@ export default async function ProjectDetailPage({
     adminUserIds: project.adminUserIds,
     projectUserIds: project.projectUserIds,
     viewerUserIds: project.viewerUserIds ?? [],
-    createdBy: project.createdBy ?? '',
+    createdBy: project.adminUserIds[0] ?? '', // First admin is typically creator
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
   };

@@ -48,8 +48,8 @@ export async function GET(
         return { isRecurring: false, recurringTask: null };
       }
 
-      // Fetch RecurringTask data
-      const recurringTask = await tx.recurringTask.findUnique({
+      // Fetch source Task (the recurring template task)
+      const sourceTask = await tx.task.findUnique({
         where: { id: task.sourceRecurringTaskId },
         select: {
           id: true,
@@ -57,38 +57,38 @@ export async function GET(
           description: true,
           category: true,
           xpValue: true,
-          startAt: true,
-          recurrenceType: true,
-          timesOfDay: true,
-          daysOfWeek: true,
-          monthDays: true,
+          startDate: true,
+          recurrencePattern: true,
         },
       });
 
-      if (!recurringTask) {
+      if (!sourceTask || !sourceTask.recurrencePattern) {
         return { isRecurring: false, recurringTask: null };
       }
 
-      // Convert RecurrenceType enum to string format
-      const recurrenceTypeMap: Record<string, 'none' | 'daily' | 'weekly' | 'monthly'> = {
-        DAILY: 'daily',
-        WEEKLY: 'weekly',
-        MONTHLY: 'monthly',
-      };
+      // Parse recurrence pattern from JSON
+      let recurrencePattern: any = null;
+      try {
+        recurrencePattern = typeof sourceTask.recurrencePattern === 'string'
+          ? JSON.parse(sourceTask.recurrencePattern)
+          : sourceTask.recurrencePattern;
+      } catch {
+        return { isRecurring: false, recurringTask: null };
+      }
 
       return {
         isRecurring: true,
         recurringTask: {
-          id: recurringTask.id,
-          title: recurringTask.title,
-          description: recurringTask.description,
-          category: recurringTask.category,
-          xpValue: recurringTask.xpValue,
-          startAt: recurringTask.startAt?.toISOString() ?? null,
-          recurrence: recurrenceTypeMap[recurringTask.recurrenceType] ?? 'daily',
-          recurrenceDays: recurringTask.daysOfWeek,
-          recurrenceMonthDays: recurringTask.monthDays,
-          timesOfDay: recurringTask.timesOfDay,
+          id: sourceTask.id,
+          title: sourceTask.title,
+          description: sourceTask.description,
+          category: sourceTask.category,
+          xpValue: sourceTask.xpValue,
+          startAt: sourceTask.startDate?.toISOString() ?? null,
+          recurrence: recurrencePattern?.type ?? 'daily',
+          recurrenceDays: recurrencePattern?.daysOfWeek ?? null,
+          recurrenceMonthDays: recurrencePattern?.daysOfMonth ?? null,
+          timesOfDay: recurrencePattern?.timesOfDay ?? null,
         },
       };
     });

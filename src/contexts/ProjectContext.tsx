@@ -17,7 +17,7 @@ export interface Project {
   projectUserIds: string[];
   viewerUserIds: string[];
   joinRequestUserIds?: string[];
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
   updatedAt: string;
 }

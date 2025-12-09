@@ -9,6 +9,10 @@ import {
 } from '@pointwise/lib/api/route-handler';
 import { serializeTask } from '@pointwise/lib/tasks';
 import { verifyTaskOwnershipWithSelect } from '@pointwise/lib/api/auth-helpers';
+import {
+  verifyProjectAccess,
+  userCanEditTasks,
+} from '@pointwise/lib/api/project-access';
 
 export async function POST(
   _req: Request,

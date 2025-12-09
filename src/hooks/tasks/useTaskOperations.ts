@@ -326,7 +326,7 @@ export function useTaskOperations(
         const payload = await completeTask(task.id);
 
         if (payload.task) {
-          setTaskItems((prev) => mergeTasks(prev, [payload.task]));
+          setTaskItems((prev) => mergeTasks(prev, [payload.task as DashboardTask]));
         }
 
         if (payload.xp && updateXpFromSnapshot) {

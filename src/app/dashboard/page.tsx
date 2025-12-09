@@ -64,34 +64,6 @@ export default async function DashboardPage() {
   const { level, progress, xpIntoLevel, xpToNext } = levelFromXp(totalXp);
   const xpRemaining = Math.max(0, xpToNext - xpIntoLevel);
 
-  // Fetch all projects user has access to (including public ones)
-  const projects = await (prisma as any).project.findMany({
-    where: {
-      OR: [
-        { adminUserIds: { has: userRecord.id } },
-        { projectUserIds: { has: userRecord.id } },
-        { viewerUserIds: { has: userRecord.id } },
-        { visibility: 'PUBLIC' },
-      ],
-    },
-    orderBy: [
-      { createdAt: 'desc' },
-    ],
-  });
-
-  // Get task counts for each project
-  const taskCounts: Record<string, number> = {};
-  
-  for (const project of projects) {
-    const count = await prisma.task.count({
-      where: {
-        projectId: project.id,
-        completedAt: null, // Only count incomplete tasks
-      } as any, // Type assertion needed due to Prisma type issues
-    });
-    taskCounts[project.id] = count;
-  }
-
   const initials =
     session.user?.name
       ?.split(' ')
@@ -101,28 +73,13 @@ export default async function DashboardPage() {
       .join('')
       .toUpperCase() ?? 'PW';
 
-  // Serialize projects for client component
-  const serializedProjects = projects.map((p: any) => ({
-    id: p.id,
-    name: p.name,
-    description: p.description ?? undefined,
-    visibility: p.visibility,
-    adminUserIds: p.adminUserIds,
-    projectUserIds: p.projectUserIds,
-    viewerUserIds: p.viewerUserIds ?? [],
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-  }));
-
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
       <BackgroundGlow />
       <ProjectsOverview
-        projects={serializedProjects}
         userId={userRecord.id}
         displayName={displayName}
         initials={initials}
-        taskCounts={taskCounts}
         today={today}
         level={level}
         xpRemaining={xpRemaining}
