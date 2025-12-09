@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import React from 'react';
+import { Spinner } from './Spinner';
 
 export type CardVariant = 'primary' | 'secondary' | 'danger';
 
@@ -15,6 +16,16 @@ export interface CardProps
   children?: React.ReactNode;
   responsivePadding?: boolean;
   contentClassName?: string;
+  /**
+   * Whether to show loading state
+   * When true, displays spinner instead of children but keeps header visible
+   * @default false
+   */
+  loading?: boolean;
+  /**
+   * Optional loading message to display below spinner
+   */
+  loadingMessage?: string;
 }
 
 const baseStyle = 'bg-zinc-900/60 backdrop-blur';
@@ -35,6 +46,8 @@ export function Card({
   responsivePadding = false,
   contentClassName,
   className,
+  loading = false,
+  loadingMessage,
   ...props
 }: CardProps) {
   const actions = Array.isArray(action) ? action : action ? [action] : [];
@@ -79,7 +92,16 @@ export function Card({
         </header>
       )}
       <div className={clsx(hasHeader && 'mt-5', contentClassName)}>
-        {children}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Spinner size="lg" variant="primary" />
+            {loadingMessage && (
+              <p className="text-sm text-zinc-400 mt-4">{loadingMessage}</p>
+            )}
+          </div>
+        ) : (
+          children
+        )}
       </div>
     </Component>
   );

@@ -42,7 +42,7 @@ export default function AuthPage() {
     <div className="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
       <BackgroundGlow />
       <div className="relative z-10 w-full max-w-md flex flex-col items-center text-center">
-        <BrandHeader />
+        <BrandHeader className="mb-8" />
         <WelcomeBlock tab={tab} />
         <main className="w-full">
           <Card variant="primary" responsivePadding>

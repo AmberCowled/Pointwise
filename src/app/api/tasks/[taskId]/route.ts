@@ -8,10 +8,19 @@ import {
   jsonResponse,
 } from '@pointwise/lib/api/route-handler';
 import { serializeTask } from '@pointwise/lib/tasks';
+import { verifyTaskOwnershipWithSelect } from '@pointwise/lib/api/auth-helpers';
+import { isTaskTemplate, isTaskInstance } from '@pointwise/lib/tasks/utils';
 import {
-  verifyTaskOwnership,
-  verifyTaskOwnershipWithSelect,
-} from '@pointwise/lib/api/auth-helpers';
+  convertToOneTime,
+  convertToRecurring,
+  updateRecurrencePattern,
+  updateSingleTask,
+  updateSeriesTasks,
+} from '@pointwise/lib/tasks/task-conversions';
+import {
+  verifyProjectAccess,
+  userCanEditTasks,
+} from '@pointwise/lib/api/project-access';
 
 export async function PATCH(
   req: Request,
@@ -29,6 +38,14 @@ export async function PATCH(
       return errorResponse('Task ID required', 400);
     }
 
+    // Get scope parameter (default to 'single')
+    const url = new URL(req.url);
+    const scope = (url.searchParams.get('scope') ?? 'single') as 'single' | 'series';
+
+    if (scope !== 'single' && scope !== 'series') {
+      return errorResponse('Invalid scope parameter. Must be "single" or "series".', 400);
+    }
+
     const rawBody = await req.json().catch(() => ({}));
     const parsed = parseUpdateTaskBody(rawBody);
     if (!parsed.success) {
@@ -36,33 +53,123 @@ export async function PATCH(
     }
     const updates = parsed.data;
 
-    const updated = await prisma.$transaction(async (tx) => {
-      const ownership = await verifyTaskOwnership(tx, taskId, email);
+    // Get user for timezone
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, preferredTimeZone: true },
+    });
+
+    if (!user) {
+      return errorResponse('User not found', 404);
+    }
+
+    const userTimeZone = user.preferredTimeZone ?? 'UTC';
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Get task with ownership verification
+      const ownership = await verifyTaskOwnershipWithSelect(tx, taskId, email, {
+        id: true,
+        userId: true,
+        projectId: true, // NEW: Get projectId for access check
+        title: true,
+        description: true,
+        category: true,
+        xpValue: true,
+        startDate: true,
+        startTime: true,
+        dueDate: true,
+        dueTime: true,
+        recurrencePattern: true,
+        isRecurringInstance: true,
+        sourceRecurringTaskId: true,
+        recurrenceInstanceKey: true,
+        isEditedInstance: true,
+        editedInstanceKeys: true,
+      });
+
       if (!ownership.success) {
         return null;
       }
 
-      const data: Record<string, unknown> = {};
-      if (updates.title !== undefined) data.title = updates.title;
-      if (updates.category !== undefined) data.category = updates.category;
-      if (updates.xpValue !== undefined) data.xpValue = updates.xpValue;
-      if (updates.context !== undefined) data.description = updates.context;
-      if ('startAt' in updates) data.startAt = updates.startAt ?? null;
-      if ('dueAt' in updates) data.dueAt = updates.dueAt ?? null;
+      const task = ownership.task;
 
-      if (Object.keys(data).length === 0) return ownership.task;
+      // NEW: Verify user has access to the project and can edit tasks
+      const projectAccess = await verifyProjectAccess(tx, task.projectId, user.id);
+      
+      if (!projectAccess.success) {
+        return null;
+      }
 
-      return tx.task.update({
-        where: { id: taskId },
-        data,
-      });
+      // Check if user can edit tasks (admins and users can, viewers cannot)
+      if (!userCanEditTasks(projectAccess.project, user.id)) {
+        return { error: 'Viewers cannot edit tasks', status: 403 };
+      }
+      
+      // Determine task type
+      const isTemplate = isTaskTemplate(task as any);
+      const isInstance = isTaskInstance(task as any);
+
+      // Check if recurrence is being changed
+      const hasRecurrenceFields =
+        updates.recurrence !== undefined ||
+        updates.recurrenceDays !== undefined ||
+        updates.recurrenceMonthDays !== undefined ||
+        updates.timesOfDay !== undefined;
+
+      const newRecurrence = updates.recurrence;
+
+      // Determine conversion type
+      const isConvertingToOneTime = scope === 'series' && newRecurrence === 'none' && isTemplate;
+      const isConvertingToRecurring = scope === 'single' && newRecurrence !== undefined && 
+        newRecurrence !== 'none' && !isTemplate && !isInstance;
+      const isChangingRecurrence = scope === 'series' && hasRecurrenceFields && 
+        isTemplate && newRecurrence !== 'none';
+
+      // Handle conversions
+      if (isConvertingToOneTime) {
+        const updated = await convertToOneTime(tx, taskId, task, updates, user.id);
+        return { type: 'single' as const, task: updated };
+      }
+
+      if (isConvertingToRecurring) {
+        const updated = await convertToRecurring(tx, taskId, task, updates, userTimeZone);
+        return { type: 'single' as const, task: updated };
+      }
+
+      if (isChangingRecurrence) {
+        const tasks = await updateRecurrencePattern(tx, taskId, task, updates, userTimeZone, user.id);
+        return { type: 'series' as const, tasks };
+      }
+
+      // Handle standard updates
+      if (scope === 'single') {
+        const updated = await updateSingleTask(tx, taskId, task, updates);
+        return { type: 'single' as const, task: updated };
+      }
+
+      if (scope === 'series' && isTemplate) {
+        const tasks = await updateSeriesTasks(tx, taskId, task, updates, user.id);
+        return { type: 'series' as const, tasks };
+      }
+
+      // Fallback: return unchanged task
+      return { type: 'single' as const, task };
     });
 
-    if (!updated) {
+    if (!result) {
       return errorResponse('Task not found', 404);
     }
 
-    return jsonResponse({ task: serializeTask(updated) });
+    // NEW: Check for access error
+    if ('error' in result && 'status' in result) {
+      return errorResponse(result.error as string, result.status as number);
+    }
+
+    if (result.type === 'single') {
+      return jsonResponse({ task: serializeTask(result.task) });
+    } else {
+      return jsonResponse({ tasks: result.tasks.map(serializeTask) });
+    }
   });
 }
 
@@ -84,38 +191,78 @@ export async function DELETE(
 
     const scope = new URL(req.url).searchParams.get('scope') ?? 'single';
 
+    // Get user for userId
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return errorResponse('User not found', 404);
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const ownership = await verifyTaskOwnershipWithSelect(tx, taskId, email, {
         id: true,
         userId: true,
+        projectId: true, // NEW: Get projectId for access check
+        isRecurringInstance: true,
         sourceRecurringTaskId: true,
+        recurrencePattern: true,
       });
+      
       if (!ownership.success) {
         return null;
       }
+      
       const task = ownership.task;
 
-      if (scope === 'series' && task.sourceRecurringTaskId) {
-        const recurringId = task.sourceRecurringTaskId;
-        const relatedTasks = await tx.task.findMany({
+      // NEW: Verify user has access to the project and can edit tasks
+      const projectAccess = await verifyProjectAccess(tx, task.projectId, user.id);
+      
+      if (!projectAccess.success) {
+        return null;
+      }
+
+      // Check if user can edit tasks (admins and users can, viewers cannot)
+      if (!userCanEditTasks(projectAccess.project, user.id)) {
+        return { error: 'Viewers cannot delete tasks', status: 403 };
+      }
+      
+      // Check if task is a template (has recurrence pattern, not an instance)
+      const isTemplate = isTaskTemplate({
+        isRecurringInstance: task.isRecurringInstance ?? false,
+        recurrencePattern: task.recurrencePattern ? (task.recurrencePattern as any) : undefined,
+      });
+
+      if (scope === 'series' && isTemplate) {
+        // Fetch IDs to delete first
+        const toDelete = await tx.task.findMany({
           where: {
-            OR: [{ id: taskId }, { sourceRecurringTaskId: recurringId }],
-            user: { email },
+            OR: [
+              { id: taskId },
+              { sourceRecurringTaskId: taskId },
+            ],
+            userId: user.id,
           },
           select: { id: true },
         });
+        
+        // Delete template and all instances
         await tx.task.deleteMany({
           where: {
-            OR: [{ id: taskId }, { sourceRecurringTaskId: recurringId }],
-            user: { email },
+            OR: [
+              { id: taskId },
+              { sourceRecurringTaskId: taskId },
+            ],
+            userId: user.id,
           },
         });
-        await tx.recurringTask.delete({
-          where: { id: recurringId },
-        });
-        return relatedTasks.map((item) => item.id);
+        
+        return toDelete.map((item) => item.id);
       }
 
+      // Delete single task
       await tx.task.delete({
         where: { id: taskId },
       });
@@ -126,6 +273,11 @@ export async function DELETE(
       return errorResponse('Task not found', 404);
     }
 
-    return jsonResponse({ deletedIds: result });
+    // NEW: Check for access error
+    if ('error' in result && 'status' in result) {
+      return errorResponse(result.error as string, result.status as number);
+    }
+
+    return jsonResponse({ deletedIds: result as string[] });
   });
 }

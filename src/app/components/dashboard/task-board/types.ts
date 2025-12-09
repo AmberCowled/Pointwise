@@ -1,4 +1,4 @@
-import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
+import type { DashboardTask } from '@pointwise/app/components/dashboard/tasks/TaskList';
 
 /**
  * Props for the TaskBoard component

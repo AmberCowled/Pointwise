@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { DashboardTask } from '../app/components/dashboard/TaskList';
+import type { DashboardTask } from '../app/components/dashboard/tasks/TaskList';
 import {
   buildAnalyticsSnapshot,
   type AnalyticsRange,

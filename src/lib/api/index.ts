@@ -47,8 +47,9 @@ export function useApi() {
       update: (
         taskId: string,
         data: Parameters<typeof tasksApi.update>[1],
+        scope?: 'single' | 'series',
         options?: ApiRequestOptions,
-      ) => tasksApi.update(taskId, data, { ...createOptions(), ...options }),
+      ) => tasksApi.update(taskId, data, scope ?? 'single', { ...createOptions(), ...options }),
       delete: (
         taskId: string,
         scope?: 'single' | 'series',
@@ -56,6 +57,10 @@ export function useApi() {
       ) => tasksApi.delete(taskId, scope, { ...createOptions(), ...options }),
       complete: (taskId: string, options?: ApiRequestOptions) =>
         tasksApi.complete(taskId, { ...createOptions(), ...options }),
+      getRecurring: (
+        taskId: string,
+        options?: ApiRequestOptions,
+      ) => tasksApi.getRecurring(taskId, { ...createOptions(), ...options }),
     },
     user: {
       updatePreferences: (

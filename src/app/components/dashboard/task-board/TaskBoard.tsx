@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import TaskList from '@pointwise/app/components/dashboard/TaskList';
+import TaskList from '@pointwise/app/components/dashboard/tasks/TaskList';
 import { Button } from '@pointwise/app/components/ui/Button';
 import TaskSectionCard from './TaskSectionCard';
 import TaskDayControls from './TaskDayControls';

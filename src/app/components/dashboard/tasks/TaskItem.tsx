@@ -6,13 +6,13 @@ import {
   formatDateTime,
   formatTimePart,
   isSameDay,
-  toDate,
 } from '@pointwise/lib/datetime';
+import { getCategoryColor } from '@pointwise/lib/categories';
 
 const ACTION_LABEL: Record<DashboardTask['status'], string> = {
   'in-progress': 'Resume',
-  focus: 'Start focus session',
-  scheduled: 'Mark complete',
+  focus: 'Start focus',
+  scheduled: 'Complete',
   completed: 'Completed',
 };
 
@@ -31,8 +31,18 @@ export function getTaskScheduleLabel(
   locale?: string,
   timeZone?: string,
 ) {
-  const safeStart = toDate(task.startAt);
-  const safeEnd = toDate(task.dueAt);
+  // Combine date and time for display
+  const safeStart = task.startDate && task.startTime
+    ? new Date(`${task.startDate}T${task.startTime}`)
+    : task.startDate
+    ? new Date(`${task.startDate}T00:00:00`)
+    : null;
+
+  const safeEnd = task.dueDate && task.dueTime
+    ? new Date(`${task.dueDate}T${task.dueTime}`)
+    : task.dueDate
+    ? new Date(`${task.dueDate}T23:59:59`)
+    : null;
 
   if (!safeStart && !safeEnd) return null;
 
@@ -74,7 +84,7 @@ export default function TaskItem({
     ? 'Completed'
     : isProcessing
       ? 'Awarding...'
-      : ACTION_LABEL[task.status];
+      : ACTION_LABEL[task.status] || 'Complete';
 
   const containerClass = [
     'group rounded-2xl border border-white/5 p-4 transition',
@@ -104,7 +114,21 @@ export default function TaskItem({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1.5">
-          <p className="text-base font-medium text-zinc-100">{task.title}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-base font-medium text-zinc-100">{task.title}</p>
+            {task.category ? (
+              <span
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border"
+                style={{
+                  backgroundColor: `${getCategoryColor(task.category)}20`,
+                  borderColor: `${getCategoryColor(task.category)}40`,
+                  color: getCategoryColor(task.category),
+                }}
+              >
+                {task.category}
+              </span>
+            ) : null}
+          </div>
           {subtitle ? (
             <p className="text-sm text-zinc-400">{subtitle}</p>
           ) : null}

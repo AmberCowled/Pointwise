@@ -14,11 +14,6 @@ export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
   fullWidth?: boolean;
 }
 
-const orientationStyles: Record<DividerOrientation, string> = {
-  horizontal: 'w-full',
-  vertical: 'h-full w-px flex-shrink-0',
-};
-
 const variantBorderStyles: Record<DividerVariant, string> = {
   subtle: 'border-white/10',
   prominent: 'border-white/20',

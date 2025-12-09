@@ -1,4 +1,4 @@
-import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
+import type { DashboardTask } from '@pointwise/app/components/dashboard/tasks/TaskList';
 import {
   DateTimeDefaults,
   addDays,
@@ -188,10 +188,22 @@ export function getAnalyticsWindow(
 export function getEffectiveCompletionDate(task: DashboardTask) {
   const completion = toDate(task.completedAt);
   if (completion) return completion;
-  const due = toDate(task.dueAt);
-  if (due) return due;
-  const start = toDate(task.startAt);
-  return start;
+
+  // Check due date/time
+  if (task.dueDate && task.dueTime) {
+    return new Date(`${task.dueDate}T${task.dueTime}`);
+  } else if (task.dueDate) {
+    return new Date(`${task.dueDate}T23:59:59`);
+  }
+
+  // Check start date/time
+  if (task.startDate && task.startTime) {
+    return new Date(`${task.startDate}T${task.startTime}`);
+  } else if (task.startDate) {
+    return new Date(`${task.startDate}T00:00:00`);
+  }
+
+  return null;
 }
 
 export function formatShortDayLabel(

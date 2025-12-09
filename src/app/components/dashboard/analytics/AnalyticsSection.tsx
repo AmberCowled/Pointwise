@@ -1,6 +1,6 @@
 'use client';
 
-import type { DashboardTask } from '../TaskList';
+import type { DashboardTask } from '../tasks/TaskList';
 import { useEffect, useId, useMemo, useState } from 'react';
 import LineChart from './LineChart';
 import useAnalyticsSeries from '@pointwise/hooks/useAnalyticsSeries';

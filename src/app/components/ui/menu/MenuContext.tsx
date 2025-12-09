@@ -62,9 +62,9 @@ export const useMenuContext = () => {
 
 // Shared style constants
 export const variantStyles: Record<MenuVariant, string> = {
-  primary: 'border-white/10 bg-zinc-900/90 shadow-indigo-500/20',
-  secondary: 'border-white/10 bg-zinc-800/90 shadow-fuchsia-500/20',
-  danger: 'border-rose-400/40 bg-zinc-900/90 shadow-rose-500/20',
+  primary: 'border-white/10 bg-zinc-900 shadow-indigo-500/20',
+  secondary: 'border-white/10 bg-zinc-800 shadow-fuchsia-500/20',
+  danger: 'border-rose-400/40 bg-zinc-900 shadow-rose-500/20',
 };
 
 export const sizeStyles: Record<MenuSize, string> = {

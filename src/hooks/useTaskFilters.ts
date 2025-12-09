@@ -1,14 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
+import type { DashboardTask } from '@pointwise/app/components/dashboard/tasks/TaskList';
 import type { TaskBoardViewMode } from '@pointwise/app/components/dashboard/task-board/types';
 import {
   addDays,
   formatDateLabel,
   getDateTimeParts,
   startOfDay,
-  toDate,
   toDateKey,
 } from '@pointwise/lib/datetime';
 
@@ -54,16 +53,45 @@ export function useTaskFilters(
     const rangeStartMs = rangeStart.getTime();
     const rangeEndMs = rangeEnd.getTime();
     return stableTasks.filter((task) => {
-      if (task.completed) return false;
-      const rawStart = toDate(task.startAt);
-      const rawEnd = toDate(task.dueAt);
-      if (!rawStart && !rawEnd) return false;
+      const {startDate, dueDate, startTime, dueTime, completed} = task;
+      if (completed) return false;
 
-      const taskStartMs =
-        rawStart?.getTime() ?? rawEnd?.getTime() ?? Number.NEGATIVE_INFINITY;
-      const taskEndMs =
-        rawEnd?.getTime() ??
-        (rawStart ? rawStart.getTime() : Number.POSITIVE_INFINITY);
+      // A task is scheduled if it has both date and time
+      // const hasStartDateTime = task.startDate;
+      // const hasDueDateTime = task.dueDate;
+
+      if (!startDate && !dueDate) return false;
+
+      // Convert to Date objects for comparison
+      const rawStart = startDate ? new Date(`${startDate}Z`) : null;
+      const rawEnd = dueDate ? new Date(`${dueDate}Z`) : null;
+
+      const taskStartMs = rawStart?.getTime() ?? rawEnd?.getTime() ?? Number.NEGATIVE_INFINITY;
+
+      // For tasks with only start date/time, treat them as spanning the entire start date
+      // For tasks with due date/time, use the due time as the end
+      // If dueDate exists but no dueTime, treat it as spanning the entire day
+      let taskEndMs: number;
+      if (rawEnd) {
+        // If task has dueTime, use the exact time; otherwise treat as end of day
+        if (dueTime) {
+          taskEndMs = rawEnd.getTime();
+        } else {
+          // Task has only dueDate (no dueTime): treat it as spanning the entire due date
+          // Use end of the due date to ensure it overlaps with the day view
+          const endDate = new Date(rawEnd);
+          endDate.setUTCHours(23, 59, 59, 999);
+          taskEndMs = endDate.getTime();
+        }
+      } else if (rawStart) {
+        // Task has only start date/time: treat it as spanning the entire start date
+        // Use end of the start date to ensure it overlaps with the day view
+        const startDate = new Date(rawStart);
+        startDate.setUTCHours(23, 59, 59, 999);
+        taskEndMs = startDate.getTime();
+      } else {
+        taskEndMs = Number.POSITIVE_INFINITY;
+      }
 
       // Task overlaps with range if:
       // - Task starts before range ends AND
@@ -77,9 +105,14 @@ export function useTaskFilters(
 
   const optionalTasks = useMemo(
     () =>
-      stableTasks.filter(
-        (task) => !task.completed && !task.startAt && !task.dueAt,
-      ),
+      stableTasks.filter((task) => {
+        if (task.completed) return false;
+
+        // Also include tasks with no dates at all (legacy optional tasks)
+        const hasNoDates = !task.startDate && !task.dueDate;
+
+        return hasNoDates;
+      }),
     [stableTasks],
   );
 
@@ -87,13 +120,22 @@ export function useTaskFilters(
     return stableTasks
       .filter((task) => {
         if (task.completed) return false;
-        const due = toDate(task.dueAt);
-        if (!due) return false;
-        return due.getTime() < referenceTimestamp;
+        if (!task.dueDate) return false;
+
+      // If task has due time, use that; otherwise use end of due date
+      const dueDateTime = task.dueTime
+        ? new Date(`${task.dueDate}T${task.dueTime}Z`)
+        : new Date(`${task.dueDate}T23:59:59Z`);
+
+        return dueDateTime.getTime() < referenceTimestamp;
       })
       .sort((a, b) => {
-        const aDue = toDate(a.dueAt)!.getTime();
-        const bDue = toDate(b.dueAt)!.getTime();
+        const aDue = a.dueTime
+          ? new Date(`${a.dueDate}T${a.dueTime}Z`).getTime()
+          : new Date(`${a.dueDate}T23:59:59Z`).getTime();
+        const bDue = b.dueTime
+          ? new Date(`${b.dueDate}T${b.dueTime}Z`).getTime()
+          : new Date(`${b.dueDate}T23:59:59Z`).getTime();
         return aDue - bDue;
       });
   }, [referenceTimestamp, stableTasks]);

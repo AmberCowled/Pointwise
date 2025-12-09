@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import TaskItem, { getTaskScheduleLabel } from './TaskItem';
 import type { DashboardTask } from './TaskList';
-import { Button } from '../ui/Button';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '../ui/modals';
+import { Button } from '../../ui/Button';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '../../ui/modals';
+import { Spinner } from '../../ui/Spinner';
 import { DateTimeDefaults } from '@pointwise/lib/datetime';
 
 type DeleteMode = 'single' | 'all';
@@ -13,10 +14,11 @@ type TaskManageModalProps = {
   open: boolean;
   task: DashboardTask | null;
   onClose: () => void;
-  onEdit?: (task: DashboardTask) => void;
+  onEdit?: (task: DashboardTask, scope: 'single' | 'series') => Promise<void> | void;
   onDelete?: (task: DashboardTask, mode: DeleteMode) => void;
   onComplete?: (task: DashboardTask) => Promise<void> | void;
   isCompleting?: boolean;
+  isEditing?: boolean;
   locale?: string | null;
   timeZone?: string | null;
 };
@@ -29,11 +31,14 @@ export default function TaskManageModal({
   onDelete,
   onComplete,
   isCompleting = false,
+  isEditing = false,
   locale,
   timeZone,
 }: TaskManageModalProps) {
   const isRecurring = Boolean(task?.sourceRecurringTaskId);
   const [localBusy, setLocalBusy] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<DeleteMode>('single');
   const activeLocale = locale ?? DateTimeDefaults.locale;
   const activeTimeZone = timeZone ?? DateTimeDefaults.timeZone;
 
@@ -46,6 +51,23 @@ export default function TaskManageModal({
     } finally {
       setLocalBusy(false);
     }
+  };
+
+  const handleDeleteClick = (mode: DeleteMode) => {
+    setDeleteMode(mode);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (task && onDelete) {
+      onDelete(task, deleteMode);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setDeleteMode('single');
   };
 
   return (
@@ -120,25 +142,65 @@ export default function TaskManageModal({
           ) : null}
         </div>
         <div className="flex items-center gap-3">
-          <button
-            className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white"
-            onClick={() => task && onEdit?.(task)}
-            disabled={!task}
-          >
-            Edit task
-          </button>
+          {isRecurring ? (
+            <>
+              <button
+                className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => task && onEdit?.(task, 'single')}
+                disabled={!task || isEditing}
+              >
+                {isEditing ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner size="sm" />
+                    Loading...
+                  </span>
+                ) : (
+                  'Edit task'
+                )}
+              </button>
+              <button
+                className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => task && onEdit?.(task, 'series')}
+                disabled={!task || isEditing}
+              >
+                {isEditing ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner size="sm" />
+                    Loading...
+                  </span>
+                ) : (
+                  'Edit series'
+                )}
+              </button>
+            </>
+          ) : (
+            <button
+              className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-indigo-400/60 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => task && onEdit?.(task, 'single')}
+              disabled={!task || isEditing}
+            >
+              {isEditing ? (
+                <span className="flex items-center gap-2">
+                  <Spinner size="sm" />
+                  Loading...
+                </span>
+              ) : (
+                'Edit task'
+              )}
+            </button>
+          )}
           {isRecurring ? (
             <div className="flex items-center gap-2">
               <button
                 className="rounded-full border border-rose-400/40 px-4 py-2 text-sm font-medium text-rose-200 transition hover:bg-rose-500/20 hover:text-white"
-                onClick={() => task && onDelete?.(task, 'single')}
+                onClick={() => handleDeleteClick('single')}
                 disabled={!task}
               >
-                Delete once
+                Delete task
               </button>
               <button
                 className="rounded-full border border-rose-500/40 px-4 py-2 text-sm font-medium text-rose-300 transition hover:bg-rose-500/30 hover:text-white"
-                onClick={() => task && onDelete?.(task, 'all')}
+                onClick={() => handleDeleteClick('all')}
                 disabled={!task}
               >
                 Delete series
@@ -147,7 +209,7 @@ export default function TaskManageModal({
           ) : (
             <button
               className="rounded-full border border-rose-400/40 px-4 py-2 text-sm font-medium text-rose-300 transition hover:bg-rose-500/20 hover:text-white"
-              onClick={() => task && onDelete?.(task, 'single')}
+              onClick={() => handleDeleteClick('single')}
               disabled={!task}
             >
               Delete task
@@ -155,6 +217,39 @@ export default function TaskManageModal({
           )}
         </div>
       </ModalFooter>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={showDeleteConfirm}
+        onClose={handleDeleteCancel}
+        size="sm"
+        zIndex={60}
+      >
+        <ModalHeader
+          title={deleteMode === 'all' ? 'Delete series?' : 'Delete task?'}
+          subtitle={
+            deleteMode === 'all'
+              ? 'This will permanently delete all tasks in this series. This action cannot be undone.'
+              : 'This will permanently delete this task. This action cannot be undone.'
+          }
+          showCloseButton
+          onClose={handleDeleteCancel}
+        />
+        <ModalFooter align="end">
+          <button
+            className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-zinc-400/60 hover:text-white"
+            onClick={handleDeleteCancel}
+          >
+            Cancel
+          </button>
+          <button
+            className="rounded-full border border-rose-500/40 px-4 py-2 text-sm font-medium text-rose-300 transition hover:bg-rose-500/30 hover:text-white"
+            onClick={handleDeleteConfirm}
+          >
+            Delete
+          </button>
+        </ModalFooter>
+      </Modal>
     </Modal>
   );
 }

@@ -2,17 +2,15 @@ import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import BackgroundGlow from '@pointwise/app/components/general/BackgroundGlow';
-import DashboardPageClient from './DashboardPageClient';
-import { type DashboardTask } from '@pointwise/app/components/dashboard/TaskList';
+import { ProjectsOverview } from '@pointwise/app/components/dashboard/ProjectsOverview';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
-import { levelFromXp } from '@pointwise/lib/xp';
-import { buildAnalyticsSnapshot } from '@pointwise/lib/analytics';
 import {
   DateTimeDefaults,
   formatDateLabel,
   startOfDay,
 } from '@pointwise/lib/datetime';
+import { levelFromXp } from '@pointwise/lib/xp';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +20,6 @@ export default async function DashboardPage() {
   if (!session) {
     redirect('/');
   }
-
-  const headerStore = await headers();
-  const cookieStore = await cookies();
 
   const displayName =
     session.user?.name?.split(' ')[0] ?? session.user?.email ?? 'Adventurer';
@@ -45,8 +40,10 @@ export default async function DashboardPage() {
     redirect('/');
   }
 
+  // Get locale and timezone for date formatting
   const headerLocale =
-    headerStore.get('accept-language')?.split(',')[0]?.trim() ?? undefined;
+    (await headers()).get('accept-language')?.split(',')[0]?.trim() ?? undefined;
+  const cookieStore = await cookies();
   const cookieLocale = cookieStore.get('pw-locale')?.value;
   const cookieTimeZone = cookieStore.get('pw-timezone')?.value;
 
@@ -62,49 +59,10 @@ export default async function DashboardPage() {
   const todayStart = startOfDay(now, timeZone);
   const today = formatDateLabel(todayStart, locale, timeZone);
 
+  // Calculate XP and level
   const totalXp = userRecord.xp ?? 0;
   const { level, progress, xpIntoLevel, xpToNext } = levelFromXp(totalXp);
   const xpRemaining = Math.max(0, xpToNext - xpIntoLevel);
-
-  const profile = {
-    level,
-    totalXp,
-    xpIntoLevel,
-    xpToNext,
-    xpRemaining,
-    progress,
-    // Streak will be implemented in a future update
-    // streak: calculateStreak(tasks, timeZone),
-    title: 'Momentum Builder',
-  };
-
-  const tasksFromDb = await prisma.task.findMany({
-    where: {
-      userId: userRecord.id,
-    },
-    orderBy: [{ startAt: 'asc' }, { dueAt: 'asc' }, { createdAt: 'asc' }],
-  });
-
-  const tasks: DashboardTask[] = tasksFromDb.map((task) => ({
-    id: task.id,
-    title: task.title,
-    context: task.description,
-    category: task.category,
-    xp: task.xpValue ?? 0,
-    status: task.completedAt ? 'completed' : 'scheduled',
-    completed: Boolean(task.completedAt),
-    startAt: task.startAt ? task.startAt.toISOString() : null,
-    dueAt: task.dueAt ? task.dueAt.toISOString() : null,
-    completedAt: task.completedAt ? task.completedAt.toISOString() : null,
-    sourceRecurringTaskId: task.sourceRecurringTaskId,
-  }));
-
-  const initialAnalytics = buildAnalyticsSnapshot(
-    tasks,
-    '7d',
-    locale,
-    timeZone,
-  );
 
   const initials =
     session.user?.name
@@ -118,17 +76,16 @@ export default async function DashboardPage() {
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
       <BackgroundGlow />
-      <DashboardPageClient
-        today={today}
+      <ProjectsOverview
+        userId={userRecord.id}
         displayName={displayName}
         initials={initials}
-        tasks={tasks}
-        profile={profile}
-        locale={locale}
-        timeZone={timeZone}
-        initialAnalytics={initialAnalytics}
-        initialSelectedDateMs={todayStart.getTime()}
-        initialNowMs={now.getTime()}
+        today={today}
+        level={level}
+        xpRemaining={xpRemaining}
+        progress={progress}
+        xpIntoLevel={xpIntoLevel}
+        xpToNext={xpToNext}
       />
     </div>
   );

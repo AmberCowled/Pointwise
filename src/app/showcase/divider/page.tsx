@@ -57,7 +57,7 @@ export default function DividerShowcasePage() {
           <div className="space-y-6">
             <div>
               <p className="text-sm text-zinc-400 mb-2">
-                Subtle with "or" label
+                Subtle with &quot;or&quot; label
               </p>
               <div className="bg-zinc-900/40 p-4 rounded-lg">
                 <p className="text-sm text-zinc-300 mb-4">Sign in with email</p>
