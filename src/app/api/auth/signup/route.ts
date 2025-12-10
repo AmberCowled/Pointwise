@@ -10,7 +10,7 @@ import {
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const rawBody = await req.json().catch(() => ({}));
     const parsed = parseSignupBody(rawBody);
     if (!parsed.success) {

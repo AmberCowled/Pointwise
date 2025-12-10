@@ -13,6 +13,8 @@ import type {
 } from '@pointwise/lib/api/types';
 import { mergeTasks } from '@pointwise/lib/tasks';
 import { useProject } from '@pointwise/contexts/ProjectContext';
+import { xpApi } from '@pointwise/lib/redux/services/xpApi';
+import { useAppDispatch } from '@pointwise/lib/redux/hooks';
 
 export interface UseTaskOperationsOptions {
   // API methods
@@ -36,15 +38,6 @@ export interface UseTaskOperationsOptions {
   closeManageModal?: () => void;
   setCreateError?: (error: string | null) => void;
   setIsCreating?: (loading: boolean) => void;
-
-  // XP state (for complete operation)
-  updateXpFromSnapshot?: (snapshot: {
-    level: number;
-    totalXp: number;
-    xpIntoLevel?: number;
-    xpToNext?: number;
-    progress?: number;
-  }) => void;
 
   // Editor state (needed for submit)
   editorMode?: 'create' | 'edit';
@@ -81,19 +74,16 @@ export function useTaskOperations(
     closeManageModal,
     setCreateError,
     setIsCreating,
-    updateXpFromSnapshot,
     editorMode = 'create',
     editScope = 'single',
   } = options;
 
+  // Redux dispatch for XP updates
+  const dispatch = useAppDispatch();
+
   // Get current project from context
   const { currentProjectId, currentProject } = useProject();
 
-  console.log('🔍 useTaskOperations - Project Context:', {
-    currentProjectId,
-    currentProjectName: currentProject?.name,
-    hasContext: !!currentProjectId,
-  });
 
   const [completingId, setCompletingId] = useState<string | null>(null);
 
@@ -109,7 +99,6 @@ export function useTaskOperations(
   const handleSubmitTask = useCallback(
     async (values: TaskFormValues) => {
       if (!createTask || !updateTask) {
-        console.warn('Task operations not available');
         return;
       }
 
@@ -164,26 +153,7 @@ export function useTaskOperations(
             }
           }
 
-          console.log('[useTaskOperations] Sending update to API:', {
-            taskId: values.id,
-            apiScope,
-            isConvertingToRecurring,
-            isConvertingToOneTime,
-            recurrence: updatePayload.recurrence,
-            valuesRecurrence: values.recurrence,
-            editScope,
-            updatePayloadKeys: Object.keys(updatePayload),
-          });
-
           const payload = await updateTask(values.id, updatePayload, apiScope);
-          
-          console.log('[useTaskOperations] API response:', {
-            hasTask: !!payload.task,
-            hasTasks: !!payload.tasks,
-            taskId: payload.task?.id,
-            tasksCount: payload.tasks?.length,
-            taskSourceRecurringTaskId: payload.task?.sourceRecurringTaskId,
-          });
 
           // Handle response - simplified logic
           if (payload.task) {
@@ -229,7 +199,6 @@ export function useTaskOperations(
             throw new Error('No project selected. Please select a project to create tasks.');
           }
 
-          console.log('🎯 Creating task with projectId:', currentProjectId);
 
           const payload = await createTask({
             projectId: currentProjectId,
@@ -247,7 +216,6 @@ export function useTaskOperations(
             timesOfDay: (values.timesOfDay ?? []).filter(Boolean),
           });
 
-          console.log('✅ Task created:', payload);
 
           if (Array.isArray(payload.tasks)) {
             setTaskItems((prev) => mergeTasks(prev, payload.tasks as any));
@@ -290,7 +258,7 @@ export function useTaskOperations(
       closeManageModal,
       setCreateError,
       setIsCreating,
-      updateXpFromSnapshot,
+      currentProjectId,
     ],
   );
 
@@ -298,7 +266,6 @@ export function useTaskOperations(
   const handleDeleteTask = useCallback(
     async (task: DashboardTask, scope: 'single' | 'all') => {
       if (!deleteTask) {
-        console.warn('Delete task operation not available');
         return;
       }
 
@@ -329,14 +296,17 @@ export function useTaskOperations(
           setTaskItems((prev) => mergeTasks(prev, [payload.task as DashboardTask]));
         }
 
-        if (payload.xp && updateXpFromSnapshot) {
-          updateXpFromSnapshot(payload.xp);
+        // Update XP cache with the response data
+        if (payload.xp) {
+          dispatch(xpApi.util.updateQueryData('getXP', undefined, (draft) => {
+            draft.xp = payload.xp;
+          }));
         }
       } catch {
         // API client handles error notifications automatically
       }
     },
-    [completeTask, setTaskItems, updateXpFromSnapshot],
+    [completeTask, setTaskItems, dispatch],
   );
 
   // Handle complete with loading state tracking

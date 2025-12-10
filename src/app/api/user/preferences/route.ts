@@ -12,7 +12,7 @@ import {
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
 export async function POST(request: Request) {
-  return handleRoute(async () => {
+  return handleRoute(request, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 

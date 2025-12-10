@@ -16,7 +16,7 @@ import {
 } from '@pointwise/lib/api/project-access';
 
 export async function POST(req: Request) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return errorResponse('Unauthorized', 401);

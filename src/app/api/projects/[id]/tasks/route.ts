@@ -24,7 +24,7 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
