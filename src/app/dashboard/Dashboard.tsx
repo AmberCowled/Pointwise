@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Navbar from '@pointwise/app/components/dashboard/navbar/Navbar';
 import type { DashboardTask } from '@pointwise/app/components/dashboard/tasks/TaskList';
 import TaskCreateModal from '@pointwise/app/components/dashboard/tasks/TaskCreateModal';
@@ -11,7 +11,6 @@ import type { TaskBoardViewMode } from '@pointwise/app/components/dashboard/task
 import { useTaskFilters } from '@pointwise/hooks/useTaskFilters';
 import { useUserPreferences } from '@pointwise/hooks/useUserPreferences';
 import { useDateSettings } from '@pointwise/hooks/useDateSettings';
-import { useXpState } from '@pointwise/hooks/useXpState';
 import { useTaskModals } from '@pointwise/hooks/tasks/useTaskModals';
 import { useTaskOperations } from '@pointwise/hooks/tasks/useTaskOperations';
 import { useTaskSearch } from '@pointwise/hooks/tasks/useTaskSearch';
@@ -20,6 +19,7 @@ import { useRecurringTaskInstances } from '@pointwise/hooks/tasks/useRecurringTa
 import type { AnalyticsSnapshot } from '@pointwise/lib/analytics';
 import { useApi } from '@pointwise/lib/api';
 import type { ProfileSnapshot } from '@pointwise/app/components/dashboard/types';
+import { useGetXPQuery } from '@pointwise/lib/redux/services/xpApi';
 
 type DashboardProps = {
   today: string;
@@ -59,15 +59,8 @@ export default function Dashboard({
   const [searchQuery, setSearchQuery] = useState('');
   const api = useApi();
 
-  // Use XP state hook
-  const { xpState, updateXpFromSnapshot } = useXpState({
-    initialLevel: profile.level,
-    initialTotalXp: profile.totalXp,
-    initialXpIntoLevel: profile.xpIntoLevel,
-    initialXpToNext: profile.xpToNext,
-    initialXpRemaining: profile.xpRemaining,
-    initialProgress: profile.progress,
-  });
+  // Fetch XP from RTK Query - cache handles everything
+  const { error: xpError, refetch: refetchXP } = useGetXPQuery();
 
   // Use preference management hook
   const { locale: formatLocale, timeZone: formatTimeZone } = useUserPreferences({
@@ -128,7 +121,6 @@ export default function Dashboard({
     closeManageModal,
     setCreateError,
     setIsCreating,
-    updateXpFromSnapshot,
     editorMode,
     editScope,
   });
@@ -199,15 +191,12 @@ export default function Dashboard({
     <>
       <Navbar
         initials={initials}
-        level={xpState.level}
-        xpRemaining={xpState.xpRemaining}
-        progress={xpState.progress}
         streak={profile.streak}
-        xpIntoLevel={xpState.xpIntoLevel}
-        xpToNext={xpState.xpToNext}
         locale={formatLocale}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        xpError={xpError}
+        onRetryXP={refetchXP}
       />
 
       <TaskCreateModal

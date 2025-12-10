@@ -10,7 +10,6 @@ import {
   formatDateLabel,
   startOfDay,
 } from '@pointwise/lib/datetime';
-import { levelFromXp } from '@pointwise/lib/xp';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +28,6 @@ export default async function DashboardPage() {
         where: { email: session.user.email },
         select: {
           id: true,
-          xp: true,
           preferredLocale: true,
           preferredTimeZone: true,
         },
@@ -59,11 +57,6 @@ export default async function DashboardPage() {
   const todayStart = startOfDay(now, timeZone);
   const today = formatDateLabel(todayStart, locale, timeZone);
 
-  // Calculate XP and level
-  const totalXp = userRecord.xp ?? 0;
-  const { level, progress, xpIntoLevel, xpToNext } = levelFromXp(totalXp);
-  const xpRemaining = Math.max(0, xpToNext - xpIntoLevel);
-
   const initials =
     session.user?.name
       ?.split(' ')
@@ -81,11 +74,6 @@ export default async function DashboardPage() {
         displayName={displayName}
         initials={initials}
         today={today}
-        level={level}
-        xpRemaining={xpRemaining}
-        progress={progress}
-        xpIntoLevel={xpIntoLevel}
-        xpToNext={xpToNext}
       />
     </div>
   );

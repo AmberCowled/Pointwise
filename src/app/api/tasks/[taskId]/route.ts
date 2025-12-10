@@ -26,7 +26,7 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ taskId: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     if (!email) {
@@ -177,7 +177,7 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ taskId: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     if (!email) {

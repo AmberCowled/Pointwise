@@ -27,10 +27,10 @@ import {
  * Get project details (requires access to project)
  */
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     
@@ -80,7 +80,7 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     
@@ -154,10 +154,10 @@ export async function PATCH(
  * Delete project (admin only)
  */
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     

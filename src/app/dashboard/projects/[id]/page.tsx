@@ -7,7 +7,6 @@ import { ProjectProvider } from '@pointwise/contexts/ProjectContext';
 import { type DashboardTask } from '@pointwise/app/components/dashboard/tasks/TaskList';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
-import { levelFromXp } from '@pointwise/lib/xp';
 import { buildAnalyticsSnapshot } from '@pointwise/lib/analytics';
 import {
   DateTimeDefaults,
@@ -41,7 +40,6 @@ export default async function ProjectDetailPage({
         where: { email: session.user.email },
         select: {
           id: true,
-          xp: true,
           preferredLocale: true,
           preferredTimeZone: true,
         },
@@ -89,17 +87,7 @@ export default async function ProjectDetailPage({
   const todayStart = startOfDay(now, timeZone);
   const today = formatDateLabel(todayStart, locale, timeZone);
 
-  const totalXp = userRecord.xp ?? 0;
-  const { level, progress, xpIntoLevel, xpToNext } = levelFromXp(totalXp);
-  const xpRemaining = Math.max(0, xpToNext - xpIntoLevel);
-
   const profile = {
-    level,
-    totalXp,
-    xpIntoLevel,
-    xpToNext,
-    xpRemaining,
-    progress,
     title: 'Momentum Builder',
   };
 
@@ -135,13 +123,6 @@ export default async function ProjectDetailPage({
       createdAt: true,
       updatedAt: true,
     },
-  });
-
-  console.log('📊 Project Detail Page - Tasks Loaded:', {
-    projectId,
-    projectName: project.name,
-    tasksCount: tasksFromDb.length,
-    taskIds: tasksFromDb.map(t => t.id),
   });
 
   const tasks: DashboardTask[] = tasksFromDb.map((task) => {

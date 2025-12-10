@@ -28,7 +28,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string; userId: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
@@ -129,10 +129,10 @@ export async function POST(
  * Reject a join request or cancel own request
  */
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string; userId: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 

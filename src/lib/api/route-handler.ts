@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
+import * as z from 'zod';
 
 /**
  * Options for route handler
@@ -20,25 +21,43 @@ export interface RouteHandlerOptions {
 }
 
 /**
- * Handle API route with consistent error handling
+ * Handle API route with consistent error handling and optional validation
  *
  * @example
  * ```typescript
- * export async function POST(req: Request) {
- *   return handleRoute(async () => {
- *     const data = await req.json();
- *     // ... route logic ...
- *     return NextResponse.json({ result: data });
+ * // Without validation
+ * export async function GET(req: Request) {
+ *   return handleRoute(req, async ({ req }) => {
+ *     const data = await getSomeData();
+ *     return jsonResponse({ data });
  *   });
+ * }
+ * 
+ * // With validation
+ * export async function POST(req: Request) {
+ *   return handleRoute(req, async ({ body }) => {
+ *     // body is typed and validated
+ *     return jsonResponse({ result: body });
+ *   }, CreateItemSchema);
  * }
  * ```
  */
-export async function handleRoute<T>(
-  handler: () => Promise<NextResponse<T>>,
+export async function handleRoute<TBody = unknown, TQuery = unknown, TResponse = unknown>(
+  req: Request,
+  handler: (context: RouteContext<TBody, TQuery>) => Promise<NextResponse<TResponse>>,
+  schema?: z.ZodSchema<TBody | TQuery>,
   options: RouteHandlerOptions = {},
 ): Promise<NextResponse> {
   try {
-    return await handler();
+    // Parse and validate request if schema provided
+    const { body, query } = await parseAndValidateRequest(req, schema);
+    
+    // Call handler with context
+    return await handler({
+      body: body as TBody,
+      query: query as TQuery,
+      req,
+    });
   } catch (error) {
     // Allow custom error handler to override
     if (options.onError) {
@@ -85,6 +104,32 @@ export async function handleRoute<T>(
       console.error('Prisma Validation Error:', error.message);
       return NextResponse.json(
         { error: 'Invalid data provided' },
+        { status: 400 },
+      );
+    }
+
+    // Handle Zod validation errors
+    if (error instanceof ValidationError) {
+      if (error.zodError) {
+        // Format Zod errors for client
+        const formattedErrors = error.zodError.issues.map((err: z.ZodIssue) => ({
+          path: err.path.join('.'),
+          message: err.message,
+        }));
+        
+        console.error('Validation Error:', formattedErrors);
+        
+        return NextResponse.json(
+          { 
+            error: 'Validation failed',
+            details: formattedErrors,
+          },
+          { status: 400 },
+        );
+      }
+      
+      return NextResponse.json(
+        { error: error.message },
         { status: 400 },
       );
     }
@@ -140,9 +185,100 @@ export function errorResponse(
 }
 
 /**
+ * HTTP methods that use query parameters
+ */
+const QUERY_METHODS = ['GET', 'DELETE', 'HEAD', 'OPTIONS'] as const;
+
+/**
+ * HTTP methods that use request body
+ */
+const BODY_METHODS = ['POST', 'PATCH', 'PUT'] as const;
+
+/**
+ * Parse and validate request data based on HTTP method
+ */
+async function parseAndValidateRequest<T>(
+  req: Request,
+  schema?: z.ZodSchema<T>,
+): Promise<{ body?: T; query?: T }> {
+  const method = req.method.toUpperCase();
+  
+  // Determine if we should parse query or body
+  const isQueryMethod = QUERY_METHODS.includes(method as any);
+  
+  if (isQueryMethod) {
+    // Parse query parameters
+    if (!schema) {
+      return { query: {} as T };
+    }
+    
+    const url = new URL(req.url);
+    const params: Record<string, any> = {};
+    
+    url.searchParams.forEach((value, key) => {
+      // Attempt to parse numbers
+      const numValue = Number(value);
+      params[key] = isNaN(numValue) ? value : numValue;
+    });
+    
+    const result = schema.safeParse(params);
+    if (!result.success) {
+      throw new ValidationError(result.error);
+    }
+    
+    return { query: result.data };
+  } else {
+    // Parse request body
+    if (!schema) {
+      return { body: {} as T };
+    }
+    
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch (error) {
+      throw new ValidationError('Invalid JSON in request body');
+    }
+    
+    const result = schema.safeParse(body);
+    if (!result.success) {
+      throw new ValidationError(result.error);
+    }
+    
+    return { body: result.data };
+  }
+}
+
+/**
+ * Custom validation error class
+ */
+class ValidationError extends Error {
+  public zodError?: z.ZodError;
+  
+  constructor(error: string | z.ZodError) {
+    if (typeof error === 'string') {
+      super(error);
+    } else {
+      super('Validation failed');
+      this.zodError = error;
+    }
+    this.name = 'ValidationError';
+  }
+}
+
+/**
+ * Base context passed to route handlers
+ */
+export interface RouteContext<TBody = unknown, TQuery = unknown> {
+  body?: TBody;
+  query?: TQuery;
+  req: Request;
+}
+
+/**
  * Authenticated user context passed to protected route handlers
  */
-export interface AuthContext {
+export interface AuthContext<TBody = unknown, TQuery = unknown> extends RouteContext<TBody, TQuery> {
   user: {
     id: string;
     email: string;
@@ -151,31 +287,42 @@ export interface AuthContext {
 }
 
 /**
- * Handle API route that requires authentication
+ * Handle API route that requires authentication with optional validation
  * 
  * Automatically handles:
  * - Session verification
  * - User lookup from database
+ * - Request validation (if schema provided)
  * - Returns 401 if not authenticated
  * - Returns 404 if user not found
+ * - Returns 400 if validation fails
  * 
  * @example
  * ```typescript
- * export async function GET() {
- *   return handleProtectedRoute(async ({ user }) => {
- *     // user is guaranteed to exist here with id, email, and name
- *     const projects = await prisma.project.findMany({
- *       where: { adminUserIds: { has: user.id } }
- *     });
- *     return jsonResponse({ projects });
+ * // Without validation
+ * export async function GET(req: Request) {
+ *   return handleProtectedRoute(req, async ({ user }) => {
+ *     const xp = await getXP(user.id);
+ *     return jsonResponse({ xp });
  *   });
+ * }
+ * 
+ * // With validation
+ * export async function PATCH(req: Request) {
+ *   return handleProtectedRoute(req, async ({ user, body }) => {
+ *     // body is typed and validated
+ *     const xp = await updateXP(user.id, body.delta);
+ *     return jsonResponse({ xp });
+ *   }, UpdateXPRequestSchema);
  * }
  * ```
  */
-export async function handleProtectedRoute<T>(
-  handler: (context: AuthContext) => Promise<NextResponse<T>>,
+export async function handleProtectedRoute<TBody = unknown, TQuery = unknown, TResponse = unknown>(
+  req: Request,
+  handler: (context: AuthContext<TBody, TQuery>) => Promise<NextResponse<TResponse>>,
+  schema?: z.ZodSchema<TBody | TQuery>,
 ): Promise<NextResponse> {
-  return handleRoute(async () => {
+  return handleRoute(req, async ({ body, query, req: request }) => {
     // 1. Get session
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
@@ -198,7 +345,7 @@ export async function handleProtectedRoute<T>(
       return errorResponse('User not found', 404);
     }
 
-    // 3. Call handler with authenticated user context
+    // 3. Call handler with authenticated user context and validated data
     // Type assertion: we know email is string because we checked above
     return handler({
       user: {
@@ -206,6 +353,9 @@ export async function handleProtectedRoute<T>(
         email: user.email,
         name: user.name,
       },
+      body: body as TBody,
+      query: query as TQuery,
+      req: request,
     });
-  });
+  }, schema);
 }

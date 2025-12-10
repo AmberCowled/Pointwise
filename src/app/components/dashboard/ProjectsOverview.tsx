@@ -15,17 +15,13 @@ import { Button } from '@pointwise/app/components/ui/Button';
 import { Card } from '@pointwise/app/components/ui/Card';
 import Navbar from '@pointwise/app/components/dashboard/navbar/Navbar';
 import type { ProjectWithRole } from '@pointwise/lib/api/types';
+import { useGetXPQuery } from '@pointwise/lib/redux/services/xpApi';
 
 interface ProjectsOverviewProps {
   userId: string;
   displayName: string;
   initials: string;
   today: string;
-  level: number;
-  xpRemaining: number;
-  progress: number;
-  xpIntoLevel: number;
-  xpToNext: number;
 }
 
 export function ProjectsOverview({
@@ -33,11 +29,6 @@ export function ProjectsOverview({
   displayName,
   initials,
   today,
-  level,
-  xpRemaining,
-  progress,
-  xpIntoLevel,
-  xpToNext,
 }: ProjectsOverviewProps) {
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectWithRole[]>([]);
@@ -46,6 +37,9 @@ export function ProjectsOverview({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+
+  // Fetch XP from RTK Query - cache handles everything
+  const { error: xpError, refetch: refetchXP } = useGetXPQuery();
 
   // Fetch projects from API
   const fetchProjects = async (showLoading = false) => {
@@ -107,11 +101,8 @@ export function ProjectsOverview({
       {/* Use existing Navbar component */}
       <Navbar
         initials={initials}
-        level={level}
-        xpRemaining={xpRemaining}
-        progress={progress}
-        xpIntoLevel={xpIntoLevel}
-        xpToNext={xpToNext}
+        xpError={xpError}
+        onRetryXP={refetchXP}
       />
 
       {/* Main Content */}
@@ -157,7 +148,7 @@ export function ProjectsOverview({
                     variant="secondary"
                     size="sm"
                     onClick={refetchProjects}
-                    className="mt-2"
+                    className="mx-2"
                   >
                     Try Again
                   </Button>

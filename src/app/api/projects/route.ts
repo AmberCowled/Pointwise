@@ -21,8 +21,8 @@ import { serializeProject } from '@pointwise/lib/api/project-access';
  * GET /api/projects
  * List all projects the user has access to
  */
-export async function GET() {
-  return handleRoute(async () => {
+export async function GET(req: Request) {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     
@@ -65,7 +65,7 @@ export async function GET() {
  * Create a new project
  */
 export async function POST(req: Request) {
-  return handleRoute(async () => {
+  return handleRoute(req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     

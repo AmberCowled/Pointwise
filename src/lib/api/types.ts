@@ -164,16 +164,30 @@ export interface UpdateTaskResponse {
   tasks?: Task[];
 }
 
+// XP type
+export interface XP {
+  value: number;        // current XP (totalXp)
+  lv: number;           // current level
+  toNextLv: number;     // XP needed to reach next level
+  nextLvAt: number;     // total XP at which next level is reached
+  lvStartXP: number;    // total XP at which current level started
+  progress: number;     // 0-1 ratio for progress bar
+}
+
+// XP get response
+export interface GetXPResponse {
+  xp: XP;
+}
+
+// XP update request
+export interface UpdateXPRequest {
+  delta: number;
+}
+
 // Task complete response (includes updated task and XP snapshot)
 export interface CompleteTaskResponse {
   task: Task;
-  xp: {
-    level: number;
-    totalXp: number;
-    progress: number;
-    xpIntoLevel: number;
-    xpToNext: number;
-  };
+  xp: XP;
 }
 
 // Task delete response

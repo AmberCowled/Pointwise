@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
-import { levelFromXp } from '@pointwise/lib/xp';
+import { updateXP, serializeXP } from '@pointwise/lib/xp';
 import {
   handleRoute,
   errorResponse,
@@ -18,7 +18,7 @@ export async function POST(
   _req: Request,
   { params }: { params: Promise<{ taskId: string }> },
 ) {
-  return handleRoute(async () => {
+  return handleRoute(_req, async () => {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     if (!email) {
@@ -100,7 +100,6 @@ export async function POST(
       }
 
       let updatedTask = task;
-      let nextXp = currentUser.xp ?? 0;
       const xpIncrement = Math.max(0, task.xpValue ?? 0);
 
       if (!task.completedAt) {
@@ -111,20 +110,29 @@ export async function POST(
             status: 'completed' as any,
           } as any,
         });
-        nextXp = nextXp + xpIncrement;
-        await tx.user.update({
-          where: { id: currentUser.id },
-          data: { xp: nextXp },
-        });
+        
+        // Use the XP update function for single source of truth
+        // Pass transaction client to maintain atomicity
+        const nextXp = await updateXP(currentUser.id, xpIncrement, tx);
+        const xpSnapshot = serializeXP(nextXp);
+        
+        return {
+          status: 200 as const,
+          task: serializeTask(updatedTask as any),
+          xpSnapshot,
+          totalXp: nextXp,
+        };
       }
 
-      const xpSnapshot = levelFromXp(nextXp);
+      // Task already completed, return current XP
+      const currentXp = currentUser.xp ?? 0;
+      const xpSnapshot = serializeXP(currentXp);
 
       return {
         status: 200 as const,
         task: serializeTask(updatedTask as any),
         xpSnapshot,
-        totalXp: nextXp,
+        totalXp: currentXp,
       };
     });
 
