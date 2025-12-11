@@ -1,5 +1,5 @@
 import prisma from '@pointwise/lib/prisma';
-import type { XP } from '@pointwise/lib/api/types';
+import type { XP, UpdateXPRequest } from '@pointwise/lib/api/types';
 
 type XpCurve = { BASE: number; GROWTH: number; version: string };
 
@@ -50,7 +50,7 @@ function calculateLevelFromXp(totalXp: number) {
 
 /**
  * Get XP data for a user by ID
- * 
+ *
  * @param userId - User ID to fetch XP for
  * @returns XP data with level, progress, and related values
  */
@@ -66,21 +66,24 @@ export async function getXP(userId: string): Promise<number> {
 
 /**
  * Update XP for a user by ID
- * 
+ *
  * @param userId - User ID to update XP for
  * @param delta - Amount to increment XP by
  * @param tx - Optional transaction client (for use within transactions)
  * @returns Updated XP value
  */
 export async function updateXP(
-  userId: string, 
-  delta: number,
-  tx?: Omit<typeof prisma, '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'>
+  userId: string,
+  request: UpdateXPRequest,
+  tx?: Omit<
+    typeof prisma,
+    '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'
+  >,
 ): Promise<number> {
   const client = (tx || prisma) as typeof prisma;
   const result = await client.user.update({
     where: { id: userId },
-    data: { xp: { increment: delta } },
+    data: { xp: { increment: request.delta } },
     select: { xp: true },
   });
   return result.xp;
@@ -88,13 +91,13 @@ export async function updateXP(
 
 /**
  * Serialize raw XP value into XP data structure
- * 
+ *
  * @param xp - Raw XP value from database
  * @returns XP data with level, progress, and related values
  */
 export function serializeXP(xp: number): XP {
   const result = calculateLevelFromXp(xp);
-  
+
   return {
     value: xp,
     lv: result.level,

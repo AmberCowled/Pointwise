@@ -32,7 +32,7 @@ export interface RouteHandlerOptions {
  *     return jsonResponse({ data });
  *   });
  * }
- * 
+ *
  * // With validation
  * export async function POST(req: Request) {
  *   return handleRoute(req, async ({ body }) => {
@@ -42,16 +42,22 @@ export interface RouteHandlerOptions {
  * }
  * ```
  */
-export async function handleRoute<TBody = unknown, TQuery = unknown, TResponse = unknown>(
+export async function handleRoute<
+  TBody = unknown,
+  TQuery = unknown,
+  TResponse = unknown,
+>(
   req: Request,
-  handler: (context: RouteContext<TBody, TQuery>) => Promise<NextResponse<TResponse>>,
+  handler: (
+    context: RouteContext<TBody, TQuery>,
+  ) => Promise<NextResponse<TResponse>>,
   schema?: z.ZodSchema<TBody | TQuery>,
   options: RouteHandlerOptions = {},
 ): Promise<NextResponse> {
   try {
     // Parse and validate request if schema provided
     const { body, query } = await parseAndValidateRequest(req, schema);
-    
+
     // Call handler with context
     return await handler({
       body: body as TBody,
@@ -112,26 +118,25 @@ export async function handleRoute<TBody = unknown, TQuery = unknown, TResponse =
     if (error instanceof ValidationError) {
       if (error.zodError) {
         // Format Zod errors for client
-        const formattedErrors = error.zodError.issues.map((err: z.ZodIssue) => ({
-          path: err.path.join('.'),
-          message: err.message,
-        }));
-        
+        const formattedErrors = error.zodError.issues.map(
+          (err: z.ZodIssue) => ({
+            path: err.path.join('.'),
+            message: err.message,
+          }),
+        );
+
         console.error('Validation Error:', formattedErrors);
-        
+
         return NextResponse.json(
-          { 
+          {
             error: 'Validation failed',
             details: formattedErrors,
           },
           { status: 400 },
         );
       }
-      
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 },
-      );
+
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     // Handle generic errors
@@ -202,49 +207,49 @@ async function parseAndValidateRequest<T>(
   schema?: z.ZodSchema<T>,
 ): Promise<{ body?: T; query?: T }> {
   const method = req.method.toUpperCase();
-  
+
   // Determine if we should parse query or body
   const isQueryMethod = QUERY_METHODS.includes(method as any);
-  
+
   if (isQueryMethod) {
     // Parse query parameters
     if (!schema) {
       return { query: {} as T };
     }
-    
+
     const url = new URL(req.url);
     const params: Record<string, any> = {};
-    
+
     url.searchParams.forEach((value, key) => {
       // Attempt to parse numbers
       const numValue = Number(value);
       params[key] = isNaN(numValue) ? value : numValue;
     });
-    
+
     const result = schema.safeParse(params);
     if (!result.success) {
       throw new ValidationError(result.error);
     }
-    
+
     return { query: result.data };
   } else {
     // Parse request body
     if (!schema) {
       return { body: {} as T };
     }
-    
+
     let body: unknown;
     try {
       body = await req.json();
     } catch (error) {
       throw new ValidationError('Invalid JSON in request body');
     }
-    
+
     const result = schema.safeParse(body);
     if (!result.success) {
       throw new ValidationError(result.error);
     }
-    
+
     return { body: result.data };
   }
 }
@@ -254,7 +259,7 @@ async function parseAndValidateRequest<T>(
  */
 class ValidationError extends Error {
   public zodError?: z.ZodError;
-  
+
   constructor(error: string | z.ZodError) {
     if (typeof error === 'string') {
       super(error);
@@ -278,7 +283,10 @@ export interface RouteContext<TBody = unknown, TQuery = unknown> {
 /**
  * Authenticated user context passed to protected route handlers
  */
-export interface AuthContext<TBody = unknown, TQuery = unknown> extends RouteContext<TBody, TQuery> {
+export interface AuthContext<
+  TBody = unknown,
+  TQuery = unknown,
+> extends RouteContext<TBody, TQuery> {
   user: {
     id: string;
     email: string;
@@ -288,7 +296,7 @@ export interface AuthContext<TBody = unknown, TQuery = unknown> extends RouteCon
 
 /**
  * Handle API route that requires authentication with optional validation
- * 
+ *
  * Automatically handles:
  * - Session verification
  * - User lookup from database
@@ -296,7 +304,7 @@ export interface AuthContext<TBody = unknown, TQuery = unknown> extends RouteCon
  * - Returns 401 if not authenticated
  * - Returns 404 if user not found
  * - Returns 400 if validation fails
- * 
+ *
  * @example
  * ```typescript
  * // Without validation
@@ -306,7 +314,7 @@ export interface AuthContext<TBody = unknown, TQuery = unknown> extends RouteCon
  *     return jsonResponse({ xp });
  *   });
  * }
- * 
+ *
  * // With validation
  * export async function PATCH(req: Request) {
  *   return handleProtectedRoute(req, async ({ user, body }) => {
@@ -317,45 +325,55 @@ export interface AuthContext<TBody = unknown, TQuery = unknown> extends RouteCon
  * }
  * ```
  */
-export async function handleProtectedRoute<TBody = unknown, TQuery = unknown, TResponse = unknown>(
+export async function handleProtectedRoute<
+  TBody = unknown,
+  TQuery = unknown,
+  TResponse = unknown,
+>(
   req: Request,
-  handler: (context: AuthContext<TBody, TQuery>) => Promise<NextResponse<TResponse>>,
+  handler: (
+    context: AuthContext<TBody, TQuery>,
+  ) => Promise<NextResponse<TResponse>>,
   schema?: z.ZodSchema<TBody | TQuery>,
 ): Promise<NextResponse> {
-  return handleRoute(req, async ({ body, query, req: request }) => {
-    // 1. Get session
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
+  return handleRoute(
+    req,
+    async ({ body, query, req: request }) => {
+      // 1. Get session
+      const session = await getServerSession(authOptions);
+      const email = session?.user?.email;
 
-    if (!email) {
-      return errorResponse('Unauthorized', 401);
-    }
+      if (!email) {
+        return errorResponse('Unauthorized', 401);
+      }
 
-    // 2. Get user from database
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    });
+      // 2. Get user from database
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      });
 
-    if (!user || !user.email) {
-      return errorResponse('User not found', 404);
-    }
+      if (!user || !user.email) {
+        return errorResponse('User not found', 404);
+      }
 
-    // 3. Call handler with authenticated user context and validated data
-    // Type assertion: we know email is string because we checked above
-    return handler({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      },
-      body: body as TBody,
-      query: query as TQuery,
-      req: request,
-    });
-  }, schema);
+      // 3. Call handler with authenticated user context and validated data
+      // Type assertion: we know email is string because we checked above
+      return handler({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+        body: body as TBody,
+        query: query as TQuery,
+        req: request,
+      });
+    },
+    schema,
+  );
 }

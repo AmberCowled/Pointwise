@@ -63,19 +63,17 @@ export default function Dashboard({
   const { error: xpError, refetch: refetchXP } = useGetXPQuery();
 
   // Use preference management hook
-  const { locale: formatLocale, timeZone: formatTimeZone } = useUserPreferences({
-    initialLocale: locale,
-    initialTimeZone: timeZone,
-    updatePreferences: api.user.updatePreferences,
-    detectBrowserPreferences: true,
-  });
+  const { locale: formatLocale, timeZone: formatTimeZone } = useUserPreferences(
+    {
+      initialLocale: locale,
+      initialTimeZone: timeZone,
+      updatePreferences: api.user.updatePreferences,
+      detectBrowserPreferences: true,
+    },
+  );
 
   // Use date settings hook
-  const {
-    selectedDate,
-    displayToday,
-    setSelectedDate,
-  } = useDateSettings({
+  const { selectedDate, displayToday, setSelectedDate } = useDateSettings({
     initialSelectedDate: new Date(initialSelectedDateMs),
     initialToday: today,
     locale: formatLocale,
@@ -186,7 +184,6 @@ export default function Dashboard({
     timeZone: formatTimeZone,
   });
 
-
   return (
     <>
       <Navbar
@@ -235,7 +232,11 @@ export default function Dashboard({
             </p>
             <div className="flex items-baseline gap-2">
               <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
-                {viewMode === 'day' ? 'Today' : viewMode === 'week' ? 'This Week' : 'This Month'}
+                {viewMode === 'day'
+                  ? 'Today'
+                  : viewMode === 'week'
+                    ? 'This Week'
+                    : 'This Month'}
               </h1>
               <span className="text-base text-zinc-400">
                 • {scheduledTasks.length} tasks

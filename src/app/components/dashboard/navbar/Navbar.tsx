@@ -71,7 +71,7 @@ export default function Navbar({
   // Get XP data from RTK Query cache
   const { data: xpData, isLoading } = useGetXPQuery();
   const xp = xpData?.xp;
-  
+
   // Calculate XP values
   const level = xp?.lv ?? 1;
   const xpIntoLevel = xp ? xp.value - xp.lvStartXP : 0;
@@ -147,9 +147,9 @@ export default function Navbar({
                   description="View all projects"
                 />
               </MenuSection>
-              
+
               <MenuDivider />
-              
+
               <MenuSection title="Account">
                 <MenuItem
                   label="Profile"
@@ -164,9 +164,9 @@ export default function Navbar({
                   description="Manage preferences"
                 />
               </MenuSection>
-              
+
               <MenuDivider />
-              
+
               <MenuSection>
                 <MenuItem
                   label="Sign out"
@@ -189,13 +189,17 @@ export default function Navbar({
                   title="Failed to load XP. Click to retry."
                 >
                   <IoWarning className="h-4 w-4 text-rose-400" />
-                  <span className="text-xs uppercase tracking-wider text-rose-400">Level</span>
+                  <span className="text-xs uppercase tracking-wider text-rose-400">
+                    Level
+                  </span>
                   <IoRefresh className="h-3.5 w-3.5 text-rose-400" />
                 </button>
               ) : isLoading ? (
                 <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
                   <IoStar className="h-4 w-4 text-indigo-400/50" />
-                  <span className="text-xs uppercase tracking-wider text-zinc-400">Level</span>
+                  <span className="text-xs uppercase tracking-wider text-zinc-400">
+                    Level
+                  </span>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400/20 border-t-indigo-400"></div>
                 </div>
               ) : level > 0 ? (

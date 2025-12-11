@@ -46,7 +46,10 @@ export interface UseTaskOperationsOptions {
 
 export interface UseTaskOperationsReturn {
   handleSubmitTask: (values: TaskFormValues) => Promise<void>;
-  handleDeleteTask: (task: DashboardTask, scope: 'single' | 'all') => Promise<void>;
+  handleDeleteTask: (
+    task: DashboardTask,
+    scope: 'single' | 'all',
+  ) => Promise<void>;
   handleComplete: (task: DashboardTask) => Promise<void>;
   handleCompleteWithLoading: (task: DashboardTask) => Promise<void>;
   completingId: string | null;
@@ -54,7 +57,7 @@ export interface UseTaskOperationsReturn {
 
 /**
  * Hook for managing task CRUD operations
- * 
+ *
  * Handles:
  * - Creating tasks
  * - Updating tasks (single or series)
@@ -83,7 +86,6 @@ export function useTaskOperations(
 
   // Get current project from context
   const { currentProjectId, currentProject } = useProject();
-
 
   const [completingId, setCompletingId] = useState<string | null>(null);
 
@@ -131,10 +133,11 @@ export function useTaskOperations(
           // Detect if we're converting recurring to one-time
           // This happens when editing a series and setting recurrence to 'none'
           const isConvertingToOneTime =
-            editScope === 'series' &&
-            values.recurrence === 'none';
+            editScope === 'series' && values.recurrence === 'none';
 
-          const apiScope: 'single' | 'series' = isConvertingToRecurring ? 'series' : editScope;
+          const apiScope: 'single' | 'series' = isConvertingToRecurring
+            ? 'series'
+            : editScope;
 
           // Include recurrence fields when using 'series' scope or converting to one-time
           if (apiScope === 'series' || isConvertingToOneTime) {
@@ -144,7 +147,8 @@ export function useTaskOperations(
             if (!isConvertingToOneTime) {
               updatePayload.recurrenceDays = values.recurrenceDays;
               updatePayload.recurrenceMonthDays = values.recurrenceMonthDays;
-              updatePayload.timesOfDay = values.timesOfDay?.filter(Boolean) || [];
+              updatePayload.timesOfDay =
+                values.timesOfDay?.filter(Boolean) || [];
             } else {
               // Clear recurrence fields when converting to one-time
               updatePayload.recurrenceDays = [];
@@ -167,38 +171,44 @@ export function useTaskOperations(
 
                 // Remove all tasks from the series (including the original task)
                 const filtered = seriesId
-                  ? prev.filter(t => t.sourceRecurringTaskId !== seriesId)
-                  : prev.filter(t => t.id !== values.id);
+                  ? prev.filter((t) => t.sourceRecurringTaskId !== seriesId)
+                  : prev.filter((t) => t.id !== values.id);
 
                 // Add the updated single task (API returns sourceRecurringTaskId: null)
                 return mergeTasks(filtered, [payload.task as DashboardTask]);
               });
             } else {
               // Regular single task update
-              setTaskItems((prev) => mergeTasks(prev, [payload.task as DashboardTask]));
+              setTaskItems((prev) =>
+                mergeTasks(prev, [payload.task as DashboardTask]),
+              );
             }
           } else if (payload.tasks && Array.isArray(payload.tasks)) {
             // Array response: series update or convert single→recurring
             setTaskItems((prev) => {
               // Remove old versions of tasks that are being updated
               const updatedIds = new Set(payload.tasks!.map((t) => t.id));
-              const filtered = prev.filter(t => !updatedIds.has(t.id));
+              const filtered = prev.filter((t) => !updatedIds.has(t.id));
 
               // If converting single→recurring, also remove the original single task
               const finalFiltered = isConvertingToRecurring
-                ? filtered.filter(t => t.id !== values.id)
+                ? filtered.filter((t) => t.id !== values.id)
                 : filtered;
 
               // Merge in the new/updated tasks
-              return mergeTasks(finalFiltered, payload.tasks as DashboardTask[]);
+              return mergeTasks(
+                finalFiltered,
+                payload.tasks as DashboardTask[],
+              );
             });
           }
         } else {
           // Get projectId from context
           if (!currentProjectId) {
-            throw new Error('No project selected. Please select a project to create tasks.');
+            throw new Error(
+              'No project selected. Please select a project to create tasks.',
+            );
           }
-
 
           const payload = await createTask({
             projectId: currentProjectId,
@@ -216,7 +226,6 @@ export function useTaskOperations(
             timesOfDay: (values.timesOfDay ?? []).filter(Boolean),
           });
 
-
           if (Array.isArray(payload.tasks)) {
             setTaskItems((prev) => mergeTasks(prev, payload.tasks as any));
           }
@@ -233,10 +242,12 @@ export function useTaskOperations(
         // API client handles error notifications automatically
         // Only set createError for modal inline display if needed
         const fallback =
-          editorMode === 'edit' ? 'Failed to update task' : 'Failed to create task';
+          editorMode === 'edit'
+            ? 'Failed to update task'
+            : 'Failed to create task';
         const message = error instanceof Error ? error.message : fallback;
         setCreateError?.(message);
-        
+
         // Ensure modals can still be closed even on error to prevent scrolling issues
         // Use setTimeout to allow error state to be set first
         setTimeout(() => {
@@ -293,14 +304,18 @@ export function useTaskOperations(
         const payload = await completeTask(task.id);
 
         if (payload.task) {
-          setTaskItems((prev) => mergeTasks(prev, [payload.task as DashboardTask]));
+          setTaskItems((prev) =>
+            mergeTasks(prev, [payload.task as DashboardTask]),
+          );
         }
 
         // Update XP cache with the response data
         if (payload.xp) {
-          dispatch(xpApi.util.updateQueryData('getXP', undefined, (draft) => {
-            draft.xp = payload.xp;
-          }));
+          dispatch(
+            xpApi.util.updateQueryData('getXP', undefined, (draft) => {
+              draft.xp = payload.xp;
+            }),
+          );
         }
       } catch {
         // API client handles error notifications automatically
@@ -331,4 +346,3 @@ export function useTaskOperations(
     completingId,
   };
 }
-

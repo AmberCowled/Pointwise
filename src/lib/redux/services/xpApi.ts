@@ -23,5 +23,4 @@ export const xpApi = createApi({
   }),
 });
 
-// Export hooks for usage in functional components
 export const { useGetXPQuery } = xpApi;

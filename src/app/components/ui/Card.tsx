@@ -6,8 +6,10 @@ import { Spinner } from './Spinner';
 
 export type CardVariant = 'primary' | 'secondary' | 'danger';
 
-export interface CardProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, 'title'> {
+export interface CardProps extends Omit<
+  React.HTMLAttributes<HTMLElement>,
+  'title'
+> {
   as?: 'div' | 'section' | 'article';
   variant?: CardVariant;
   title?: React.ReactNode;
@@ -33,7 +35,7 @@ const baseStyle = 'bg-zinc-900/60 backdrop-blur';
 const variantStyles: Record<CardVariant, string> = {
   primary: 'rounded-2xl border border-white/10 shadow-2xl shadow-black/40',
   secondary: 'rounded-3xl border border-white/5',
-  danger: 'rounded-2xl border border-rose-400/40 bg-rose-500/10 text-rose-200',
+  danger: 'rounded-2xl border border-rose-400/40 text-zinc-100',
 };
 
 export function Card({
@@ -57,7 +59,7 @@ export function Card({
     <Component
       {...props}
       className={clsx(
-        baseStyle,
+        variant === 'danger' ? 'bg-rose-500/25 backdrop-blur' : baseStyle,
         variantStyles[variant],
         responsivePadding ? 'p-6 sm:p-8' : 'p-6',
         className,

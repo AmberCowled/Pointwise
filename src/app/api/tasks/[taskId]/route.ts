@@ -40,10 +40,15 @@ export async function PATCH(
 
     // Get scope parameter (default to 'single')
     const url = new URL(req.url);
-    const scope = (url.searchParams.get('scope') ?? 'single') as 'single' | 'series';
+    const scope = (url.searchParams.get('scope') ?? 'single') as
+      | 'single'
+      | 'series';
 
     if (scope !== 'single' && scope !== 'series') {
-      return errorResponse('Invalid scope parameter. Must be "single" or "series".', 400);
+      return errorResponse(
+        'Invalid scope parameter. Must be "single" or "series".',
+        400,
+      );
     }
 
     const rawBody = await req.json().catch(() => ({}));
@@ -94,8 +99,12 @@ export async function PATCH(
       const task = ownership.task;
 
       // NEW: Verify user has access to the project and can edit tasks
-      const projectAccess = await verifyProjectAccess(tx, task.projectId, user.id);
-      
+      const projectAccess = await verifyProjectAccess(
+        tx,
+        task.projectId,
+        user.id,
+      );
+
       if (!projectAccess.success) {
         return null;
       }
@@ -104,7 +113,7 @@ export async function PATCH(
       if (!userCanEditTasks(projectAccess.project, user.id)) {
         return { error: 'Viewers cannot edit tasks', status: 403 };
       }
-      
+
       // Determine task type
       const isTemplate = isTaskTemplate(task as any);
       const isInstance = isTaskInstance(task as any);
@@ -119,25 +128,52 @@ export async function PATCH(
       const newRecurrence = updates.recurrence;
 
       // Determine conversion type
-      const isConvertingToOneTime = scope === 'series' && newRecurrence === 'none' && isTemplate;
-      const isConvertingToRecurring = scope === 'single' && newRecurrence !== undefined && 
-        newRecurrence !== 'none' && !isTemplate && !isInstance;
-      const isChangingRecurrence = scope === 'series' && hasRecurrenceFields && 
-        isTemplate && newRecurrence !== 'none';
+      const isConvertingToOneTime =
+        scope === 'series' && newRecurrence === 'none' && isTemplate;
+      const isConvertingToRecurring =
+        scope === 'single' &&
+        newRecurrence !== undefined &&
+        newRecurrence !== 'none' &&
+        !isTemplate &&
+        !isInstance;
+      const isChangingRecurrence =
+        scope === 'series' &&
+        hasRecurrenceFields &&
+        isTemplate &&
+        newRecurrence !== 'none';
 
       // Handle conversions
       if (isConvertingToOneTime) {
-        const updated = await convertToOneTime(tx, taskId, task, updates, user.id);
+        const updated = await convertToOneTime(
+          tx,
+          taskId,
+          task,
+          updates,
+          user.id,
+        );
         return { type: 'single' as const, task: updated };
       }
 
       if (isConvertingToRecurring) {
-        const updated = await convertToRecurring(tx, taskId, task, updates, userTimeZone);
+        const updated = await convertToRecurring(
+          tx,
+          taskId,
+          task,
+          updates,
+          userTimeZone,
+        );
         return { type: 'single' as const, task: updated };
       }
 
       if (isChangingRecurrence) {
-        const tasks = await updateRecurrencePattern(tx, taskId, task, updates, userTimeZone, user.id);
+        const tasks = await updateRecurrencePattern(
+          tx,
+          taskId,
+          task,
+          updates,
+          userTimeZone,
+          user.id,
+        );
         return { type: 'series' as const, tasks };
       }
 
@@ -148,7 +184,13 @@ export async function PATCH(
       }
 
       if (scope === 'series' && isTemplate) {
-        const tasks = await updateSeriesTasks(tx, taskId, task, updates, user.id);
+        const tasks = await updateSeriesTasks(
+          tx,
+          taskId,
+          task,
+          updates,
+          user.id,
+        );
         return { type: 'series' as const, tasks };
       }
 
@@ -210,16 +252,20 @@ export async function DELETE(
         sourceRecurringTaskId: true,
         recurrencePattern: true,
       });
-      
+
       if (!ownership.success) {
         return null;
       }
-      
+
       const task = ownership.task;
 
       // NEW: Verify user has access to the project and can edit tasks
-      const projectAccess = await verifyProjectAccess(tx, task.projectId, user.id);
-      
+      const projectAccess = await verifyProjectAccess(
+        tx,
+        task.projectId,
+        user.id,
+      );
+
       if (!projectAccess.success) {
         return null;
       }
@@ -228,37 +274,33 @@ export async function DELETE(
       if (!userCanEditTasks(projectAccess.project, user.id)) {
         return { error: 'Viewers cannot delete tasks', status: 403 };
       }
-      
+
       // Check if task is a template (has recurrence pattern, not an instance)
       const isTemplate = isTaskTemplate({
         isRecurringInstance: task.isRecurringInstance ?? false,
-        recurrencePattern: task.recurrencePattern ? (task.recurrencePattern as any) : undefined,
+        recurrencePattern: task.recurrencePattern
+          ? (task.recurrencePattern as any)
+          : undefined,
       });
 
       if (scope === 'series' && isTemplate) {
         // Fetch IDs to delete first
         const toDelete = await tx.task.findMany({
           where: {
-            OR: [
-              { id: taskId },
-              { sourceRecurringTaskId: taskId },
-            ],
+            OR: [{ id: taskId }, { sourceRecurringTaskId: taskId }],
             userId: user.id,
           },
           select: { id: true },
         });
-        
+
         // Delete template and all instances
         await tx.task.deleteMany({
           where: {
-            OR: [
-              { id: taskId },
-              { sourceRecurringTaskId: taskId },
-            ],
+            OR: [{ id: taskId }, { sourceRecurringTaskId: taskId }],
             userId: user.id,
           },
         });
-        
+
         return toDelete.map((item) => item.id);
       }
 
