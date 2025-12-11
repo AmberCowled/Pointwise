@@ -16,4 +16,3 @@ export type ProfileSnapshot = {
   streak?: number; // Optional until streak calculation is implemented
   title: string;
 };
-

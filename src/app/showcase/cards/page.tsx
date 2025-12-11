@@ -6,6 +6,17 @@ import { Button } from '@pointwise/app/components/ui/Button';
 import TaskSectionCard from '@pointwise/app/components/dashboard/task-board/TaskSectionCard';
 import BackgroundGlow from '@pointwise/app/components/general/BackgroundGlow';
 
+// Helper component to display code snippets
+function CodeSnippet({ code }: { code: string }) {
+  return (
+    <pre className="mt-4 p-4 rounded-lg bg-zinc-900/80 border border-white/5 overflow-x-auto">
+      <code className="text-xs text-zinc-300 font-mono whitespace-pre">
+        {code}
+      </code>
+    </pre>
+  );
+}
+
 export default function CardsShowcasePage() {
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
@@ -27,16 +38,37 @@ export default function CardsShowcasePage() {
                 Primary variant - Default card with shadow
               </p>
             </Card>
+            <CodeSnippet
+              code={`<Card variant="primary">
+  <p className="text-sm text-zinc-300">
+    Primary variant - Default card with shadow
+  </p>
+</Card>`}
+            />
             <Card variant="secondary">
               <p className="text-sm text-zinc-300">
                 Secondary variant - Section card with larger radius
               </p>
             </Card>
+            <CodeSnippet
+              code={`<Card variant="secondary">
+  <p className="text-sm text-zinc-300">
+    Secondary variant - Section card with larger radius
+  </p>
+</Card>`}
+            />
             <Card variant="danger">
               <p className="text-sm">
                 Danger variant - Error/alert card with rose styling
               </p>
             </Card>
+            <CodeSnippet
+              code={`<Card variant="danger">
+  <p className="text-sm">
+    Danger variant - Error/alert card with rose styling
+  </p>
+</Card>`}
+            />
           </div>
         </section>
 
@@ -55,6 +87,17 @@ export default function CardsShowcasePage() {
               </p>
             </div>
           </Card>
+          <CodeSnippet
+            code={`<Card variant="primary">
+  <div className="space-y-3">
+    <h3 className="text-lg font-semibold">Simple Content</h3>
+    <p className="text-sm text-zinc-400">
+      This is a simple card wrapper. It provides a consistent
+      background, border, and padding for content.
+    </p>
+  </div>
+</Card>`}
+          />
         </section>
 
         {/* Card with Title */}
@@ -62,14 +105,19 @@ export default function CardsShowcasePage() {
           <h2 className="text-xl font-semibold text-zinc-200">
             Card with Title
           </h2>
-          <p className="text-xs text-zinc-500">
-            Card with title in header (header will render once implemented)
-          </p>
+          <p className="text-xs text-zinc-500">Card with title in header</p>
           <Card variant="secondary" title="Task List">
             <p className="text-sm text-zinc-400">
               Content area (header will appear above this)
             </p>
           </Card>
+          <CodeSnippet
+            code={`<Card variant="secondary" title="Task List">
+  <p className="text-sm text-zinc-400">
+    Content area (header will appear above this)
+  </p>
+</Card>`}
+          />
         </section>
 
         {/* Card with Title and Label */}
@@ -78,14 +126,20 @@ export default function CardsShowcasePage() {
             Card with Title and Label
           </h2>
           <p className="text-xs text-zinc-500">
-            Card with label (eyebrow) and title (header will render once
-            implemented)
+            Card with label (eyebrow) and title
           </p>
           <Card variant="secondary" title="Task List" label="Overview">
             <p className="text-sm text-zinc-400">
               Content area (header with label and title will appear above this)
             </p>
           </Card>
+          <CodeSnippet
+            code={`<Card variant="secondary" title="Task List" label="Overview">
+  <p className="text-sm text-zinc-400">
+    Content area (header with label and title will appear above this)
+  </p>
+</Card>`}
+          />
         </section>
 
         {/* Card with Action */}
@@ -93,9 +147,7 @@ export default function CardsShowcasePage() {
           <h2 className="text-xl font-semibold text-zinc-200">
             Card with Action
           </h2>
-          <p className="text-xs text-zinc-500">
-            Card with action button (header will render once implemented)
-          </p>
+          <p className="text-xs text-zinc-500">Card with action button</p>
           <Card
             variant="secondary"
             title="Task List"
@@ -109,6 +161,21 @@ export default function CardsShowcasePage() {
               Content area (header with action will appear above this)
             </p>
           </Card>
+          <CodeSnippet
+            code={`<Card
+  variant="secondary"
+  title="Task List"
+  action={
+    <Button size="sm" variant="secondary">
+      Create Task
+    </Button>
+  }
+>
+  <p className="text-sm text-zinc-400">
+    Content area (header with action will appear above this)
+  </p>
+</Card>`}
+          />
         </section>
 
         {/* Card with Multiple Actions */}
@@ -117,8 +184,7 @@ export default function CardsShowcasePage() {
             Card with Multiple Actions
           </h2>
           <p className="text-xs text-zinc-500">
-            Card with array of action buttons (header will render once
-            implemented)
+            Card with array of action buttons
           </p>
           <Card
             variant="secondary"
@@ -136,6 +202,24 @@ export default function CardsShowcasePage() {
               Content area (header with multiple actions will appear above this)
             </p>
           </Card>
+          <CodeSnippet
+            code={`<Card
+  variant="secondary"
+  title="Optional Tasks"
+  action={[
+    <Button key="filter" size="sm" variant="secondary">
+      Filter
+    </Button>,
+    <Button key="sort" size="sm" variant="secondary">
+      Sort
+    </Button>,
+  ]}
+>
+  <p className="text-sm text-zinc-400">
+    Content area (header with multiple actions will appear above this)
+  </p>
+</Card>`}
+          />
         </section>
 
         {/* Card with Full Header */}
@@ -144,8 +228,7 @@ export default function CardsShowcasePage() {
             Card with Full Header
           </h2>
           <p className="text-xs text-zinc-500">
-            Card with label, title, and action (header will render once
-            implemented)
+            Card with label, title, and action
           </p>
           <Card
             variant="secondary"
@@ -166,6 +249,27 @@ export default function CardsShowcasePage() {
               </div>
             </div>
           </Card>
+          <CodeSnippet
+            code={`<Card
+  variant="secondary"
+  title="Task List"
+  label="Overview"
+  action={
+    <Button size="sm" variant="secondary">
+      Create Task
+    </Button>
+  }
+>
+  <div className="space-y-2">
+    <div className="rounded-lg border border-white/5 bg-white/5 p-3">
+      <p className="text-sm text-zinc-300">Task item example</p>
+    </div>
+    <div className="rounded-lg border border-white/5 bg-white/5 p-3">
+      <p className="text-sm text-zinc-300">Another task item</p>
+    </div>
+  </div>
+</Card>`}
+          />
         </section>
 
         {/* Responsive Padding */}
@@ -185,6 +289,16 @@ export default function CardsShowcasePage() {
               </p>
             </div>
           </Card>
+          <CodeSnippet
+            code={`<Card variant="primary" responsivePadding>
+  <div className="space-y-3">
+    <h3 className="text-lg font-semibold">Auth-Style Card</h3>
+    <p className="text-sm text-zinc-400">
+      This card uses responsive padding (p-6 on mobile, p-8 on larger screens)
+    </p>
+  </div>
+</Card>`}
+          />
         </section>
 
         {/* Danger Variant */}
@@ -204,6 +318,17 @@ export default function CardsShowcasePage() {
               </p>
             </div>
           </Card>
+          <CodeSnippet
+            code={`<Card variant="danger">
+  <div className="space-y-2">
+    <h3 className="text-lg font-semibold">Error Message</h3>
+    <p className="text-sm">
+      This card is used for displaying error messages, validation
+      errors, or warning alerts.
+    </p>
+  </div>
+</Card>`}
+          />
         </section>
 
         {/* Semantic HTML */}
@@ -227,6 +352,19 @@ export default function CardsShowcasePage() {
               </p>
             </Card>
           </div>
+          <CodeSnippet
+            code={`<Card as="div" variant="primary" title="Div Element">
+  <p className="text-sm text-zinc-400">Renders as &lt;div&gt;</p>
+</Card>
+
+<Card as="section" variant="secondary" title="Section Element">
+  <p className="text-sm text-zinc-400">Renders as &lt;section&gt;</p>
+</Card>
+
+<Card as="article" variant="primary" title="Article Element">
+  <p className="text-sm text-zinc-400">Renders as &lt;article&gt;</p>
+</Card>`}
+          />
         </section>
 
         {/* Side by Side Comparison */}
@@ -264,9 +402,7 @@ export default function CardsShowcasePage() {
                 New Card (Secondary)
               </h3>
               <Card variant="secondary" title="Section Title" label="Label">
-                <p className="text-sm text-zinc-300">
-                  New Card with header (will show once implemented)
-                </p>
+                <p className="text-sm text-zinc-300">New Card with header</p>
               </Card>
             </div>
             <div className="space-y-2">
@@ -280,6 +416,28 @@ export default function CardsShowcasePage() {
               </TaskSectionCard>
             </div>
           </div>
+          <CodeSnippet
+            code={`// New Card (Primary)
+<Card variant="primary">
+  <p className="text-sm text-zinc-300">
+    New unified Card component
+  </p>
+</Card>
+
+// Card (Primary with Responsive Padding) - Replaces AuthCard
+<Card variant="primary" responsivePadding>
+  <p className="text-sm text-zinc-300">
+    Equivalent to legacy AuthCard
+  </p>
+</Card>
+
+// New Card (Secondary) - Replaces TaskSectionCard
+<Card variant="secondary" title="Section Title" label="Label">
+  <p className="text-sm text-zinc-300">
+    New Card with header
+  </p>
+</Card>`}
+          />
         </section>
 
         {/* Loading States */}
@@ -288,7 +446,8 @@ export default function CardsShowcasePage() {
             Loading States
           </h2>
           <p className="text-xs text-zinc-500">
-            Cards with loading prop - header stays visible, content shows spinner
+            Cards with loading prop - header stays visible, content shows
+            spinner
           </p>
           <div className="space-y-4">
             <Card
@@ -308,6 +467,21 @@ export default function CardsShowcasePage() {
                 </div>
               </div>
             </Card>
+            <CodeSnippet
+              code={`<Card
+  variant="secondary"
+  title="Projects"
+  label="Overview"
+  action={
+    <Button size="sm" variant="secondary">
+      Create Project
+    </Button>
+  }
+  loading={true}
+>
+  {/* Content hidden while loading */}
+</Card>`}
+            />
             <Card
               variant="secondary"
               title="Task List"
@@ -321,11 +495,29 @@ export default function CardsShowcasePage() {
                 </div>
               </div>
             </Card>
+            <CodeSnippet
+              code={`<Card
+  variant="secondary"
+  title="Task List"
+  label="Overview"
+  loading={true}
+  loadingMessage="Loading tasks..."
+>
+  {/* Content hidden while loading */}
+</Card>`}
+            />
             <Card variant="primary" title="Simple Loading" loading={true}>
               <p className="text-sm text-zinc-300">
                 This content is hidden while loading
               </p>
             </Card>
+            <CodeSnippet
+              code={`<Card variant="primary" title="Simple Loading" loading={true}>
+  <p className="text-sm text-zinc-300">
+    This content is hidden while loading
+  </p>
+</Card>`}
+            />
           </div>
         </section>
 
@@ -351,10 +543,22 @@ export default function CardsShowcasePage() {
                   </p>
                 </div>
               </Card>
+              <CodeSnippet
+                code={`// Replaces AuthCard
+<Card variant="primary" responsivePadding>
+  <div className="space-y-3">
+    <h3 className="text-lg font-semibold">Simple Content</h3>
+    <p className="text-sm text-zinc-400">
+      Replaces legacy AuthCard: use Card with
+      variant="primary" and responsivePadding
+    </p>
+  </div>
+</Card>`}
+              />
             </div>
             <div>
               <h3 className="text-sm font-medium text-zinc-400 mb-2">
-                TaskSectionCard
+                TaskSectionCard (Legacy)
               </h3>
               <TaskSectionCard
                 title="Task List"
@@ -372,6 +576,30 @@ export default function CardsShowcasePage() {
                   Legacy TaskSectionCard component
                 </p>
               </TaskSectionCard>
+              <CodeSnippet
+                code={`// Legacy TaskSectionCard - Use Card instead
+<TaskSectionCard
+  title="Task List"
+  eyebrow="Overview"
+  action={<button>Create Task</button>}
+>
+  <p className="text-sm text-zinc-400">
+    Legacy TaskSectionCard component
+  </p>
+</TaskSectionCard>
+
+// Migration: Replace with Card
+<Card
+  variant="secondary"
+  title="Task List"
+  label="Overview"
+  action={<Button>Create Task</Button>}
+>
+  <p className="text-sm text-zinc-400">
+    New Card component
+  </p>
+</Card>`}
+              />
             </div>
           </div>
         </section>

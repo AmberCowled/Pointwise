@@ -6,9 +6,7 @@ import {
   errorResponse,
   jsonResponse,
 } from '@pointwise/lib/api/route-handler';
-import {
-  verifyTaskOwnershipWithSelect,
-} from '@pointwise/lib/api/auth-helpers';
+import { verifyTaskOwnershipWithSelect } from '@pointwise/lib/api/auth-helpers';
 
 /**
  * GET /api/tasks/[taskId]/recurring
@@ -69,9 +67,10 @@ export async function GET(
       // Parse recurrence pattern from JSON
       let recurrencePattern: any = null;
       try {
-        recurrencePattern = typeof sourceTask.recurrencePattern === 'string'
-          ? JSON.parse(sourceTask.recurrencePattern)
-          : sourceTask.recurrencePattern;
+        recurrencePattern =
+          typeof sourceTask.recurrencePattern === 'string'
+            ? JSON.parse(sourceTask.recurrencePattern)
+            : sourceTask.recurrencePattern;
       } catch {
         return { isRecurring: false, recurringTask: null };
       }
@@ -100,4 +99,3 @@ export async function GET(
     return jsonResponse(result);
   });
 }
-

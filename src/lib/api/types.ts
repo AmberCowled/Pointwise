@@ -33,13 +33,17 @@ export interface CreateProjectRequest {
   visibility?: ProjectVisibility;
 }
 
+export interface CreateProjectResponse {
+  project: Project;
+}
+
 export interface UpdateProjectRequest {
   name?: string;
   description?: string;
   visibility?: ProjectVisibility;
 }
 
-export interface CreateProjectResponse {
+export interface UpdateProjectResponse {
   project: Project;
 }
 
@@ -86,21 +90,21 @@ export interface Task {
   dueDate: string | null;
   dueTime: string | null;
   completedAt: string | null;
-  
+
   // Assignment
   assignedUserIds: string[];
   acceptedUserIds: string[];
-  
+
   // Recurring pattern (if this is a recurring task template)
   recurrencePattern?: RecurrencePattern;
-  
+
   // Recurring instance tracking
   isRecurringInstance: boolean;
   sourceRecurringTaskId: string | null;
   recurrenceInstanceKey: string | null;
   isEditedInstance: boolean;
   editedInstanceKeys: string[];
-  
+
   // Creator tracking
   createdBy: string;
   createdAt: string;
@@ -118,13 +122,13 @@ export interface CreateTaskRequest {
   startTime?: string | null;
   dueDate?: string | null;
   dueTime?: string | null;
-  
+
   // Recurring pattern (optional - if provided, creates recurring task template)
   recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
   recurrenceDays?: number[];
   recurrenceMonthDays?: number[];
   timesOfDay?: string[];
-  
+
   // Assignment
   assignedUserIds?: string[];
 }
@@ -144,13 +148,13 @@ export interface UpdateTaskRequest {
   startTime?: string | null;
   dueDate?: string | null;
   dueTime?: string | null;
-  
+
   // Recurring pattern fields
   recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
   recurrenceDays?: number[];
   recurrenceMonthDays?: number[];
   timesOfDay?: string[];
-  
+
   // Assignment
   assignedUserIds?: string[];
   acceptedUserIds?: string[];
@@ -166,12 +170,12 @@ export interface UpdateTaskResponse {
 
 // XP type
 export interface XP {
-  value: number;        // current XP (totalXp)
-  lv: number;           // current level
-  toNextLv: number;     // XP needed to reach next level
-  nextLvAt: number;     // total XP at which next level is reached
-  lvStartXP: number;    // total XP at which current level started
-  progress: number;     // 0-1 ratio for progress bar
+  value: number; // current XP (totalXp)
+  lv: number; // current level
+  toNextLv: number; // XP needed to reach next level
+  nextLvAt: number; // total XP at which next level is reached
+  lvStartXP: number; // total XP at which current level started
+  progress: number; // 0-1 ratio for progress bar
 }
 
 // XP get response

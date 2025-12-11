@@ -175,7 +175,12 @@ export default async function ProjectDetailPage({
     };
   });
 
-  const initialAnalytics = buildAnalyticsSnapshot(tasks, '7d', locale, timeZone);
+  const initialAnalytics = buildAnalyticsSnapshot(
+    tasks,
+    '7d',
+    locale,
+    timeZone,
+  );
 
   const initials =
     session.user?.name
@@ -233,4 +238,3 @@ export default async function ProjectDetailPage({
     </div>
   );
 }
-

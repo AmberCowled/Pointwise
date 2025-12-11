@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@pointwise/lib/auth';
 import prisma from '@pointwise/lib/prisma';
-import { updateXP, serializeXP } from '@pointwise/lib/xp';
+import { updateXP, serializeXP } from '@pointwise/lib/api/xp';
 import {
   handleRoute,
   errorResponse,
@@ -77,8 +77,12 @@ export async function POST(
       }
 
       // NEW: Verify user has access to the project and can edit tasks
-      const projectAccess = await verifyProjectAccess(tx, task.projectId, currentUser.id);
-      
+      const projectAccess = await verifyProjectAccess(
+        tx,
+        task.projectId,
+        currentUser.id,
+      );
+
       if (!projectAccess.success) {
         return {
           status: 403 as const,
@@ -110,12 +114,12 @@ export async function POST(
             status: 'completed' as any,
           } as any,
         });
-        
+
         // Use the XP update function for single source of truth
         // Pass transaction client to maintain atomicity
-        const nextXp = await updateXP(currentUser.id, xpIncrement, tx);
+        const nextXp = await updateXP(currentUser.id, { delta: xpIncrement }, tx);
         const xpSnapshot = serializeXP(nextXp);
-        
+
         return {
           status: 200 as const,
           task: serializeTask(updatedTask as any),

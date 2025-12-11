@@ -40,7 +40,8 @@ export default async function DashboardPage() {
 
   // Get locale and timezone for date formatting
   const headerLocale =
-    (await headers()).get('accept-language')?.split(',')[0]?.trim() ?? undefined;
+    (await headers()).get('accept-language')?.split(',')[0]?.trim() ??
+    undefined;
   const cookieStore = await cookies();
   const cookieLocale = cookieStore.get('pw-locale')?.value;
   const cookieTimeZone = cookieStore.get('pw-timezone')?.value;
@@ -71,7 +72,6 @@ export default async function DashboardPage() {
       <BackgroundGlow />
       <ProjectsOverview
         userId={userRecord.id}
-        displayName={displayName}
         initials={initials}
         today={today}
       />

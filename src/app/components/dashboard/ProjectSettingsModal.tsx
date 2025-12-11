@@ -1,6 +1,6 @@
 /**
  * Project Settings Modal
- * 
+ *
  * Modal for editing and deleting projects
  */
 
@@ -14,13 +14,23 @@ import { ModalFooter } from '@pointwise/app/components/ui/ModalFooter';
 import { Button } from '@pointwise/app/components/ui/Button';
 import { Input } from '@pointwise/app/components/ui/Input';
 import { InputArea } from '@pointwise/app/components/ui/InputArea';
-import { deleteProject, getProject, updateProject } from '@pointwise/lib/api/endpoints/projects';
+import {
+  useDeleteProjectMutation,
+  useGetProjectQuery,
+  useUpdateProjectMutation,
+} from '@pointwise/lib/redux/services/projectsApi';
 
-interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  visibility: 'PRIVATE' | 'PUBLIC';
+// Helper to extract error message from RTK Query error
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (!error) return fallback;
+  if (typeof error === 'object' && 'data' in error) {
+    const data = error.data;
+    if (typeof data === 'object' && data && 'error' in data) {
+      return String(data.error);
+    }
+  }
+  if (error instanceof Error) return error.message;
+  return fallback;
 }
 
 interface ProjectSettingsModalProps {
@@ -38,75 +48,75 @@ export function ProjectSettingsModal({
   onProjectUpdated,
   onProjectDeleted,
 }: ProjectSettingsModalProps) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [visibility, setVisibility] = useState<'PRIVATE' | 'PUBLIC'>('PRIVATE');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
-  // Load project data when modal opens
+  // RTK Query hooks
+  const {
+    data: projectData,
+    isLoading: isLoadingProject,
+    error: projectError,
+  } = useGetProjectQuery(projectId || '', {
+    skip: !isOpen || !projectId,
+  });
+
+  const [updateProject, { isLoading: isUpdating, error: updateError }] =
+    useUpdateProjectMutation();
+  const [deleteProject, { isLoading: isDeleting, error: deleteError }] =
+    useDeleteProjectMutation();
+
+  // Use query data as source of truth
+  const project = projectData?.project;
+  
+  const [name, setName] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [visibility, setVisibility] = useState<'PRIVATE' | 'PUBLIC'>('PRIVATE');
+  
+  // Sync query data to form when it loads
   useEffect(() => {
-    if (isOpen && projectId) {
-      loadProject();
-    } else {
-      // Reset state when modal closes
-      setName('');
-      setDescription('');
-      setVisibility('PRIVATE');
-      setError(null);
-      setShowDeleteConfirm(false);
-      setDeleteConfirmText('');
-    }
-  }, [isOpen, projectId]);
-
-  const loadProject = async () => {
-    if (!projectId) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await getProject(projectId);
-      const project = response.project;
+    if (project) {
       setName(project.name);
       setDescription(project.description || '');
       setVisibility(project.visibility);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load project');
-    } finally {
-      setIsLoading(false);
     }
+  }, [project]);
+  
+  const isLoading = isLoadingProject || isUpdating;
+  const error = updateError || deleteError || projectError;
+  const errorMessage = error
+    ? getErrorMessage(error, 'An error occurred')
+    : null;
+
+  const handleClose = () => {
+    // Reset form state when closing
+    setName('');
+    setDescription('');
+    setVisibility('PRIVATE');
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText('');
+    onClose();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!projectId) return;
-    
-    if (!name.trim()) {
-      setError('Project name is required');
-      return;
-    }
 
-    setIsLoading(true);
-    setError(null);
+    if (!projectId || !name.trim()) return;
 
     try {
-      await updateProject(projectId, {
+      await updateProject({
+        projectId,
+        data: {
         name: name.trim(),
         description: description.trim() || undefined,
         visibility,
-      });
+        },
+      }).unwrap();
 
       onProjectUpdated?.();
-      onClose();
+      handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update project');
-    } finally {
-      setIsLoading(false);
+      // Error is already in updateError, will be displayed
+      console.error('Failed to update project:', err);
     }
   };
 
@@ -114,40 +124,45 @@ export function ProjectSettingsModal({
     if (!projectId) return;
 
     if (deleteConfirmText !== name.trim()) {
-      setError('Project name does not match');
+      // Validation error - show inline
       return;
     }
 
-    setIsDeleting(true);
-    setError(null);
-
     try {
-      await deleteProject(projectId);
+      await deleteProject(projectId).unwrap();
+
       onProjectDeleted?.();
-      onClose();
+      handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete project');
-    } finally {
-      setIsDeleting(false);
+      // Error is already in deleteError, will be displayed
+      console.error('Failed to delete project:', err);
     }
   };
 
   if (!projectId) return null;
 
   return (
-    <Modal open={isOpen} onClose={onClose} size="lg">
+    <Modal open={isOpen} onClose={handleClose} size="lg">
       {showDeleteConfirm ? (
         // Delete confirmation view
-        <form onSubmit={(e) => { e.preventDefault(); handleDelete(); }}>
-          <ModalHeader onClose={onClose}>
-            Delete Project
-          </ModalHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleDelete();
+          }}
+        >
+          <ModalHeader onClose={handleClose}>Delete Project</ModalHeader>
 
           <ModalBody>
             <div className="space-y-5">
-              {error && (
+              {errorMessage && (
                 <div className="px-4 py-3 bg-rose-500/10 border border-rose-400/20 rounded-lg text-rose-400 text-sm">
-                  {error}
+                  {errorMessage}
+                </div>
+              )}
+              {deleteConfirmText !== name.trim() && deleteConfirmText && (
+                <div className="px-4 py-3 bg-rose-500/10 border border-rose-400/20 rounded-lg text-rose-400 text-sm">
+                  Project name does not match
                 </div>
               )}
 
@@ -156,14 +171,16 @@ export function ProjectSettingsModal({
                   This action cannot be undone
                 </p>
                 <p className="text-zinc-400 text-sm">
-                  This will permanently delete the project and all associated tasks. 
-                  All members will lose access to this project.
+                  This will permanently delete the project and all associated
+                  tasks. All members will lose access to this project.
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Type the project name <span className="font-semibold">{name}</span> to confirm deletion:
+                  Type the project name{' '}
+                  <span className="font-semibold">{name}</span> to confirm
+                  deletion:
                 </label>
                 <Input
                   placeholder={name}
@@ -183,7 +200,6 @@ export function ProjectSettingsModal({
               onClick={() => {
                 setShowDeleteConfirm(false);
                 setDeleteConfirmText('');
-                setError(null);
               }}
               disabled={isDeleting}
             >
@@ -202,22 +218,22 @@ export function ProjectSettingsModal({
       ) : (
         // Edit view
         <form onSubmit={handleSubmit}>
-          <ModalHeader onClose={onClose}>
-            Project Settings
-          </ModalHeader>
+          <ModalHeader onClose={handleClose}>Project Settings</ModalHeader>
 
           <ModalBody>
             <div className="space-y-5">
-              {error && (
+              {errorMessage && (
                 <div className="px-4 py-3 bg-rose-500/10 border border-rose-400/20 rounded-lg text-rose-400 text-sm">
-                  {error}
+                  {errorMessage}
                 </div>
               )}
 
               {isLoading && !name ? (
                 <div className="text-center py-8">
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400"></div>
-                  <p className="text-sm text-zinc-400 mt-4">Loading project...</p>
+                  <p className="text-sm text-zinc-400 mt-4">
+                    Loading project...
+                  </p>
                 </div>
               ) : (
                 <>
@@ -259,7 +275,12 @@ export function ProjectSettingsModal({
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <div className="flex items-center justify-center gap-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -269,7 +290,9 @@ export function ProjectSettingsModal({
                           </svg>
                           <span className="font-medium">Private</span>
                         </div>
-                        <div className="text-xs mt-1 text-zinc-500">Invite only</div>
+                        <div className="text-xs mt-1 text-zinc-500">
+                          Invite only
+                        </div>
                       </button>
 
                       <button
@@ -283,7 +306,12 @@ export function ProjectSettingsModal({
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <div className="flex items-center justify-center gap-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -293,7 +321,9 @@ export function ProjectSettingsModal({
                           </svg>
                           <span className="font-medium">Public</span>
                         </div>
-                        <div className="text-xs mt-1 text-zinc-500">Anyone can request</div>
+                        <div className="text-xs mt-1 text-zinc-500">
+                          Anyone can request
+                        </div>
                       </button>
                     </div>
                   </div>
@@ -315,7 +345,7 @@ export function ProjectSettingsModal({
             <Button
               type="button"
               variant="secondary"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading || isDeleting}
             >
               Cancel

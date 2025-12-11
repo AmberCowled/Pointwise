@@ -107,8 +107,9 @@ export async function POST(req: Request) {
       // Create recurring task template
       // Build recurrence pattern object
       // Use provided startDate or default to today
-      const patternStartDate = startDateValue || startOfDay(new Date(), userTimeZone);
-      
+      const patternStartDate =
+        startDateValue || startOfDay(new Date(), userTimeZone);
+
       // Build recurrencePattern
       const recurrencePattern: RecurrencePattern = {
         type: recurrence,
@@ -118,7 +119,8 @@ export async function POST(req: Request) {
         timesOfDay: timesOfDay.length > 0 ? timesOfDay : [], // Empty = date-only recurring tasks
         startDate: patternStartDate.toISOString().split('T')[0], // YYYY-MM-DD
         endDate: undefined, // Can be set later if needed
-        maxOccurrences: recurrence === 'daily' ? 30 : recurrence === 'weekly' ? 12 : 12,
+        maxOccurrences:
+          recurrence === 'daily' ? 30 : recurrence === 'weekly' ? 12 : 12,
       };
 
       // Create recurring task template (not an instance)
@@ -149,4 +151,3 @@ export async function POST(req: Request) {
     }
   });
 }
-

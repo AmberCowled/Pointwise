@@ -1,85 +1,58 @@
 /**
  * Projects Overview Dashboard
- * 
+ *
  * Main dashboard showing all projects user has access to
  */
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectCard } from './ProjectCard';
 import { ProjectManagementModal } from './ProjectManagementModal';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { Button } from '@pointwise/app/components/ui/Button';
 import { Card } from '@pointwise/app/components/ui/Card';
+import { ErrorCard } from '@pointwise/app/components/ui/ErrorCard';
 import Navbar from '@pointwise/app/components/dashboard/navbar/Navbar';
-import type { ProjectWithRole } from '@pointwise/lib/api/types';
 import { useGetXPQuery } from '@pointwise/lib/redux/services/xpApi';
+import { useGetProjectsQuery } from '@pointwise/lib/redux/services/projectsApi';
 
 interface ProjectsOverviewProps {
   userId: string;
-  displayName: string;
   initials: string;
   today: string;
 }
 
 export function ProjectsOverview({
   userId,
-  displayName,
   initials,
   today,
 }: ProjectsOverviewProps) {
   const router = useRouter();
-  const [projects, setProjects] = useState<ProjectWithRole[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
 
   // Fetch XP from RTK Query - cache handles everything
   const { error: xpError, refetch: refetchXP } = useGetXPQuery();
-
-  // Fetch projects from API
-  const fetchProjects = async (showLoading = false) => {
-    try {
-      if (showLoading) {
-        setIsLoading(true);
-      }
-      setError(null);
-      
-      const response = await fetch('/api/projectsV2');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch projects');
-      }
-      
-      const data = await response.json();
-      setProjects(data.projects || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      if (showLoading) {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchProjects(true);
-  }, []);
-
-  const refetchProjects = () => fetchProjects(false);
+  const {
+    data: projectsData,
+    isLoading: projectsLoading,
+    error: projectsError,
+    refetch: refetchProjects,
+  } = useGetProjectsQuery();
+  const projects = projectsData?.projects ?? [];
 
   const handleProjectCreated = (projectId: string) => {
-    // Refetch projects to get updated list
     refetchProjects();
-    // Navigate to the new project
     router.push(`/dashboard/projects/${projectId}`);
   };
 
   const handleSettingsClick = (projectId: string) => {
+    refetchProjects();
     setSelectedProjectId(projectId);
     setIsSettingsModalOpen(true);
   };
@@ -99,11 +72,7 @@ export function ProjectsOverview({
   return (
     <>
       {/* Use existing Navbar component */}
-      <Navbar
-        initials={initials}
-        xpError={xpError}
-        onRetryXP={refetchXP}
-      />
+      <Navbar initials={initials} xpError={xpError} onRetryXP={refetchXP} />
 
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -138,22 +107,15 @@ export function ProjectsOverview({
                   Create Project
                 </Button>
               }
-              loading={isLoading}
+              loading={projectsLoading}
               loadingMessage="Loading projects..."
             >
-              {error ? (
-                <div className="px-4 py-3 bg-rose-500/10 border border-rose-400/20 rounded-lg text-rose-400 text-sm">
-                  {error}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={refetchProjects}
-                    className="mx-2"
-                  >
-                    Try Again
-                  </Button>
-                </div>
-              ) : projects.length > 0 ? (
+              <ErrorCard
+                display={Boolean(projectsError)}
+                message="Failed to load projects"
+                onRetry={refetchProjects}
+              />
+              {projects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {projects.map((project) => (
                     <ProjectCard
@@ -242,4 +204,3 @@ export function ProjectsOverview({
     </>
   );
 }
-
