@@ -17,16 +17,16 @@ export const projectApi = createApi({
   refetchOnReconnect: true, // Refetch when internet reconnects
   endpoints: (builder) => ({
     getProject: builder.query<GetProjectResponse, string>({
-      query: (projectId) => `/projectsV2/${projectId}`,
+      query: (projectId) => `/projects/${projectId}`,
       providesTags: ['Projects'],
     }),
     getProjects: builder.query<GetProjectsResponse, void>({
-      query: () => '/projectsV2',
+      query: () => '/projects',
       providesTags: ['Projects'],
     }),
     createProject: builder.mutation<CreateProjectResponse, CreateProjectRequest>({
       query: (body) => ({
-        url: '/projectsV2',
+        url: '/projects',
         method: 'POST',
         body,
       }),
@@ -37,7 +37,7 @@ export const projectApi = createApi({
       { projectId: string; data: UpdateProjectRequest }
     >({
       query: ({ projectId, data }) => ({
-        url: `/projectsV2/${projectId}`,
+        url: `/projects/${projectId}`,
         method: 'PATCH',
         body: data,
       }),
@@ -45,7 +45,7 @@ export const projectApi = createApi({
     }),
     deleteProject: builder.mutation<DeleteProjectResponse, string>({
       query: (projectId) => ({
-        url: `/projectsV2/${projectId}`,
+        url: `/projects/${projectId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Projects'],
