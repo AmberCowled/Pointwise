@@ -111,6 +111,28 @@ export interface Task {
   updatedAt: string;
 }
 
+export interface TaskV2 {
+  id: string;
+  projectId: string;
+  title: string;
+  description: string | null;
+  xpAward: number;
+  category: string;
+  optional: boolean;
+  startDate: string | null;
+  startTime: string | null;
+  dueDate: string | null;
+  dueTime: string | null;
+  completedAt: string | null;
+  status: 'PENDING' | 'COMPLETED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetTasksResponse {
+  tasks: TaskV2[];
+}
+
 // Task creation request
 export interface CreateTaskRequest {
   projectId: string; // Required: task belongs to a project
@@ -131,6 +153,48 @@ export interface CreateTaskRequest {
 
   // Assignment
   assignedUserIds?: string[];
+}
+
+export interface CreateTaskRequestV2 {
+  projectId: string;
+  title: string;
+  description: string | null;
+  xpAward: number;
+  category: string;
+  optional: boolean;
+  startDate: string | null;
+  startTime: string | null;
+  dueDate: string | null;
+  dueTime: string | null;
+}
+
+export interface CreateTaskResponseV2 {
+  task: TaskV2;
+}
+
+export interface UpdateTaskRequestV2 {
+  title?: string;
+  description?: string | null;
+  xpAward?: number;
+  category?: string;
+  optional?: boolean;
+  startDate?: string | null;
+  startTime?: string | null;
+  dueDate?: string | null;
+  dueTime?: string | null;
+  status?: 'PENDING' | 'COMPLETED';
+}
+
+export interface UpdateTaskResponseV2 {
+  task: TaskV2;
+}
+
+export interface DeleteTaskRequestV2 {
+  taskId: string;
+}
+
+export interface DeleteTaskResponseV2 {
+  success: boolean;
 }
 
 // Task creation response

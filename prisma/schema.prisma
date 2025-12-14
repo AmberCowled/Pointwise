@@ -75,6 +75,36 @@ model VerificationToken {
   @@index([identifier])
 }
 
+model TaskV2 {
+  // Basic
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  xpAward     Int     @default(0)
+
+  // Project relation
+  projectId   String @db.ObjectId
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Type
+  category    String
+  optional    Boolean @default(false)
+
+  // Date/Time  
+  startDate   DateTime? // Date in UTC (null = no start date)
+  startTime   String? // Time as 'HH:MM' (null = no start time)
+  dueDate     DateTime? // Date in UTC (null = no due date)
+  dueTime     String? // Time as 'HH:MM' (null = no due time)
+
+  // Status
+  completedAt DateTime?
+  status      TaskStatus @default(PENDING)
+
+  // Creation
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 model Task {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   projectId   String  @db.ObjectId // Tasks belong to projects
@@ -133,6 +163,11 @@ model Task {
   @@index([createdBy])
 }
 
+enum TaskStatus {
+  PENDING
+  COMPLETED
+}
+
 enum ProjectVisibility {
   PRIVATE
   PUBLIC
@@ -150,7 +185,8 @@ model Project {
   viewerUserIds      String[] @default([]) @db.ObjectId // Users with read-only access
   joinRequestUserIds String[] @default([]) @db.ObjectId // Pending join requests for public projects
 
-  tasks Task[]
+  tasks           Task[]
+  tasksV2         TaskV2[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,14 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { xpApi } from './services/xpApi';
 import { projectApi } from './services/projectsApi';
+import { tasksApi } from './services/tasksApi';
 
 export const store = configureStore({
   reducer: {
     [xpApi.reducerPath]: xpApi.reducer,
     [projectApi.reducerPath]: projectApi.reducer,
+    [tasksApi.reducerPath]: tasksApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(xpApi.middleware, projectApi.middleware),
+    getDefaultMiddleware().concat(xpApi.middleware, projectApi.middleware, tasksApi.middleware),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
