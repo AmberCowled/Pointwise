@@ -108,7 +108,25 @@ export function serializeProjectWithRole(
   };
 }
 
-async function isProjectAdmin(projectId: string, userId: string): Promise<boolean> {
+export async function verifyProjectAccess(projectId: string, userId: string): Promise<boolean> {
+  const project = await prisma.project.findUniqueOrThrow({
+    where: {
+      id: projectId,
+    },
+  });
+  return project.visibility === 'PUBLIC' || [...project.adminUserIds, ...project.projectUserIds, project.viewerUserIds].includes(userId);
+}
+
+export async function isProjectUserOrHigher(projectId: string, userId: string): Promise<boolean> {
+  const project = await prisma.project.findUniqueOrThrow({
+    where: {
+      id: projectId,
+    },
+  });
+  return [...project.adminUserIds, ...project.projectUserIds].includes(userId);
+}
+
+export async function isProjectAdmin(projectId: string, userId: string): Promise<boolean> {
   const projectAdmins = await prisma.project.findUniqueOrThrow({
     where: {
       id: projectId,
