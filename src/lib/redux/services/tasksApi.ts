@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { GetTasksResponse, CreateTaskRequestV2, CreateTaskResponseV2, UpdateTaskRequestV2, UpdateTaskResponseV2, DeleteTaskRequestV2, DeleteTaskResponseV2 } from '@pointwise/lib/api/types';
+import type { GetTasksResponse, UpdateTaskRequestV2, UpdateTaskResponseV2, DeleteTaskRequestV2, DeleteTaskResponseV2 } from '@pointwise/lib/api/types';
+import { CreateTaskRequest, CreateTaskResponse } from '@pointwise/lib/validation/tasks-schema';
 
 export const tasksApi = createApi({
     reducerPath: 'tasksApi',
@@ -12,7 +13,7 @@ export const tasksApi = createApi({
             query: ({ projectId }) => `/tasksV2?projectId=${projectId}`,
             providesTags: ['Tasks'],
         }),
-        createTask: builder.mutation<CreateTaskResponseV2, CreateTaskRequestV2>({
+        createTask: builder.mutation<CreateTaskResponse, CreateTaskRequest>({
             query: (task) => ({
                 url: '/tasksV2',
                 method: 'POST',
@@ -37,3 +38,5 @@ export const tasksApi = createApi({
         }),
     }),
 });
+
+export const { useGetTasksQuery, useCreateTaskMutation, useUpdateTaskMutation, useDeleteTaskMutation } = tasksApi;

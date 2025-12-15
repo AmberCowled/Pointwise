@@ -1,7 +1,7 @@
 import prisma from "@pointwise/lib/prisma";
 import { verifyProjectAccess, isProjectUserOrHigher, isProjectAdmin } from "@pointwise/lib/api/projectsV2";
 import { TaskV2 as PrismaTaskV2 } from "@prisma/client";
-import { TaskV2 } from "@pointwise/lib/api/types";
+import { TaskV2Schema, TaskV2 } from "@pointwise/lib/validation/tasks-schema";
 import { CreateTaskRequest, UpdateTaskRequest } from "@pointwise/lib/validation/tasks-schema";
 
 export async function getTasks(projectId: string, userId: string): Promise<PrismaTaskV2[]> {
@@ -104,7 +104,7 @@ export async function deleteTask(taskId: string, userId: string): Promise<void> 
 }
 
 export function serializeTask(task: PrismaTaskV2): TaskV2 {
-    return {
+    return TaskV2Schema.parse({
         id: task.id,
         title: task.title,
         description: task.description,
@@ -120,5 +120,5 @@ export function serializeTask(task: PrismaTaskV2): TaskV2 {
         status: task.status as 'PENDING' | 'COMPLETED',
         createdAt: task.createdAt.toISOString(),
         updatedAt: task.updatedAt.toISOString(),
-    };
+    });
 }

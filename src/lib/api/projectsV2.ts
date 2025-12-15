@@ -1,13 +1,7 @@
 import { ApiError } from '@pointwise/lib/api/errors';
 import prisma from '@pointwise/lib/prisma';
 import { Project as PrismaProject } from '@prisma/client';
-import type {
-  ProjectRole,
-  Project,
-  ProjectWithRole,
-  CreateProjectRequest,
-  UpdateProjectRequest,
-} from '@pointwise/lib/api/types';
+import { ProjectSchema, Project, ProjectRole, CreateProjectRequest, UpdateProjectRequest } from '@pointwise/lib/validation/projects-schema';
 
 export async function createProject(
   request: CreateProjectRequest,
@@ -18,10 +12,14 @@ export async function createProject(
       name: request.name,
       description: request.description || null,
       visibility: request.visibility || 'PRIVATE',
-      adminUserIds: [userId],
-      projectUserIds: [],
-      viewerUserIds: [],
-      joinRequestUserIds: [],
+      adminUserIds: [userId]
+    },
+    include: {
+      _count: {
+        select: {
+          tasksV2: true,
+        },
+      },
     },
   });
   return project;
@@ -35,16 +33,16 @@ export async function getProject(
     where: {
       id: projectId,
     },
+    include: {
+      _count: {
+        select: {
+          tasksV2: true,
+        },
+      },
+    },
   });
 
-  if (
-    project.visibility === 'PUBLIC' ||
-    [
-      ...project.adminUserIds,
-      ...project.projectUserIds,
-      ...project.viewerUserIds,
-    ].includes(userId)
-  ) {
+  if (project.visibility === 'PUBLIC' || [...project.adminUserIds, ...project.projectUserIds, ...project.viewerUserIds].includes(userId)) {
     return project;
   }
 
@@ -60,10 +58,18 @@ export async function getProjects(userId: string): Promise<PrismaProject[]> {
         { viewerUserIds: { has: userId } },
       ],
     },
+    include: {
+      _count: {
+        select: {
+          tasksV2: true,
+        },
+      },
+    },
     orderBy: {
       updatedAt: 'desc',
     },
   });
+
   return projects;
 }
 
@@ -72,19 +78,22 @@ export function getUserRoleInProject(
   userId: string,
 ): ProjectRole {
   if (project.adminUserIds.includes(userId)) {
-    return 'admin';
+    return 'ADMIN';
   }
   if (project.projectUserIds.includes(userId)) {
-    return 'user';
+    return 'USER';
   }
   if (project.viewerUserIds.includes(userId)) {
-    return 'viewer';
+    return 'VIEWER';
   }
-  return 'none';
+  return 'NONE';
 }
 
-export function serializeProject(project: PrismaProject): Project {
-  return {
+export function serializeProject(
+  project: PrismaProject & { _count?: { tasksV2: number } },
+  userId: string
+): Project {
+  return ProjectSchema.parse({
     id: project.id,
     name: project.name,
     description: project.description || null,
@@ -95,17 +104,9 @@ export function serializeProject(project: PrismaProject): Project {
     joinRequestUserIds: project.joinRequestUserIds || [],
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
-  };
-}
-
-export function serializeProjectWithRole(
-  project: PrismaProject,
-  userId: string,
-): ProjectWithRole {
-  return {
-    ...serializeProject(project),
+    taskCount: project._count?.tasksV2 ?? 0,
     role: getUserRoleInProject(project, userId),
-  };
+  });
 }
 
 export async function verifyProjectAccess(projectId: string, userId: string): Promise<boolean> {

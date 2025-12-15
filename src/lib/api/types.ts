@@ -2,6 +2,9 @@
  * Shared API types for client-server communication
  */
 
+import { TaskV2Schema } from "../validation/tasks-schema";
+import { z } from "zod";
+
 // ============================================================================
 // Project Types
 // ============================================================================
@@ -111,23 +114,8 @@ export interface Task {
   updatedAt: string;
 }
 
-export interface TaskV2 {
-  id: string;
-  projectId: string;
-  title: string;
-  description: string | null;
-  xpAward: number;
-  category: string;
-  optional: boolean;
-  startDate: string | null;
-  startTime: string | null;
-  dueDate: string | null;
-  dueTime: string | null;
-  completedAt: string | null;
-  status: 'PENDING' | 'COMPLETED';
-  createdAt: string;
-  updatedAt: string;
-}
+
+export type TaskV2 = z.infer<typeof TaskV2Schema>;
 
 export interface GetTasksResponse {
   tasks: TaskV2[];
@@ -158,14 +146,14 @@ export interface CreateTaskRequest {
 export interface CreateTaskRequestV2 {
   projectId: string;
   title: string;
-  description: string | null;
+  description: string | null | undefined;
   xpAward: number;
   category: string;
-  optional: boolean;
-  startDate: string | null;
-  startTime: string | null;
-  dueDate: string | null;
-  dueTime: string | null;
+  optional: boolean | undefined;
+  startDate: string | null | undefined;
+  startTime: string | null | undefined;
+  dueDate: string | null | undefined;
+  dueTime: string | null | undefined;
 }
 
 export interface CreateTaskResponseV2 {

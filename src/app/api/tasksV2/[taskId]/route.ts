@@ -9,8 +9,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ taskId
       return errorResponse('Task ID required', 400);
     }
 
-    const task = await updateTask(taskId, body!, user.id);
-    return jsonResponse({ task: serializeTask(task) });
+    const prismaTask = await updateTask(taskId, body!, user.id);
+    const task = serializeTask(prismaTask);
+    return jsonResponse({ task });
   }, UpdateTaskRequestSchema);
 }
 
