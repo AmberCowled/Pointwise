@@ -1,6 +1,6 @@
 import { handleProtectedRoute, jsonResponse } from "@pointwise/lib/api/route-handler";
 import { getTasks, createTask, serializeTask } from "@pointwise/lib/api/tasks";
-import { GetTasksRequestSchema, CreateTaskRequestSchema } from "@pointwise/lib/validation/tasks-schema";
+import { GetTasksRequestSchema, CreateTaskRequestSchema, CreateTaskResponseSchema } from "@pointwise/lib/validation/tasks-schema";
 
 export async function GET(req: Request) {
   return handleProtectedRoute(req, async ({ user, query }) => {
@@ -12,7 +12,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   return handleProtectedRoute(req, async ({ user, body }) => {
-    const task = await createTask(body!, user.id);
-    return jsonResponse({ task: serializeTask(task) }, 201);
+    const prismaTask = await createTask(body!, user.id);
+    const task = serializeTask(prismaTask);
+    return jsonResponse({ task }, 201);
   }, CreateTaskRequestSchema);
 }

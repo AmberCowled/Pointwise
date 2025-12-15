@@ -6,7 +6,7 @@ import {
   getProject,
   updateProject,
   deleteProject,
-  serializeProjectWithRole,
+  serializeProject,
 } from '@pointwise/lib/api/projectsV2';
 import { UpdateProjectRequestSchema } from '@pointwise/lib/validation/projects-schema';
 
@@ -16,9 +16,9 @@ export async function GET(
 ) {
   return handleProtectedRoute(req, async ({ user }) => {
     const { id } = await params;
-    const project = await getProject(id, user.id);
-    const serializedProject = serializeProjectWithRole(project, user.id);
-    return jsonResponse({ project: serializedProject });
+    const prismaProject = await getProject(id, user.id);
+    const project = serializeProject(prismaProject, user.id);
+    return jsonResponse({ project });
   });
 }
 
@@ -30,9 +30,9 @@ export async function PATCH(
     req,
     async ({ user, body }) => {
       const { id } = await params;
-      const project = await updateProject(id, body!, user.id);
-      const serializedProject = serializeProjectWithRole(project, user.id);
-      return jsonResponse({ project: serializedProject });
+      const prismaProject = await updateProject(id, body!, user.id);
+      const project = serializeProject(prismaProject, user.id);
+      return jsonResponse({ project });
     },
     UpdateProjectRequestSchema,
   );

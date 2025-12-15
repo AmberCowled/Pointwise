@@ -2,12 +2,12 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type {
   GetProjectResponse,
   GetProjectsResponse,
-  CreateProjectResponse,
   CreateProjectRequest,
-  UpdateProjectResponse,
+  CreateProjectResponse,
   UpdateProjectRequest,
+  UpdateProjectResponse,
   DeleteProjectResponse,
-} from '@pointwise/lib/api/types';
+} from '@pointwise/lib/validation/projects-schema';
 
 export const projectApi = createApi({
   reducerPath: 'projectApi',
