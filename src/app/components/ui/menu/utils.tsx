@@ -1,19 +1,19 @@
-import clsx from 'clsx';
-import Link from 'next/link';
-import React from 'react';
-import type { ReactNode } from 'react';
+import clsx from "clsx";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import React from "react";
+import type { MenuProps } from "./Menu";
+import { Menu } from "./Menu";
 import {
-  baseItemStyle,
-  dangerItemStyle,
-  disabledItemStyle,
-  itemVariantStyles,
-  selectedItemStyle,
-  sizeStyles,
-  type MenuSize,
-  type MenuVariant,
-} from './MenuContext';
-import { Menu } from './Menu';
-import type { MenuProps } from './Menu';
+	baseItemStyle,
+	dangerItemStyle,
+	disabledItemStyle,
+	itemVariantStyles,
+	type MenuSize,
+	type MenuVariant,
+	selectedItemStyle,
+	sizeStyles,
+} from "./MenuContext";
 
 /**
  * MenuItem className building
@@ -21,14 +21,14 @@ import type { MenuProps } from './Menu';
  * Constructs the className string for a menu item based on its state and props.
  */
 interface MenuItemClassNameParams {
-  variant: MenuVariant;
-  size: MenuSize;
-  isSelected: boolean;
-  isDanger: boolean;
-  isDisabled: boolean;
-  isFocused: boolean;
-  itemClassName?: string;
-  className?: string;
+	variant: MenuVariant;
+	size: MenuSize;
+	isSelected: boolean;
+	isDanger: boolean;
+	isDisabled: boolean;
+	isFocused: boolean;
+	itemClassName?: string;
+	className?: string;
 }
 
 /**
@@ -41,25 +41,25 @@ interface MenuItemClassNameParams {
  * @returns Combined className string
  */
 export function getMenuItemClassName({
-  variant,
-  size,
-  isSelected,
-  isDanger,
-  isDisabled,
-  isFocused,
-  itemClassName,
-  className,
+	variant,
+	size,
+	isSelected,
+	isDanger,
+	isDisabled,
+	isFocused,
+	itemClassName,
+	className,
 }: MenuItemClassNameParams): string {
-  return clsx(
-    baseItemStyle,
-    sizeStyles[size],
-    isSelected && selectedItemStyle,
-    !isSelected && (isDanger ? dangerItemStyle : itemVariantStyles[variant]),
-    isDisabled && disabledItemStyle,
-    isFocused && !isDisabled && !isSelected && 'bg-white/10',
-    itemClassName,
-    className,
-  );
+	return clsx(
+		baseItemStyle,
+		sizeStyles[size],
+		isSelected && selectedItemStyle,
+		!isSelected && (isDanger ? dangerItemStyle : itemVariantStyles[variant]),
+		isDisabled && disabledItemStyle,
+		isFocused && !isDisabled && !isSelected && "bg-white/10",
+		itemClassName,
+		className,
+	);
 }
 
 // Badge rendering
@@ -69,7 +69,7 @@ export function getMenuItemClassName({
  * @returns Formatted count string
  */
 export function formatBadgeCount(count: number): string {
-  return count > 99 ? '99+' : String(count);
+	return count > 99 ? "99+" : String(count);
 }
 
 /**
@@ -79,15 +79,15 @@ export function formatBadgeCount(count: number): string {
  * @returns Badge element or null
  */
 export function renderBadge(badge?: ReactNode, count?: number): ReactNode {
-  if (badge) return badge;
-  if (count !== undefined && count > 0) {
-    return (
-      <span className="inline-flex items-center justify-center rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-200">
-        {formatBadgeCount(count)}
-      </span>
-    );
-  }
-  return null;
+	if (badge) return badge;
+	if (count !== undefined && count > 0) {
+		return (
+			<span className="inline-flex items-center justify-center rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-200">
+				{formatBadgeCount(count)}
+			</span>
+		);
+	}
+	return null;
 }
 
 // Link/Button props handling
@@ -95,9 +95,9 @@ export function renderBadge(badge?: ReactNode, count?: number): ReactNode {
  * Parameters for determining link vs button props
  */
 interface LinkPropsParams {
-  href?: string;
-  external?: boolean;
-  onClick?: () => void;
+	href?: string;
+	external?: boolean;
+	onClick?: () => void;
 }
 
 /**
@@ -111,24 +111,24 @@ interface LinkPropsParams {
  * @returns Props object for either Link or button component
  */
 export function getLinkProps({
-  href,
-  external,
-  onClick,
+	href,
+	external,
+	onClick,
 }: LinkPropsParams):
-  | { as: typeof Link; href: string; target?: string; rel?: string }
-  | { as: 'button'; onClick?: () => void } {
-  if (href) {
-    return {
-      as: Link,
-      href,
-      target: external ? '_blank' : undefined,
-      rel: external ? 'noopener noreferrer' : undefined,
-    };
-  }
-  return {
-    as: 'button' as const,
-    onClick,
-  };
+	| { as: typeof Link; href: string; target?: string; rel?: string }
+	| { as: "button"; onClick?: () => void } {
+	if (href) {
+		return {
+			as: Link,
+			href,
+			target: external ? "_blank" : undefined,
+			rel: external ? "noopener noreferrer" : undefined,
+		};
+	}
+	return {
+		as: "button" as const,
+		onClick,
+	};
 }
 
 // Type guards for link/button props
@@ -138,9 +138,9 @@ export function getLinkProps({
  * @returns True if props are for a Link
  */
 export function isLinkProps(
-  props: ReturnType<typeof getLinkProps>,
+	props: ReturnType<typeof getLinkProps>,
 ): props is { as: typeof Link; href: string; target?: string; rel?: string } {
-  return 'href' in props && props.as === Link;
+	return "href" in props && props.as === Link;
 }
 
 /**
@@ -149,9 +149,9 @@ export function isLinkProps(
  * @returns True if props are for a button
  */
 export function isButtonProps(
-  props: ReturnType<typeof getLinkProps>,
-): props is { as: 'button'; onClick?: () => void } {
-  return props.as === 'button';
+	props: ReturnType<typeof getLinkProps>,
+): props is { as: "button"; onClick?: () => void } {
+	return props.as === "button";
 }
 
 /**
@@ -174,30 +174,28 @@ export function isButtonProps(
  * ```
  */
 export function detectNestedMenu(children: ReactNode): {
-  hasNestedMenu: boolean;
-  nestedMenu?: React.ReactElement;
-  customContent: ReactNode;
+	hasNestedMenu: boolean;
+	nestedMenu?: React.ReactElement;
+	customContent: ReactNode;
 } {
-  const childrenArray = React.Children.toArray(children);
-  let nestedMenu: React.ReactElement | undefined;
-  let hasNestedMenu = false;
+	const childrenArray = React.Children.toArray(children);
+	let nestedMenu: React.ReactElement | undefined;
+	let hasNestedMenu = false;
 
-  // Single pass to find nested menu
-  for (const child of childrenArray) {
-    if (React.isValidElement(child) && child.type === Menu) {
-      nestedMenu = child as React.ReactElement;
-      hasNestedMenu = true;
-      break;
-    }
-  }
+	// Single pass to find nested menu
+	for (const child of childrenArray) {
+		if (React.isValidElement(child) && child.type === Menu) {
+			nestedMenu = child as React.ReactElement;
+			hasNestedMenu = true;
+			break;
+		}
+	}
 
-  const customContent = hasNestedMenu
-    ? childrenArray.filter(
-        (child) => !(React.isValidElement(child) && child.type === Menu),
-      )
-    : children;
+	const customContent = hasNestedMenu
+		? childrenArray.filter((child) => !(React.isValidElement(child) && child.type === Menu))
+		: children;
 
-  return { hasNestedMenu, nestedMenu, customContent };
+	return { hasNestedMenu, nestedMenu, customContent };
 }
 
 /**
@@ -209,15 +207,13 @@ export function detectNestedMenu(children: ReactNode): {
  * @param menu - The Menu React element to clone
  * @returns Cloned Menu element with submenu-specific props
  */
-export function cloneMenuForSubmenu(
-  menu: React.ReactElement,
-): React.ReactElement {
-  return React.cloneElement(menu, {
-    isSubmenu: true,
-    trigger: undefined,
-    triggerLabel: undefined,
-    triggerBadge: undefined,
-    triggerBadgeCount: undefined,
-    width: undefined,
-  } as Partial<MenuProps>);
+export function cloneMenuForSubmenu(menu: React.ReactElement): React.ReactElement {
+	return React.cloneElement(menu, {
+		isSubmenu: true,
+		trigger: undefined,
+		triggerLabel: undefined,
+		triggerBadge: undefined,
+		triggerBadgeCount: undefined,
+		width: undefined,
+	} as Partial<MenuProps>);
 }

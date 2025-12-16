@@ -1,10 +1,7 @@
-'use client';
+"use client";
 
-import {
-  MenuSection as HeadlessMenuSection,
-  MenuHeading,
-} from '@headlessui/react';
-import type { ReactNode } from 'react';
+import { MenuSection as HeadlessMenuSection, MenuHeading } from "@headlessui/react";
+import type { ReactNode } from "react";
 
 /**
  * MenuSection Component
@@ -26,25 +23,25 @@ import type { ReactNode } from 'react';
  * ```
  */
 export interface MenuSectionProps {
-  /**
-   * Optional section title displayed above the items
-   */
-  title?: ReactNode;
-  /**
-   * Menu items to display in this section
-   */
-  children: ReactNode;
+	/**
+	 * Optional section title displayed above the items
+	 */
+	title?: ReactNode;
+	/**
+	 * Menu items to display in this section
+	 */
+	children: ReactNode;
 }
 
 export function MenuSection({ title, children }: MenuSectionProps) {
-  return (
-    <HeadlessMenuSection>
-      {title && (
-        <MenuHeading className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-          {title}
-        </MenuHeading>
-      )}
-      {children}
-    </HeadlessMenuSection>
-  );
+	return (
+		<HeadlessMenuSection>
+			{title && (
+				<MenuHeading className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+					{title}
+				</MenuHeading>
+			)}
+			{children}
+		</HeadlessMenuSection>
+	);
 }

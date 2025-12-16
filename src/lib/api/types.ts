@@ -2,64 +2,64 @@
  * Shared API types for client-server communication
  */
 
-import { TaskV2Schema } from "../validation/tasks-schema";
-import { z } from "zod";
+import type { z } from "zod";
+import type { TaskV2Schema } from "../validation/tasks-schema";
 
 // ============================================================================
 // Project Types
 // ============================================================================
 
-export type ProjectVisibility = 'PRIVATE' | 'PUBLIC';
+export type ProjectVisibility = "PRIVATE" | "PUBLIC";
 
-export type ProjectRole = 'admin' | 'user' | 'viewer' | 'none';
+export type ProjectRole = "admin" | "user" | "viewer" | "none";
 
 export interface Project {
-  id: string;
-  name: string;
-  description: string | null;
-  visibility: ProjectVisibility;
-  adminUserIds: string[];
-  projectUserIds: string[];
-  viewerUserIds: string[];
-  joinRequestUserIds: string[];
-  createdAt: string;
-  updatedAt: string;
+	id: string;
+	name: string;
+	description: string | null;
+	visibility: ProjectVisibility;
+	adminUserIds: string[];
+	projectUserIds: string[];
+	viewerUserIds: string[];
+	joinRequestUserIds: string[];
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface ProjectWithRole extends Project {
-  role: ProjectRole;
+	role: ProjectRole;
 }
 
 export interface CreateProjectRequest {
-  name: string;
-  description?: string;
-  visibility?: ProjectVisibility;
+	name: string;
+	description?: string;
+	visibility?: ProjectVisibility;
 }
 
 export interface CreateProjectResponse {
-  project: Project;
+	project: Project;
 }
 
 export interface UpdateProjectRequest {
-  name?: string;
-  description?: string;
-  visibility?: ProjectVisibility;
+	name?: string;
+	description?: string;
+	visibility?: ProjectVisibility;
 }
 
 export interface UpdateProjectResponse {
-  project: Project;
+	project: Project;
 }
 
 export interface GetProjectResponse {
-  project: Project;
+	project: Project;
 }
 
 export interface GetProjectsResponse {
-  projects: Project[];
+	projects: Project[];
 }
 
 export interface DeleteProjectResponse {
-  success: boolean;
+	success: boolean;
 }
 
 // ============================================================================
@@ -68,235 +68,234 @@ export interface DeleteProjectResponse {
 
 // Recurrence pattern type
 export interface RecurrencePattern {
-  type: 'daily' | 'weekly' | 'monthly';
-  interval?: number;
-  daysOfWeek?: number[];
-  daysOfMonth?: number[];
-  timesOfDay?: string[];
-  startDate: string; // ISO 8601 date string
-  endDate?: string; // ISO 8601 date string
-  maxOccurrences?: number;
+	type: "daily" | "weekly" | "monthly";
+	interval?: number;
+	daysOfWeek?: number[];
+	daysOfMonth?: number[];
+	timesOfDay?: string[];
+	startDate: string; // ISO 8601 date string
+	endDate?: string; // ISO 8601 date string
+	maxOccurrences?: number;
 }
 
 // Task types
 export interface Task {
-  id: string;
-  projectId: string; // Tasks belong to projects
-  title: string;
-  category: string | null;
-  xp: number;
-  context: string | null;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  completed?: boolean;
-  startDate: string | null;
-  startTime: string | null;
-  dueDate: string | null;
-  dueTime: string | null;
-  completedAt: string | null;
+	id: string;
+	projectId: string; // Tasks belong to projects
+	title: string;
+	category: string | null;
+	xp: number;
+	context: string | null;
+	status: "pending" | "in_progress" | "completed" | "cancelled";
+	completed?: boolean;
+	startDate: string | null;
+	startTime: string | null;
+	dueDate: string | null;
+	dueTime: string | null;
+	completedAt: string | null;
 
-  // Assignment
-  assignedUserIds: string[];
-  acceptedUserIds: string[];
+	// Assignment
+	assignedUserIds: string[];
+	acceptedUserIds: string[];
 
-  // Recurring pattern (if this is a recurring task template)
-  recurrencePattern?: RecurrencePattern;
+	// Recurring pattern (if this is a recurring task template)
+	recurrencePattern?: RecurrencePattern;
 
-  // Recurring instance tracking
-  isRecurringInstance: boolean;
-  sourceRecurringTaskId: string | null;
-  recurrenceInstanceKey: string | null;
-  isEditedInstance: boolean;
-  editedInstanceKeys: string[];
+	// Recurring instance tracking
+	isRecurringInstance: boolean;
+	sourceRecurringTaskId: string | null;
+	recurrenceInstanceKey: string | null;
+	isEditedInstance: boolean;
+	editedInstanceKeys: string[];
 
-  // Creator tracking
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
+	// Creator tracking
+	createdBy: string;
+	createdAt: string;
+	updatedAt: string;
 }
-
 
 export type TaskV2 = z.infer<typeof TaskV2Schema>;
 
 export interface GetTasksResponse {
-  tasks: TaskV2[];
+	tasks: TaskV2[];
 }
 
 // Task creation request
 export interface CreateTaskRequest {
-  projectId: string; // Required: task belongs to a project
-  title: string;
-  category: string;
-  xpValue: number;
-  context?: string;
-  startDate?: string | null;
-  startTime?: string | null;
-  dueDate?: string | null;
-  dueTime?: string | null;
+	projectId: string; // Required: task belongs to a project
+	title: string;
+	category: string;
+	xpValue: number;
+	context?: string;
+	startDate?: string | null;
+	startTime?: string | null;
+	dueDate?: string | null;
+	dueTime?: string | null;
 
-  // Recurring pattern (optional - if provided, creates recurring task template)
-  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
-  recurrenceDays?: number[];
-  recurrenceMonthDays?: number[];
-  timesOfDay?: string[];
+	// Recurring pattern (optional - if provided, creates recurring task template)
+	recurrence?: "none" | "daily" | "weekly" | "monthly";
+	recurrenceDays?: number[];
+	recurrenceMonthDays?: number[];
+	timesOfDay?: string[];
 
-  // Assignment
-  assignedUserIds?: string[];
+	// Assignment
+	assignedUserIds?: string[];
 }
 
 export interface CreateTaskRequestV2 {
-  projectId: string;
-  title: string;
-  description: string | null | undefined;
-  xpAward: number;
-  category: string;
-  optional: boolean | undefined;
-  startDate: string | null | undefined;
-  startTime: string | null | undefined;
-  dueDate: string | null | undefined;
-  dueTime: string | null | undefined;
+	projectId: string;
+	title: string;
+	description: string | null | undefined;
+	xpAward: number;
+	category: string;
+	optional: boolean | undefined;
+	startDate: string | null | undefined;
+	startTime: string | null | undefined;
+	dueDate: string | null | undefined;
+	dueTime: string | null | undefined;
 }
 
 export interface CreateTaskResponseV2 {
-  task: TaskV2;
+	task: TaskV2;
 }
 
 export interface UpdateTaskRequestV2 {
-  title?: string;
-  description?: string | null;
-  xpAward?: number;
-  category?: string;
-  optional?: boolean;
-  startDate?: string | null;
-  startTime?: string | null;
-  dueDate?: string | null;
-  dueTime?: string | null;
-  status?: 'PENDING' | 'COMPLETED';
+	title?: string;
+	description?: string | null;
+	xpAward?: number;
+	category?: string;
+	optional?: boolean;
+	startDate?: string | null;
+	startTime?: string | null;
+	dueDate?: string | null;
+	dueTime?: string | null;
+	status?: "PENDING" | "COMPLETED";
 }
 
 export interface UpdateTaskResponseV2 {
-  task: TaskV2;
+	task: TaskV2;
 }
 
 export interface DeleteTaskRequestV2 {
-  taskId: string;
+	taskId: string;
 }
 
 export interface DeleteTaskResponseV2 {
-  success: boolean;
+	success: boolean;
 }
 
 // Task creation response
 export interface CreateTaskResponse {
-  tasks: Task[];
+	tasks: Task[];
 }
 
 // Task update request
 export interface UpdateTaskRequest {
-  title?: string;
-  category?: string;
-  xpValue?: number;
-  context?: string;
-  startDate?: string | null;
-  startTime?: string | null;
-  dueDate?: string | null;
-  dueTime?: string | null;
+	title?: string;
+	category?: string;
+	xpValue?: number;
+	context?: string;
+	startDate?: string | null;
+	startTime?: string | null;
+	dueDate?: string | null;
+	dueTime?: string | null;
 
-  // Recurring pattern fields
-  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
-  recurrenceDays?: number[];
-  recurrenceMonthDays?: number[];
-  timesOfDay?: string[];
+	// Recurring pattern fields
+	recurrence?: "none" | "daily" | "weekly" | "monthly";
+	recurrenceDays?: number[];
+	recurrenceMonthDays?: number[];
+	timesOfDay?: string[];
 
-  // Assignment
-  assignedUserIds?: string[];
-  acceptedUserIds?: string[];
+	// Assignment
+	assignedUserIds?: string[];
+	acceptedUserIds?: string[];
 }
 
 // Task update response
 // When scope=single, returns a single task
 // When scope=series, returns an array of tasks
 export interface UpdateTaskResponse {
-  task?: Task;
-  tasks?: Task[];
+	task?: Task;
+	tasks?: Task[];
 }
 
 // XP type
 export interface XP {
-  value: number; // current XP (totalXp)
-  lv: number; // current level
-  toNextLv: number; // XP needed to reach next level
-  nextLvAt: number; // total XP at which next level is reached
-  lvStartXP: number; // total XP at which current level started
-  progress: number; // 0-1 ratio for progress bar
+	value: number; // current XP (totalXp)
+	lv: number; // current level
+	toNextLv: number; // XP needed to reach next level
+	nextLvAt: number; // total XP at which next level is reached
+	lvStartXP: number; // total XP at which current level started
+	progress: number; // 0-1 ratio for progress bar
 }
 
 // XP get response
 export interface GetXPResponse {
-  xp: XP;
+	xp: XP;
 }
 
 // XP update request
 export interface UpdateXPRequest {
-  delta: number;
+	delta: number;
 }
 
 // Task complete response (includes updated task and XP snapshot)
 export interface CompleteTaskResponse {
-  task: Task;
-  xp: XP;
+	task: Task;
+	xp: XP;
 }
 
 // Task delete response
 export interface DeleteTaskResponse {
-  deletedIds: string[];
+	deletedIds: string[];
 }
 
 // User preferences request
 export interface UpdatePreferencesRequest {
-  locale: string;
-  timeZone: string;
+	locale: string;
+	timeZone: string;
 }
 
 // User preferences response
 export interface UpdatePreferencesResponse {
-  locale: string;
-  timeZone: string;
+	locale: string;
+	timeZone: string;
 }
 
 // Signup request
 export interface SignupRequest {
-  name?: string;
-  email: string;
-  password: string;
+	name?: string;
+	email: string;
+	password: string;
 }
 
 // Signup response
 export interface SignupResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
+	user: {
+		id: string;
+		email: string;
+		name: string | null;
+	};
 }
 
 // Get recurring task response (for backward compatibility during transition)
 export interface GetRecurringTaskResponse {
-  isRecurring: boolean;
-  recurringTask: {
-    id: string;
-    title: string;
-    description: string | null;
-    category: string;
-    xpValue: number;
-    startAt: string | null;
-    recurrence: 'daily' | 'weekly' | 'monthly';
-    recurrenceDays: number[];
-    recurrenceMonthDays: number[];
-    timesOfDay: string[];
-  } | null;
+	isRecurring: boolean;
+	recurringTask: {
+		id: string;
+		title: string;
+		description: string | null;
+		category: string;
+		xpValue: number;
+		startAt: string | null;
+		recurrence: "daily" | "weekly" | "monthly";
+		recurrenceDays: number[];
+		recurrenceMonthDays: number[];
+		timesOfDay: string[];
+	} | null;
 }
 
 // API error response (standard format from server)
 export interface ApiErrorResponse {
-  error: string;
+	error: string;
 }

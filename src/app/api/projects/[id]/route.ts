@@ -1,47 +1,38 @@
 import {
-  handleProtectedRoute,
-  jsonResponse,
-} from '@pointwise/lib/api/route-handler';
-import {
-  getProject,
-  updateProject,
-  deleteProject,
-  serializeProject,
-} from '@pointwise/lib/api/projectsV2';
-import { UpdateProjectRequestSchema } from '@pointwise/lib/validation/projects-schema';
+	deleteProject,
+	getProject,
+	serializeProject,
+	updateProject,
+} from "@pointwise/lib/api/projectsV2";
+import { handleProtectedRoute, jsonResponse } from "@pointwise/lib/api/route-handler";
+import { UpdateProjectRequestSchema } from "@pointwise/lib/validation/projects-schema";
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  return handleProtectedRoute(req, async ({ user }) => {
-    const { id } = await params;
-    const prismaProject = await getProject(id, user.id);
-    const project = serializeProject(prismaProject, user.id);
-    return jsonResponse({ project });
-  });
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+	return handleProtectedRoute(req, async ({ user }) => {
+		const { id } = await params;
+		const prismaProject = await getProject(id, user.id);
+		const project = serializeProject(prismaProject, user.id);
+		return jsonResponse({ project });
+	});
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  return handleProtectedRoute(
-    req,
-    async ({ user, body }) => {
-      const { id } = await params;
-      const prismaProject = await updateProject(id, body!, user.id);
-      const project = serializeProject(prismaProject, user.id);
-      return jsonResponse({ project });
-    },
-    UpdateProjectRequestSchema,
-  );
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+	return handleProtectedRoute(
+		req,
+		async ({ user, body }) => {
+			const { id } = await params;
+			const prismaProject = await updateProject(id, body!, user.id);
+			const project = serializeProject(prismaProject, user.id);
+			return jsonResponse({ project });
+		},
+		UpdateProjectRequestSchema,
+	);
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  return handleProtectedRoute(req, async ({ user }) => {
-    const { id } = await params;
-    const result = await deleteProject(id, user.id);
-    return jsonResponse({ success: result });
-  });
+	return handleProtectedRoute(req, async ({ user }) => {
+		const { id } = await params;
+		const result = await deleteProject(id, user.id);
+		return jsonResponse({ success: result });
+	});
 }
