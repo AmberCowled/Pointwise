@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { MenuSeparator } from '@headlessui/react';
+import { MenuSeparator } from "@headlessui/react";
 
 /**
  * MenuDivider Component
@@ -18,5 +18,5 @@ import { MenuSeparator } from '@headlessui/react';
  * ```
  */
 export function MenuDivider() {
-  return <MenuSeparator className="my-1 border-t border-white/10" />;
+	return <MenuSeparator className="my-1 border-t border-white/10" />;
 }

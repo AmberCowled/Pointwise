@@ -1,8 +1,8 @@
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-import NextAuth from 'next-auth';
-import { authOptions } from '@pointwise/lib/auth';
+import { authOptions } from "@pointwise/lib/auth";
+import NextAuth from "next-auth";
 
 const handler = NextAuth(authOptions);
 

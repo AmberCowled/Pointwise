@@ -1,4 +1,4 @@
 /**
  * Authentication tab type
  */
-export type AuthTab = 'signin' | 'signup';
+export type AuthTab = "signin" | "signup";

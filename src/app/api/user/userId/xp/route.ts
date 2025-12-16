@@ -10,6 +10,6 @@
 import { jsonResponse } from "@pointwise/lib/api/route-handler";
 
 export async function GET() {
-    //TODO: Implement privacy levels for accounts and function logic...
-  return jsonResponse({ xp: 0 });
+	//TODO: Implement privacy levels for accounts and function logic...
+	return jsonResponse({ xp: 0 });
 }
