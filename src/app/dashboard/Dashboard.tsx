@@ -19,7 +19,7 @@ import { useUserPreferences } from "@pointwise/hooks/useUserPreferences";
 import type { AnalyticsSnapshot } from "@pointwise/lib/analytics";
 import { useApi } from "@pointwise/lib/api";
 import { useGetXPQuery } from "@pointwise/lib/redux/services/xpApi";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type DashboardProps = {
 	today: string;
@@ -42,7 +42,6 @@ type DashboardProps = {
 
 export default function Dashboard({
 	today,
-	displayName,
 	initials,
 	tasks,
 	profile,
@@ -51,7 +50,6 @@ export default function Dashboard({
 	initialAnalytics,
 	initialSelectedDateMs,
 	initialNowMs,
-	project,
 }: DashboardProps) {
 	const [taskItems, setTaskItems] = useState<DashboardTask[]>(Array.isArray(tasks) ? tasks : []);
 	const [searchQuery, setSearchQuery] = useState("");
