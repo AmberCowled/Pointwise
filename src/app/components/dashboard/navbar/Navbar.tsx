@@ -7,7 +7,6 @@ import { InputSelect } from "@pointwise/app/components/ui/InputSelect";
 import { Menu, MenuDivider, MenuItem, MenuSection } from "@pointwise/app/components/ui/menus";
 import { ProgressBar } from "@pointwise/app/components/ui/ProgressBar";
 import { useGetXPQuery } from "@pointwise/lib/redux/services/xpApi";
-import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useMemo, useState } from "react";
 import {
@@ -77,14 +76,14 @@ export default function Navbar({
 	const numberFormatter = useMemo(() => new Intl.NumberFormat(locale ?? "en-US"), [locale]);
 
 	const progressPercent = Math.min(100, Math.round(progress * 100));
-	const [showTooltip, setShowTooltip] = useState(false);
+	// const [showTooltip, setShowTooltip] = useState(false);
 	const [searchFilter, setSearchFilter] = useState<"tasks" | "people">("tasks");
 
 	return (
 		<div className="sticky top-0 z-40 w-full border-b border-white/5 bg-zinc-950/90 backdrop-blur">
 			<div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
 				<div className="flex items-center gap-2 sm:gap-6">
-					<BrandHeader asLink size="small" align="left" showText={true} showEyebrow={true} />
+					<BrandHeader asLink size="small" align="left" showEyebrow={true} />
 					<form className="flex flex-1 items-center gap-2 min-w-[140px]">
 						<div className={`flex-1 min-w-0 ${INPUT_WRAPPER_CLASS}`}>
 							<Input
@@ -118,6 +117,7 @@ export default function Navbar({
 								<button
 									className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:border-indigo-400/60 hover:bg-indigo-500/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
 									aria-label="User menu"
+									type="button"
 								>
 									<span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-semibold text-indigo-200">
 										{initials}
@@ -173,6 +173,7 @@ export default function Navbar({
 									onClick={onRetryXP}
 									className="flex items-center gap-2 rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 transition hover:border-rose-400/50 hover:bg-rose-500/20"
 									title="Failed to load XP. Click to retry."
+									type="button"
 								>
 									<IoWarning className="h-4 w-4 text-rose-400" />
 									<span className="text-xs uppercase tracking-wider text-rose-400">Level</span>
@@ -256,13 +257,14 @@ export default function Navbar({
 						<div className="h-2 overflow-hidden rounded-full bg-rose-500/10 border border-rose-400/20"></div>
 					) : isLoading ? (
 						<div className="h-2 overflow-hidden rounded-full bg-white/5">
-							<div className="h-full w-1/3 animate-pulse bg-gradient-to-r from-indigo-500/30 via-fuchsia-500/30 to-rose-500/30"></div>
+							<div className="h-full w-1/3 animate-pulse bg-linear-to-r from-indigo-500/30 via-fuchsia-500/30 to-rose-500/30"></div>
 						</div>
 					) : progress > 0 ? (
 						<div
 							className="relative"
-							onMouseEnter={() => setShowTooltip(true)}
-							onMouseLeave={() => setShowTooltip(false)}
+							// TODO: Add tooltip functionality
+							//onMouseEnter={() => setShowTooltip(true)}
+							//onMouseLeave={() => setShowTooltip(false)}
 						>
 							<ProgressBar
 								value={progressPercent}
@@ -278,7 +280,8 @@ export default function Navbar({
 								xpRemaining={xpRemaining}
 								nextLevel={level + 1}
 								formatter={numberFormatter}
-								show={showTooltip}
+								// show={showTooltip}
+								show={false}
 							/>
 						</div>
 					) : null}

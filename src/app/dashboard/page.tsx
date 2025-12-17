@@ -16,8 +16,6 @@ export default async function DashboardPage() {
 		redirect("/");
 	}
 
-	const displayName = session.user?.name?.split(" ")[0] ?? session.user?.email ?? "Adventurer";
-
 	const userRecord = session.user?.email
 		? await prisma.user.findUnique({
 				where: { email: session.user.email },
