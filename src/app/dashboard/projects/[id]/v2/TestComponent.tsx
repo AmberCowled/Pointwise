@@ -2,13 +2,13 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
-import { useCreateTaskMutation, useDeleteTaskMutation, useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
+import {
+	useCreateTaskMutation,
+	useDeleteTaskMutation,
+	useGetTasksQuery,
+} from "@pointwise/lib/redux/services/tasksApi";
 
-export default function TestComponent({
-	projectId,
-}: {
-	projectId: string;
-}) {
+export default function TestComponent({ projectId }: { projectId: string }) {
 	const { data: project } = useGetProjectQuery(projectId);
 	const tasks = useGetTasksQuery({ projectId });
 	const [createTask] = useCreateTaskMutation();
@@ -33,7 +33,6 @@ export default function TestComponent({
 					Create Task
 				</Button>
 			</div>
-
 			<div>
 				<h2 className="text-lg font-bold">Tasks</h2>
 				{tasks.data?.tasks.map((task) => (
@@ -54,9 +53,7 @@ export default function TestComponent({
 							<li>Updated At: {task.updatedAt}</li>
 							<li>{true}</li>
 						</ul>
-						<Button onClick={() => deleteTask({ taskId: task.id })}>
-							Delete Task
-						</Button>
+						<Button onClick={() => deleteTask({ taskId: task.id })}>Delete Task</Button>
 					</div>
 				))}
 			</div>

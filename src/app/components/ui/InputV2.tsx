@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import type React from "react";
 import { forwardRef, useId, useState } from "react";
+import { IoSearch } from "react-icons/io5";
 import { CharCount } from "./CharCount";
 import { InputHeader } from "./InputHeader";
 import { ProgressBar } from "./ProgressBar";
@@ -84,14 +85,32 @@ export interface InputV2CustomProps {
 	 * @default 90
 	 */
 	charCountErrorThreshold?: number;
+
+	/**
+	 * Callback fired when user submits search (Enter key or button click)
+	 * Optional - button can be shown without callback for visual consistency
+	 * @param value - The current input value
+	 */
+	onSearch?: (value: string) => void;
+
+	/**
+	 * Whether to show the search button on the right side
+	 * Works independently of `onSearch` - button will appear if `true` even without callback
+	 * Useful for front-end only implementations where backend will wire up later
+	 * Button will be disabled (non-functional) if `showSearchButton={true}` but `onSearch` is not provided
+	 * @default false
+	 */
+	showSearchButton?: boolean;
 }
 
 /**
  * Props for the InputV2 component
  */
-export type InputV2Props = InputV2CustomProps & Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">;
+export type InputV2Props = InputV2CustomProps &
+	Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">;
 
-const baseStyle = "border text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:outline-none";
+const baseStyle =
+	"border text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:outline-none";
 
 const variantStyles: Record<InputVariants, string> = {
 	primary: "rounded-2xl border-white/10 bg-white/5",
@@ -154,19 +173,24 @@ const innerWidthClasses: Record<InputFlex, string> = {
  * - `showProgressBar?: boolean` - Show progress bar (default: false, requires maxLength)
  * - `charCountWarningThreshold?: number` - Warning threshold % (default: 70)
  * - `charCountErrorThreshold?: number` - Error threshold % (default: 90)
+ * - `onSearch?: (value: string) => void` - Callback fired when user submits search (Enter key or button click)
+ * - `showSearchButton?: boolean` - Show search button on the right side (default: false). Works independently of `onSearch` for better DX
  *
  * All standard HTML input attributes are also supported.
  *
  * @example
  * ```tsx
+ * // With callback wired up
  * <InputV2
- *   label="Email"
- *   type="email"
- *   variant="primary"
- *   size="md"
- *   flex="grow"
- *   showCharCount
- *   maxLength={100}
+ *   placeholder="Search..."
+ *   showSearchButton
+ *   onSearch={(value) => console.log("Searching:", value)}
+ * />
+ *
+ * // Front-end only (button visible but disabled until callback added)
+ * <InputV2
+ *   placeholder="Search..."
+ *   showSearchButton
  * />
  * ```
  */
@@ -183,6 +207,8 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 		showProgressBar = false,
 		charCountWarningThreshold = 70,
 		charCountErrorThreshold = 90,
+		onSearch,
+		showSearchButton = false,
 		className,
 		id,
 		disabled,
@@ -218,6 +244,20 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 			setInternalValue(e.target.value);
 		}
 		onChange?.(e);
+	};
+
+	const handleSearch = () => {
+		if (!disabled && onSearch) {
+			onSearch(inputValue);
+		}
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter" && !disabled && onSearch) {
+			e.preventDefault();
+			handleSearch();
+		}
+		props.onKeyDown?.(e);
 	};
 
 	const getProgressBarColor = (normalisedUsage: number) => {
@@ -258,12 +298,13 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 						{...(isControlled ? { value } : { defaultValue })}
 						maxLength={maxLength}
 						onChange={handleChange}
+						onKeyDown={handleKeyDown}
 						className={clsx(
 							baseStyle,
 							variantStyles[variant],
 							sizeStyles[size],
 							"w-full",
-							showPasswordToggle && "pr-10",
+							(showPasswordToggle || showSearchButton) && "pr-10",
 							disabled && disabledStyle,
 							!disabled && error && variantErrorStyles[variant],
 							!disabled && !error && variantFocusStyles[variant],
@@ -272,12 +313,31 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 						)}
 					/>
 
-					{showPasswordToggle && (
-						<VisibilityToggle
-							visible={showPassword}
-							onToggle={() => setShowPassword((prev) => !prev)}
-						/>
-					)}
+					<div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
+						{showSearchButton && (
+							<button
+								type="button"
+								onClick={handleSearch}
+								disabled={disabled || !onSearch}
+								className={clsx(
+									"rounded-lg p-1.5 text-zinc-400 transition-all duration-200",
+									"hover:text-zinc-100 hover:bg-white/10 hover:scale-110",
+									"active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
+									(disabled || !onSearch) &&
+										"cursor-not-allowed opacity-50 hover:scale-100 hover:bg-transparent",
+								)}
+								aria-label="Search"
+							>
+								<IoSearch className="h-4 w-4" />
+							</button>
+						)}
+						{showPasswordToggle && (
+							<VisibilityToggle
+								visible={showPassword}
+								onToggle={() => setShowPassword((prev) => !prev)}
+							/>
+						)}
+					</div>
 				</div>
 
 				{shouldShowProgressBar && (
@@ -301,4 +361,3 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 InputV2.displayName = "InputV2";
 
 export default InputV2;
-
