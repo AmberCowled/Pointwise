@@ -211,9 +211,7 @@ function InputSelectV2({
 	const optionObjects = options.map((str) => ({ label: str, value: str }));
 
 	// Internal state management - auto-select first option
-	const [selectedValue, setSelectedValue] = useState<string>(
-		defaultValue ?? options[0] ?? "",
-	);
+	const [selectedValue, setSelectedValue] = useState<string>(defaultValue ?? options[0] ?? "");
 
 	// Find active option
 	const activeOption = optionObjects.find((option) => option.value === selectedValue);
@@ -279,7 +277,7 @@ function InputSelectV2({
 							)}
 						>
 							<span className="block truncate pr-8">
-								{activeOption ? activeOption.label : placeholder ?? "Select..."}
+								{activeOption ? activeOption.label : (placeholder ?? "Select...")}
 							</span>
 							<span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
 								<IoChevronDown className="h-4 w-4" aria-hidden="true" />
