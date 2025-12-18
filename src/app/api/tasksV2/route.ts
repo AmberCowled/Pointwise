@@ -2,7 +2,6 @@ import { handleProtectedRoute, jsonResponse } from "@pointwise/lib/api/route-han
 import { createTask, getTasks, serializeTask } from "@pointwise/lib/api/tasks";
 import {
 	CreateTaskRequestSchema,
-	CreateTaskResponseSchema,
 	GetTasksRequestSchema,
 } from "@pointwise/lib/validation/tasks-schema";
 

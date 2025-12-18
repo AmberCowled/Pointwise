@@ -1,5 +1,6 @@
-import type { UpdateXPRequest, XP } from "@pointwise/lib/api/types";
 import prisma from "@pointwise/lib/prisma";
+import { type UpdateXPRequest, type XP, XP_SCHEMA } from "@pointwise/lib/validation/xp-schema";
+import { ApiError } from "./errors";
 
 type XpCurve = { BASE: number; GROWTH: number; version: string };
 
@@ -66,22 +67,33 @@ export async function getXP(userId: string): Promise<number> {
  * Update XP for a user by ID
  *
  * @param userId - User ID to update XP for
- * @param delta - Amount to increment XP by
- * @param tx - Optional transaction client (for use within transactions)
- * @returns Updated XP value
+ * @param UpdateXPRequest - Request containing either value or delta
+ * @returns Updated XP data
  */
-export async function updateXP(
-	userId: string,
-	request: UpdateXPRequest,
-	tx?: Omit<typeof prisma, "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends">,
-): Promise<number> {
-	const client = (tx || prisma) as typeof prisma;
-	const result = await client.user.update({
+export async function updateXP(userId: string, request: UpdateXPRequest): Promise<number> {
+	const prismaUser = await prisma.user.findUniqueOrThrow({
 		where: { id: userId },
-		data: { xp: { increment: request.delta } },
 		select: { xp: true },
 	});
-	return result.xp;
+
+	let newXP = prismaUser.xp;
+	if (request.value !== undefined) {
+		newXP = request.value;
+	} else if (request.delta !== undefined) {
+		newXP = prismaUser.xp + request.delta;
+	}
+
+	if (newXP === prismaUser.xp) {
+		throw new ApiError("No XP change", 400);
+	}
+
+	const updatedPrismaUser = await prisma.user.update({
+		where: { id: userId },
+		data: { xp: newXP },
+		select: { xp: true },
+	});
+
+	return updatedPrismaUser.xp;
 }
 
 /**
@@ -93,12 +105,12 @@ export async function updateXP(
 export function serializeXP(xp: number): XP {
 	const result = calculateLevelFromXp(xp);
 
-	return {
+	return XP_SCHEMA.parse({
 		value: xp,
 		lv: result.level,
 		toNextLv: result.xpToNext - result.xpIntoLevel, // XP remaining to next level
 		nextLvAt: result.nextStart, // Total XP at which next level is reached
 		lvStartXP: result.start, // Total XP at which current level started
-		progress: result.progress,
-	};
+		progress: Math.round(result.progress * 100), // Convert 0-1 to 0-100 and round to integer
+	});
 }

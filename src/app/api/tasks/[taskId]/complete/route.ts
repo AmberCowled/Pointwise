@@ -103,7 +103,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ taskId
 
 				// Use the XP update function for single source of truth
 				// Pass transaction client to maintain atomicity
-				const nextXp = await updateXP(currentUser.id, { delta: xpIncrement }, tx);
+				const nextXp = await updateXP(currentUser.id, { delta: xpIncrement });
 				const xpSnapshot = serializeXP(nextXp);
 
 				return {
