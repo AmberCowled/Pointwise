@@ -1,4 +1,8 @@
-import type { GetXPResponse, UpdateXPRequest } from "@pointwise/lib/api/types";
+import type {
+	GetXPResponse,
+	UpdateXPRequest,
+	UpdateXPResponse,
+} from "@pointwise/lib/validation/xp-schema";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const xpApi = createApi({
@@ -9,12 +13,12 @@ export const xpApi = createApi({
 	refetchOnReconnect: true, // Refetch when internet reconnects
 	endpoints: (builder) => ({
 		getXP: builder.query<GetXPResponse, void>({
-			query: () => "/user/xp",
+			query: () => "/userV2/xp",
 			providesTags: ["XP"],
 		}),
-		updateXP: builder.mutation<GetXPResponse, UpdateXPRequest>({
+		updateXP: builder.mutation<UpdateXPResponse, UpdateXPRequest>({
 			query: (body) => ({
-				url: "/user/xp",
+				url: "/userV2/xp",
 				method: "PATCH",
 				body,
 			}),

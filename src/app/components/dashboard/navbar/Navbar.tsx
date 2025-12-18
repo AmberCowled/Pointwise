@@ -75,7 +75,7 @@ export default function Navbar({
 	const hasError = Boolean(xpError);
 	const numberFormatter = useMemo(() => new Intl.NumberFormat(locale ?? "en-US"), [locale]);
 
-	const progressPercent = Math.min(100, Math.round(progress * 100));
+	const progressPercent = Math.min(100, Math.round(progress));
 	// const [showTooltip, setShowTooltip] = useState(false);
 	const [searchFilter, setSearchFilter] = useState<"tasks" | "people">("tasks");
 
