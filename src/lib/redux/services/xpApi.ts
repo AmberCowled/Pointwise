@@ -27,4 +27,4 @@ export const xpApi = createApi({
 	}),
 });
 
-export const { useGetXPQuery } = xpApi;
+export const { useGetXPQuery, useUpdateXPMutation } = xpApi;
