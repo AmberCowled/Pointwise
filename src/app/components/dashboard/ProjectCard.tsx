@@ -46,7 +46,7 @@ export function ProjectCard({ project, userId, taskCount = 0, onSettingsClick }:
 		<Link href={`/dashboard/projects/${project.id}`} className="block group">
 			<div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm transition-all hover:border-zinc-700 hover:bg-zinc-900/80">
 				{/* Gradient overlay on hover */}
-				<div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 opacity-0 transition-opacity group-hover:opacity-10" />
+				<div className="absolute inset-0 bg-linear-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 opacity-0 transition-opacity group-hover:opacity-10" />
 
 				<div className="relative p-6">
 					{/* Header */}
@@ -61,7 +61,7 @@ export function ProjectCard({ project, userId, taskCount = 0, onSettingsClick }:
 						</div>
 
 						{/* Visibility badge & Settings button */}
-						<div className="ml-3 flex-shrink-0 flex items-center gap-2">
+						<div className="ml-3 shrink-0 flex items-center gap-2">
 							{/* Visibility badge */}
 							{project.visibility === "PUBLIC" ? (
 								<div className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800/50 rounded-md">

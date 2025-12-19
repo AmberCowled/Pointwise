@@ -95,6 +95,14 @@ export function getUserRoleInProject(
 	return "NONE";
 }
 
+export function getProjectMemberCount(project: Project | PrismaProject): number {
+	return (
+		(project.adminUserIds?.length ?? 0) +
+		(project.projectUserIds?.length ?? 0) +
+		(project.viewerUserIds?.length ?? 0)
+	);
+}
+
 export function serializeProject(
 	project: PrismaProject & { _count?: { tasksV2: number } },
 	userId: string,
