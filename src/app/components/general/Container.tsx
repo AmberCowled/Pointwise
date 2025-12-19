@@ -2,6 +2,35 @@ import clsx from "clsx";
 import type { ReactNode } from "react";
 
 /**
+ * Check if an element is interactive (Link, Button, input, etc.)
+ */
+function isInteractive(element: HTMLElement): boolean {
+	const tagName = element.tagName.toLowerCase();
+	const role = element.getAttribute("role");
+
+	// Check if element itself is interactive
+	if (
+		tagName === "a" ||
+		tagName === "button" ||
+		tagName === "input" ||
+		tagName === "select" ||
+		tagName === "textarea" ||
+		role === "button" ||
+		role === "link" ||
+		element.hasAttribute("onClick")
+	) {
+		return true;
+	}
+
+	// Check if element is inside an interactive element
+	if (element.closest("a, button, [role='button'], [role='link'], [onClick]")) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Props for the Container component
  */
 export interface ContainerProps {
@@ -43,6 +72,12 @@ export interface ContainerProps {
 	 * @default true
 	 */
 	fullWidth?: boolean;
+
+	/**
+	 * Click handler for the container
+	 * Only fires when clicking non-interactive areas (respects nested Links/Buttons)
+	 */
+	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 /**
@@ -55,6 +90,7 @@ export interface ContainerProps {
  * - `gap?: "none" | "xs" | "sm" | "md" | "lg" | "xl"` - Spacing between child elements (default: "md")
  * - `direction?: "vertical" | "horizontal"` - Flex direction (default: "horizontal")
  * - `fullWidth?: boolean` - Whether container takes full width with constraints (default: true)
+ * - `onClick?: (e: React.MouseEvent<HTMLDivElement>) => void` - Click handler (only fires on non-interactive areas)
  *
  * When `fullWidth={true}`, the container applies:
  * - Full width (`w-full`)
@@ -63,6 +99,9 @@ export interface ContainerProps {
  * - Responsive horizontal padding (`px-2 sm:px-6 lg:px-8`)
  *
  * When `fullWidth={false}`, the container only takes the width of its content.
+ *
+ * When `onClick` is provided, the container becomes visually clickable (cursor-pointer, hover effects)
+ * but respects nested interactive elements (Links, Buttons, etc.).
  *
  * @example
  * ```tsx
@@ -77,6 +116,12 @@ export interface ContainerProps {
  *   <BrandHeader />
  *   <Search />
  * </Container>
+ *
+ * // Clickable container (respects nested Links/Buttons)
+ * <Container onClick={() => openModal()}>
+ *   <Link href="/details">Details</Link>
+ *   <Button onClick={handleSettings}>Settings</Button>
+ * </Container>
  * ```
  *
  * @param {ContainerProps} props - The props for the Container component.
@@ -89,6 +134,7 @@ export default function Container({
 	direction = "horizontal",
 	fullWidth = true,
 	gap = "md",
+	onClick,
 }: ContainerProps) {
 	const maxWidthClasses = {
 		sm: "sm:max-w-sm",
@@ -113,8 +159,22 @@ export default function Container({
 		xl: "gap-8",
 	};
 
+	const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!onClick) return;
+
+		// Check if the clicked element is interactive
+		const target = e.target as HTMLElement;
+		if (isInteractive(target)) {
+			return; // Don't fire onClick if clicking an interactive element
+		}
+
+		// Fire the onClick handler
+		onClick(e);
+	};
+
 	return (
 		<div
+			onClick={onClick ? handleClick : undefined}
 			className={clsx(
 				"flex items-center",
 				gapClasses[gap],
@@ -122,6 +182,7 @@ export default function Container({
 					? ["mx-auto w-full", maxWidthClasses[maxWidth], "px-2 sm:px-6 lg:px-8"]
 					: "w-auto",
 				directionClasses[direction],
+				onClick && "cursor-pointer hover:opacity-90 transition-opacity",
 				className,
 			)}
 		>

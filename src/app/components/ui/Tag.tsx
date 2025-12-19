@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
+import type { IconType } from "react-icons";
 
 export type TagVariant = "primary" | "secondary" | "danger" | "success" | "warning" | "info";
 export type TagSize = "xs" | "sm" | "md" | "lg" | "xl";
@@ -9,6 +10,10 @@ export type TagSize = "xs" | "sm" | "md" | "lg" | "xl";
 export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
 	variant?: TagVariant;
 	size?: TagSize;
+	/**
+	 * Optional icon to display before the text
+	 */
+	icon?: IconType;
 	children: React.ReactNode;
 }
 
@@ -31,12 +36,28 @@ const sizeStyles: Record<TagSize, string> = {
 	xl: "text-base px-4 py-2",
 };
 
-export function Tag({ variant = "primary", size = "sm", children, className, ...props }: TagProps) {
+const iconSizeStyles: Record<TagSize, string> = {
+	xs: "h-2.5 w-2.5",
+	sm: "h-3 w-3",
+	md: "h-3.5 w-3.5",
+	lg: "h-4 w-4",
+	xl: "h-5 w-5",
+};
+
+export function Tag({
+	variant = "primary",
+	size = "sm",
+	icon: Icon,
+	children,
+	className,
+	...props
+}: TagProps) {
 	return (
 		<span
 			className={clsx(baseStyle, variantStyles[variant], sizeStyles[size], className)}
 			{...props}
 		>
+			{Icon && <Icon className={clsx(iconSizeStyles[size], "mr-1.5 shrink-0")} aria-hidden="true" />}
 			{children}
 		</span>
 	);
