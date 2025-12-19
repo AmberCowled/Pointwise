@@ -12,7 +12,7 @@ import type { Project as PrismaProject } from "@prisma/client";
 export async function createProject(
 	request: CreateProjectRequest,
 	userId: string,
-): Promise<PrismaProject> {
+): Promise<PrismaProject & { _count: { tasksV2: number } }> {
 	const project = await prisma.project.create({
 		data: {
 			name: request.name,
@@ -28,10 +28,13 @@ export async function createProject(
 			},
 		},
 	});
-	return project;
+	return project as PrismaProject & { _count: { tasksV2: number } };
 }
 
-export async function getProject(projectId: string, userId: string): Promise<PrismaProject> {
+export async function getProject(
+	projectId: string,
+	userId: string,
+): Promise<PrismaProject & { _count: { tasksV2: number } }> {
 	const project = await prisma.project.findUniqueOrThrow({
 		where: {
 			id: projectId,
@@ -49,13 +52,15 @@ export async function getProject(projectId: string, userId: string): Promise<Pri
 		project.visibility === "PUBLIC" ||
 		[...project.adminUserIds, ...project.projectUserIds, ...project.viewerUserIds].includes(userId)
 	) {
-		return project;
+		return project as PrismaProject & { _count: { tasksV2: number } };
 	}
 
 	throw new ApiError("Forbidden: You do not have access to this project", 403);
 }
 
-export async function getProjects(userId: string): Promise<PrismaProject[]> {
+export async function getProjects(
+	userId: string,
+): Promise<(PrismaProject & { _count: { tasksV2: number } })[]> {
 	const projects = await prisma.project.findMany({
 		where: {
 			OR: [
@@ -76,7 +81,7 @@ export async function getProjects(userId: string): Promise<PrismaProject[]> {
 		},
 	});
 
-	return projects;
+	return projects as (PrismaProject & { _count: { tasksV2: number } })[];
 }
 
 export function getUserRoleInProject(
@@ -160,7 +165,7 @@ export async function updateProject(
 	projectId: string,
 	request: UpdateProjectRequest,
 	userId: string,
-): Promise<PrismaProject> {
+): Promise<PrismaProject & { _count: { tasksV2: number } }> {
 	const isAdmin = await isProjectAdmin(projectId, userId);
 	if (!isAdmin) {
 		throw new ApiError("Forbidden: You must be admin to update the project", 403);
@@ -175,8 +180,15 @@ export async function updateProject(
 			description: request.description,
 			visibility: request.visibility,
 		},
+		include: {
+			_count: {
+				select: {
+					tasksV2: true,
+				},
+			},
+		},
 	});
-	return project;
+	return project as PrismaProject & { _count: { tasksV2: number } };
 }
 
 export async function deleteProject(projectId: string, userId: string): Promise<boolean> {
