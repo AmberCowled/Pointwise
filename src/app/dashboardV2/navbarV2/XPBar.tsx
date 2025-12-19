@@ -9,9 +9,8 @@ import { IoRefresh } from "react-icons/io5";
 export default function XPBar() {
 	const { data: xp, isLoading, isFetching, isError, refetch } = useGetXPQuery();
 
-	const currentXP = xp?.xp.value ?? 0;
-	const nextLevelXP = xp?.xp.nextLvAt ?? 1;
-	const progressPercent = nextLevelXP > 0 ? Math.min(100, (currentXP / nextLevelXP) * 100) : 0;
+	const progress = xp?.xp.progress ?? 0;
+	const progressPercent = Math.min(100, Math.round(progress));
 	const isCurrentlyLoading = isLoading || (isFetching && !xp);
 
 	const progressBarStyles = clsx("h-1.5 w-full rounded-full transition-all", {
