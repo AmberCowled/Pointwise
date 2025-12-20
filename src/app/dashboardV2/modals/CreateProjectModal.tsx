@@ -38,7 +38,7 @@ export default function CreateProjectModal() {
 	};
 
 	return (
-		<ModalV2 id="create-project-modal" size="lg" onAfterClose={handleReset}>
+		<ModalV2 id="create-project-modal" size="lg" loading={isLoading} onAfterClose={handleReset}>
 			<ModalV2.Header title="Create Project" />
 			<ModalV2.Body>
 				<Container direction="vertical" gap="md" className="items-stretch">
@@ -49,8 +49,8 @@ export default function CreateProjectModal() {
 			</ModalV2.Body>
 			<ModalV2.Footer align="end">
 				<Button variant="secondary">Cancel</Button>
-				<Button onClick={handleCreateProject} disabled={isLoading || !name.trim()}>
-					Create Project
+				<Button onClick={handleCreateProject} disabled={!name.trim()}>
+					Create
 				</Button>
 			</ModalV2.Footer>
 		</ModalV2>
