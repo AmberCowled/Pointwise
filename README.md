@@ -1,6 +1,6 @@
 # Pointwise
 
-> A gamified productivity dashboard built with Next.js, React, and TypeScript. Transform your task management into an engaging experience with XP, levels, and analytics.
+> A gamified productivity dashboard built with Next.js, React, and TypeScript. Transform your task management into an engaging experience with XP, levels, and team collaboration.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://pointwise-sepia.vercel.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -13,6 +13,13 @@
 
 ## ✨ Features
 
+### Project Management
+
+- **Create & Organize Projects** - Create projects with descriptions, visibility settings (Public/Private)
+- **Team Collaboration** - Invite team members with role-based access (Admin, User, Viewer)
+- **Project Sharing** - Public projects allow other users to request access
+- **Project Analytics** - Track task completion and team productivity per project
+
 ### Task Management
 
 - **Create & Organize Tasks** - Add tasks with descriptions, categories, and due dates
@@ -24,8 +31,7 @@
 
 - **XP System** - Earn experience points for completing tasks
 - **Level Progression** - Level up as you complete more tasks
-- **Streaks** - Maintain daily productivity streaks
-- **Achievements** - Unlock titles and rewards
+- **Progress Tracking** - Visual progress bars and XP tracking
 
 ### User Experience
 
@@ -33,14 +39,8 @@
 - **Responsive Design** - Works seamlessly on desktop and mobile
 - **Real-time Updates** - Instant feedback with toast notifications
 - **Social Authentication** - Sign in with Google or GitHub
-- **Custom UI Components** - Reusable component library with 20+ components
-
-### Analytics Dashboard
-
-- **Productivity Metrics** - Track tasks completed, XP earned, and more
-- **Visual Charts** - Interactive line charts for trend analysis
-- **Date Filtering** - View analytics for specific time periods
-- **Summary Cards** - Quick overview of your productivity stats
+- **Custom UI Components** - Comprehensive component library with V2 component system
+- **Modal System** - Advanced modal system with self-managed state (ModalV2)
 
 ## 🛠️ Tech Stack
 
@@ -51,6 +51,8 @@
 - **TypeScript 5** - Type-safe development
 - **Tailwind CSS v4** - Utility-first styling
 - **Headless UI** - Accessible component primitives
+- **Redux Toolkit Query** - Data fetching and caching
+- **React Redux** - State management
 
 ### Backend
 
@@ -59,12 +61,12 @@
 - **MongoDB** - NoSQL database
 - **NextAuth.js** - Authentication with credentials and OAuth
 - **bcrypt** - Secure password hashing
+- **Zod** - Schema validation
 
 ### Development Tools
 
+- **Biome** - Fast linter and formatter
 - **Vitest** - Fast unit testing
-- **ESLint** - Code linting
-- **Prettier** - Code formatting
 - **TypeScript** - Static type checking
 
 ## 📁 Project Structure
@@ -74,18 +76,31 @@ pointwise/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/                # API routes
+│   │   │   ├── auth/          # Authentication endpoints
+│   │   │   ├── projects/      # Project management endpoints
+│   │   │   ├── tasks/         # Task management endpoints
+│   │   │   └── user/          # User endpoints (XP, preferences)
 │   │   ├── components/         # React components
 │   │   │   ├── auth/          # Authentication components
-│   │   │   ├── dashboard/     # Dashboard components
+│   │   │   ├── dashboard/     # Dashboard components (v1)
 │   │   │   ├── ui/            # Reusable UI components
+│   │   │   │   ├── modalV2/  # ModalV2 system
+│   │   │   │   ├── menuV2/   # MenuV2 system
+│   │   │   │   └── ...       # V2 components (InputV2, Selector, etc.)
 │   │   │   └── showcase/      # Component showcase pages
-│   │   └── dashboard/         # Dashboard pages
+│   │   ├── dashboard/         # Dashboard pages (v1)
+│   │   └── dashboardV2/       # Dashboard v2 (new architecture)
+│   │       ├── modals/        # Project modals (Create, Update, Delete)
+│   │       ├── navbarV2/      # Navigation bar components
+│   │       ├── projectCard/   # Project card components
+│   │       └── projectsOverview/ # Projects overview page
 │   ├── lib/                    # Utility libraries
-│   │   ├── analytics.ts       # Analytics calculations
+│   │   ├── api/               # API client and helpers
+│   │   ├── redux/             # Redux store and services
+│   │   ├── validation/        # Zod validation schemas
 │   │   ├── auth.ts            # Authentication config
 │   │   ├── datetime.ts        # Date/time utilities
-│   │   ├── tasks.ts           # Task utilities
-│   │   └── validation/       # Validation schemas
+│   │   └── tasks.ts           # Task utilities
 │   └── hooks/                  # Custom React hooks
 ├── prisma/
 │   └── schema.prisma          # Database schema
@@ -96,7 +111,7 @@ pointwise/
 
 ### Prerequisites
 
-- Node.js 18+ and pnpm (or npm/yarn)
+- Node.js 18+ and pnpm (recommended) or npm/yarn
 - MongoDB database (local or cloud)
 - Google/GitHub OAuth credentials (optional, for social auth)
 
@@ -153,22 +168,35 @@ pointwise/
 - `pnpm dev` - Start development server
 - `pnpm build` - Build for production
 - `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint
-- `pnpm format` - Format code with Prettier
+- `pnpm lint` - Run Biome linter
+- `pnpm format` - Format code with Biome
+- `pnpm check` - Run Biome check (lint + format)
+- `pnpm check:fix` - Run Biome check and fix issues
 - `pnpm test` - Run tests with Vitest
 
 ## 🎨 UI Component Library
 
 Pointwise includes a comprehensive UI component library with showcase pages:
 
-- **Buttons** - Multiple variants and sizes
+### V2 Component System
+
+- **ModalV2** - Advanced modal system with self-managed state, built-in modals (Confirm, Alert, Prompt)
+- **InputV2** - Uncontrolled input component with variants and sizes
+- **InputAreaV2** - Uncontrolled textarea component
+- **InputSelectV2** - Select dropdown component
+- **Selector** - Button-based selection grid with responsive columns
+- **MenuV2** - Menu system with sub-menus
+
+### Core Components
+
+- **Buttons** - Multiple variants, sizes, and states
 - **Cards** - Flexible container components
-- **Inputs** - Text, textarea, and select inputs
-- **Modals** - Full-featured modal system with animations
-- **Notifications** - Toast notification system
+- **Grid & Container** - Layout components
 - **Tabs** - Accessible tab navigation
+- **Notifications** - Toast notification system
 - **Spinners & Skeletons** - Loading states
 - **Progress Bars** - Visual progress indicators
+- **Tags** - Badge/tag components
 - **And more...**
 
 Visit `/showcase/[component]` routes to see all components in action.
@@ -176,11 +204,14 @@ Visit `/showcase/[component]` routes to see all components in action.
 ## 🏗️ Architecture Highlights
 
 - **Server Components** - Leveraging Next.js App Router for optimal performance
-- **Type Safety** - End-to-end TypeScript with Prisma-generated types
+- **Type Safety** - End-to-end TypeScript with Prisma-generated types and Zod validation
 - **Component Composition** - Reusable, composable UI components
+- **V2 Component Pattern** - Uncontrolled components with internal state management
+- **Redux Toolkit Query** - Efficient data fetching and caching
 - **Custom Hooks** - Encapsulated business logic
 - **API Routes** - RESTful endpoints with proper error handling
 - **Authentication** - Secure auth with NextAuth.js and session management
+- **Project-Based Architecture** - Tasks organized within projects for better collaboration
 
 ## 📚 Documentation
 
