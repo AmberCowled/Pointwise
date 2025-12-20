@@ -1,6 +1,6 @@
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import clsx from "clsx";
 import type { ReactNode } from "react";
-import BackgroundGlow from "./BackgroundGlow";
 
 interface PageProps {
 	children: ReactNode;

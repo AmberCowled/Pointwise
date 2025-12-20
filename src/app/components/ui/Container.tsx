@@ -173,6 +173,8 @@ export default function Container({
 	};
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: Container may contain nested buttons, so we cannot use <button>. Click handling respects nested interactive elements.
+		// biome-ignore lint/a11y/useKeyWithClickEvents: Container is a layout component that may contain nested interactive elements. Keyboard navigation is handled by nested elements.
 		<div
 			onClick={onClick ? handleClick : undefined}
 			className={clsx(

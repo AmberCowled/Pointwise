@@ -1,6 +1,6 @@
 "use client";
 
-import Container from "@pointwise/app/components/general/Container";
+import Container from "@pointwise/app/components/ui/Container";
 
 export interface ProjectCardV2HeaderProps {
 	/**
@@ -23,4 +23,3 @@ export default function ProjectCardV2Header({ name }: ProjectCardV2HeaderProps) 
 		</Container>
 	);
 }
-

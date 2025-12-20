@@ -1,7 +1,7 @@
 "use client";
 
 import BrandHeaderV2 from "@pointwise/app/components/general/BrandHeaderV2";
-import Container from "@pointwise/app/components/general/Container";
+import Container from "@pointwise/app/components/ui/Container";
 import FriendRequestsMenu from "./FriendRequestsMenu";
 import LVStat from "./LVStat";
 import MessagesMenu from "./MessagesMenu";

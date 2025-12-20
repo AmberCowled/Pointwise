@@ -1,6 +1,6 @@
 "use client";
 
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { Button } from "@pointwise/app/components/ui/Button";
 import { Card } from "@pointwise/app/components/ui/Card";
 import { Menu, MenuDivider, MenuItem, MenuSection } from "@pointwise/app/components/ui/menus";

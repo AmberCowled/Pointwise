@@ -3,43 +3,42 @@
 import clsx from "clsx";
 import type React from "react";
 import { forwardRef, useId, useState } from "react";
-import { IoSearch } from "react-icons/io5";
 import { CharCount } from "./CharCount";
 import { InputHeader } from "./InputHeader";
 import { ProgressBar } from "./ProgressBar";
-import { VisibilityToggle } from "./VisibilityToggle";
 
-type InputVariants = "primary" | "secondary" | "danger";
-type InputSizes = "xs" | "sm" | "md" | "lg" | "xl";
-type InputFlex = "shrink" | "default" | "grow";
+type InputAreaFlex = "shrink" | "default" | "grow";
+type InputAreaVariants = "primary" | "secondary" | "danger";
+type InputAreaSizes = "xs" | "sm" | "md" | "lg" | "xl";
 
 /**
- * Custom props for the InputV2 component
- *
- * These props appear first in IntelliSense autocomplete when using the component.
- * All standard HTML input attributes are also supported.
+ * Props for the InputAreaV2 component
  */
-export interface InputV2CustomProps {
+export interface InputAreaV2Props
+	extends Omit<
+		React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+		"size" | "onChange" | "value" | "defaultValue"
+	> {
 	/**
 	 * Visual variant style
 	 * @default 'primary'
 	 */
-	variant?: InputVariants;
+	variant?: InputAreaVariants;
 
 	/**
-	 * Size of the input
+	 * Size of the textarea
 	 * @default 'md'
 	 */
-	size?: InputSizes;
+	size?: InputAreaSizes;
 
 	/**
-	 * Flex behavior for the input wrapper
-	 * - 'shrink': Prevents the input from shrinking (flex-shrink-0)
+	 * Flex behavior for the textarea wrapper
+	 * - 'shrink': Prevents the textarea from shrinking (flex-shrink-0)
 	 * - 'default': Normal flex behavior
-	 * - 'grow': Input takes up available space (flex-1 min-w-0)
+	 * - 'grow': Textarea takes up available space (flex-1 min-w-0)
 	 * @default 'default'
 	 */
-	flex?: InputFlex;
+	flex?: InputAreaFlex;
 
 	/**
 	 * Error state. Can be a boolean to show error styling, or a string to display an error message
@@ -47,20 +46,19 @@ export interface InputV2CustomProps {
 	error?: boolean | string;
 
 	/**
-	 * Label text displayed above the input
+	 * Label text displayed above the textarea
 	 */
 	label?: React.ReactNode;
 
 	/**
-	 * Description text displayed below the input
+	 * Description text displayed below the textarea
 	 */
 	description?: React.ReactNode;
 
 	/**
-	 * Whether to show a password visibility toggle button (only applies when type="password")
-	 * @default false
+	 * Whether the textarea is required
 	 */
-	showPasswordToggle?: boolean;
+	required?: boolean;
 
 	/**
 	 * Whether to show character count indicator (requires maxLength to be set)
@@ -87,63 +85,53 @@ export interface InputV2CustomProps {
 	charCountErrorThreshold?: number;
 
 	/**
-	 * Callback fired when user submits search (Enter key or button click)
-	 * Optional - button can be shown without callback for visual consistency
-	 * @param value - The current input value
+	 * Number of visible text rows
+	 * @default 4
 	 */
-	onSearch?: (value: string) => void;
+	rows?: number;
 
 	/**
-	 * Whether to show the search button on the right side
-	 * Works independently of `onSearch` - button will appear if `true` even without callback
-	 * Useful for front-end only implementations where backend will wire up later
-	 * Button will be disabled (non-functional) if `showSearchButton={true}` but `onSearch` is not provided
+	 * Whether the textarea is resizable
 	 * @default false
 	 */
-	showSearchButton?: boolean;
+	resizable?: boolean;
 
 	/**
-	 * Default value for the input (uncontrolled component)
+	 * Default value for the textarea (uncontrolled component)
 	 * @default ''
 	 */
 	defaultValue?: string;
 
 	/**
-	 * Callback fired when the input value changes
+	 * Callback fired when the textarea value changes
 	 * Receives the new value as a string (not the event)
-	 * @param value - The new input value
+	 * @param value - The new textarea value
 	 */
 	onChange?: (value: string) => void;
 }
 
-/**
- * Props for the InputV2 component
- */
-export type InputV2Props = InputV2CustomProps &
-	Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "onChange" | "value" | "defaultValue">;
-
 const baseStyle =
-	"border text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:outline-none";
+	"border text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:outline-none resize-none";
 
-const variantStyles: Record<InputVariants, string> = {
+const variantStyles: Record<InputAreaVariants, string> = {
 	primary: "rounded-2xl border-white/10 bg-white/5",
 	secondary: "rounded-lg border-white/10 bg-zinc-900",
 	danger: "rounded-2xl border-rose-400/60 bg-rose-500/10",
 };
 
-const variantFocusStyles: Record<InputVariants, string> = {
+const variantFocusStyles: Record<InputAreaVariants, string> = {
 	primary: "focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/40",
 	secondary: "focus:border-fuchsia-500/50",
 	danger: "focus:border-rose-500/80 focus:ring-2 focus:ring-rose-500/40",
 };
 
-const variantHoverStyles: Record<InputVariants, string> = {
+const variantHoverStyles: Record<InputAreaVariants, string> = {
 	primary: "hover:border-white/20",
 	secondary: "hover:border-white/15",
 	danger: "hover:border-rose-400/70",
 };
 
-const sizeStyles: Record<InputSizes, string> = {
+const sizeStyles: Record<InputAreaSizes, string> = {
 	xs: "text-xs px-2 py-1.5",
 	sm: "text-sm px-3 py-2",
 	md: "text-sm px-4 py-3",
@@ -151,70 +139,68 @@ const sizeStyles: Record<InputSizes, string> = {
 	xl: "text-lg px-8 py-4",
 };
 
-const disabledStyle = "opacity-50 cursor-not-allowed";
+const variantDisabledStyles: Record<InputAreaVariants, string> = {
+	primary: "opacity-50 cursor-not-allowed",
+	secondary: "opacity-50 cursor-not-allowed",
+	danger: "opacity-50 cursor-not-allowed",
+};
 
-const variantErrorStyles: Record<InputVariants, string> = {
+const variantErrorStyles: Record<InputAreaVariants, string> = {
 	primary: "border-rose-400/60 focus:border-rose-400/80",
 	secondary: "border-rose-400/60 focus:border-rose-400/80",
 	danger: "border-rose-500/80 focus:border-rose-500/90",
 };
 
-const flexClasses: Record<InputFlex, string> = {
+const flexClasses: Record<InputAreaFlex, string> = {
 	shrink: "flex-shrink-0",
 	default: "",
 	grow: "flex-1 min-w-0",
 };
 
-const innerWidthClasses: Record<InputFlex, string> = {
+const innerWidthClasses: Record<InputAreaFlex, string> = {
 	shrink: "w-auto",
 	default: "inline-block",
 	grow: "w-full",
 };
 
 /**
- * InputV2 - Enhanced input component with variants, sizes, and optional features
+ * InputAreaV2 - Enhanced textarea component with variants, sizes, and optional features
  *
  * Uncontrolled component that manages its own internal state. Use `onChange` to track value changes
  * in parent components.
  *
- * **Custom Props:**
+ * **Props:**
  * - `variant?: "primary" | "secondary" | "danger"` - Visual style (default: "primary")
- * - `size?: "xs" | "sm" | "md" | "lg" | "xl"` - Input size (default: "md")
+ * - `size?: "xs" | "sm" | "md" | "lg" | "xl"` - Textarea size (default: "md")
  * - `flex?: "shrink" | "default" | "grow"` - Flex behavior (default: "default")
  * - `error?: boolean | string` - Error state or error message
- * - `label?: ReactNode` - Label text above input
- * - `description?: ReactNode` - Description text below input
+ * - `label?: ReactNode` - Label text above textarea
+ * - `description?: ReactNode` - Description text below textarea
+ * - `required?: boolean` - Whether the textarea is required
  * - `defaultValue?: string` - Initial value (default: "")
  * - `onChange?: (value: string) => void` - Callback fired when value changes (receives string, not event)
- * - `showPasswordToggle?: boolean` - Show password visibility toggle (default: false)
  * - `showCharCount?: boolean` - Show character count (default: false, requires maxLength)
  * - `showProgressBar?: boolean` - Show progress bar (default: false, requires maxLength)
  * - `charCountWarningThreshold?: number` - Warning threshold % (default: 70)
  * - `charCountErrorThreshold?: number` - Error threshold % (default: 90)
- * - `onSearch?: (value: string) => void` - Callback fired when user submits search (Enter key or button click)
- * - `showSearchButton?: boolean` - Show search button on the right side (default: false). Works independently of `onSearch` for better DX
+ * - `rows?: number` - Number of visible rows (default: 4)
+ * - `resizable?: boolean` - Whether textarea is resizable (default: false)
  *
- * All standard HTML input attributes (except `onChange`, `value`, `defaultValue`) are also supported.
+ * All standard HTML textarea attributes (except `onChange`, `value`, `defaultValue`, `size`) are also supported.
  *
  * @example
  * ```tsx
- * const [name, setName] = useState("");
+ * const [description, setDescription] = useState("");
  *
- * <InputV2
- *   label="Project Name"
+ * <InputAreaV2
+ *   label="Description"
  *   defaultValue=""
- *   onChange={setName}
- * />
- *
- * // With search button
- * <InputV2
- *   placeholder="Search..."
- *   showSearchButton
- *   onSearch={(value) => console.log("Searching:", value)}
+ *   onChange={setDescription}
+ *   flex="grow"
  * />
  * ```
  */
-const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
+const InputAreaV2 = forwardRef<HTMLTextAreaElement, InputAreaV2Props>(function InputAreaV2(
 	{
 		variant = "primary",
 		size = "md",
@@ -222,31 +208,26 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 		error,
 		label,
 		description,
-		showPasswordToggle = false,
+		required,
 		showCharCount = false,
 		showProgressBar = false,
 		charCountWarningThreshold = 70,
 		charCountErrorThreshold = 90,
-		onSearch,
-		showSearchButton = false,
+		rows = 4,
+		resizable = false,
 		defaultValue = "",
 		onChange,
 		className,
 		id,
 		disabled,
-		required,
-		type = "text",
 		maxLength,
 		...props
-	}: InputV2Props,
+	}: InputAreaV2Props,
 	ref,
 ) {
 	const generatedId = useId();
-	const inputId = id || generatedId;
+	const textareaId = id || generatedId;
 	const errorMessage = typeof error === "string" ? error : undefined;
-
-	const shouldShowPassword = showPasswordToggle && type === "password";
-	const [showPassword, setShowPassword] = useState(false);
 
 	// Internal state management (uncontrolled component)
 	const [internalValue, setInternalValue] = useState(defaultValue);
@@ -257,24 +238,10 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 	const shouldShowProgressBar = showProgressBar && maxChars > 0;
 	const hasHeader = !!label || !!required || shouldShowCharCount;
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const newValue = e.target.value;
 		setInternalValue(newValue);
 		onChange?.(newValue);
-	};
-
-	const handleSearch = () => {
-		if (!disabled && onSearch) {
-			onSearch(internalValue);
-		}
-	};
-
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === "Enter" && !disabled && onSearch) {
-			e.preventDefault();
-			handleSearch();
-		}
-		props.onKeyDown?.(e);
 	};
 
 	const getProgressBarColor = (normalisedUsage: number) => {
@@ -288,7 +255,7 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 			<div className={innerWidthClasses[flex]}>
 				{hasHeader && (
 					<InputHeader
-						htmlFor={inputId}
+						htmlFor={textareaId}
 						label={label}
 						required={required}
 						rightSlot={
@@ -305,56 +272,29 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 				)}
 
 				<div className="relative mt-1">
-					<input
+					<textarea
 						{...props}
-						id={inputId}
+						id={textareaId}
 						ref={ref}
-						type={shouldShowPassword && showPassword ? "text" : type}
+						rows={rows}
 						disabled={disabled}
 						required={required}
 						value={internalValue}
 						maxLength={maxLength}
 						onChange={handleChange}
-						onKeyDown={handleKeyDown}
 						className={clsx(
 							baseStyle,
 							variantStyles[variant],
 							sizeStyles[size],
 							"w-full",
-							(showPasswordToggle || showSearchButton) && "pr-10",
-							disabled && disabledStyle,
+							resizable && "resize-y",
+							disabled && variantDisabledStyles[variant],
 							!disabled && error && variantErrorStyles[variant],
 							!disabled && !error && variantFocusStyles[variant],
 							!disabled && !error && variantHoverStyles[variant],
 							className,
 						)}
 					/>
-
-					<div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
-						{showSearchButton && (
-							<button
-								type="button"
-								onClick={handleSearch}
-								disabled={disabled || !onSearch}
-								className={clsx(
-									"rounded-lg p-1.5 text-zinc-400 transition-all duration-200",
-									"hover:text-zinc-100 hover:bg-white/10 hover:scale-110",
-									"active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
-									(disabled || !onSearch) &&
-										"cursor-not-allowed opacity-50 hover:scale-100 hover:bg-transparent",
-								)}
-								aria-label="Search"
-							>
-								<IoSearch className="h-4 w-4" />
-							</button>
-						)}
-						{showPasswordToggle && (
-							<VisibilityToggle
-								visible={showPassword}
-								onToggle={() => setShowPassword((prev) => !prev)}
-							/>
-						)}
-					</div>
 				</div>
 
 				{shouldShowProgressBar && (
@@ -375,6 +315,6 @@ const InputV2 = forwardRef<HTMLInputElement, InputV2Props>(function InputV2(
 	);
 });
 
-InputV2.displayName = "InputV2";
+InputAreaV2.displayName = "InputAreaV2";
 
-export default InputV2;
+export default InputAreaV2;

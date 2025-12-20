@@ -1,6 +1,6 @@
 "use client";
 
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { InputSelect, type InputSelectOption } from "@pointwise/app/components/ui/InputSelect";
 import { useState } from "react";
 

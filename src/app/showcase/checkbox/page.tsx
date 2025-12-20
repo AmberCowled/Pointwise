@@ -1,6 +1,6 @@
 "use client";
 
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { Checkbox } from "@pointwise/app/components/ui/Checkbox";
 import { useState } from "react";
 

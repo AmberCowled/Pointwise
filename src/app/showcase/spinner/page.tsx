@@ -1,6 +1,6 @@
 "use client";
 
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { Spinner } from "@pointwise/app/components/ui/Spinner";
 
 export default function SpinnerShowcasePage() {

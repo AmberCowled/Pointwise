@@ -1,6 +1,6 @@
 "use client";
 
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { Skeleton } from "@pointwise/app/components/ui/Skeleton";
 import { SkeletonCard } from "@pointwise/app/components/ui/SkeletonCard";
 import { SkeletonText } from "@pointwise/app/components/ui/SkeletonText";

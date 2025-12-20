@@ -1,5 +1,5 @@
 import { ProjectsOverview } from "@pointwise/app/components/dashboard/ProjectsOverview";
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { authOptions } from "@pointwise/lib/auth";
 import { DateTimeDefaults, formatDateLabel, startOfDay } from "@pointwise/lib/datetime";
 import prisma from "@pointwise/lib/prisma";

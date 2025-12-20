@@ -1,6 +1,6 @@
 "use client";
 
-import Container from "@pointwise/app/components/general/Container";
+import Container from "@pointwise/app/components/ui/Container";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
 
 export interface ProjectCardV2DescriptionProps {
@@ -28,4 +28,3 @@ export default function ProjectCardV2Description({ description }: ProjectCardV2D
 		</Container>
 	);
 }
-

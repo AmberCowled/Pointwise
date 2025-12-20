@@ -2,7 +2,7 @@
 
 // AuthCard has been replaced with Card component
 import TaskSectionCard from "@pointwise/app/components/dashboard/task-board/TaskSectionCard";
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { Button } from "@pointwise/app/components/ui/Button";
 import { Card } from "@pointwise/app/components/ui/Card";
 

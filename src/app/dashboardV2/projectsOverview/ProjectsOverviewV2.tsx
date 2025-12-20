@@ -1,10 +1,11 @@
 "use client";
 
-import Container from "@pointwise/app/components/general/Container";
-import Grid from "@pointwise/app/components/general/Grid";
 import { Button } from "@pointwise/app/components/ui/Button";
 import { Card } from "@pointwise/app/components/ui/Card";
+import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
+import Grid from "@pointwise/app/components/ui/Grid";
+import ModalV2 from "@pointwise/app/components/ui/modalV2";
 import { useGetProjectsQuery } from "@pointwise/lib/redux/services/projectsApi";
 import ProjectCardV2 from "../projectCard/ProjectCardV2";
 import NoProjectsView from "./NoProjectsView";
@@ -23,7 +24,11 @@ export default function ProjectsOverviewV2() {
 					loading={isLoading}
 					className="flex-1"
 					action={
-						<Button variant="secondary" size="sm">
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={() => ModalV2.Manager.open("create-project-modal")}
+						>
 							Create Project
 						</Button>
 					}

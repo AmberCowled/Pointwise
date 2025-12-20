@@ -93,7 +93,12 @@ export function TextPreview({
 	// Calculate fixed height if needed (approximate line height * number of lines)
 	const fixedHeightStyle = fixedHeight
 		? {
-				minHeight: size === "sm" ? `${lines * 1.25}rem` : size === "md" ? `${lines * 1.5}rem` : `${lines * 1.75}rem`,
+				minHeight:
+					size === "sm"
+						? `${lines * 1.25}rem`
+						: size === "md"
+							? `${lines * 1.5}rem`
+							: `${lines * 1.75}rem`,
 			}
 		: undefined;
 
@@ -127,4 +132,3 @@ export function TextPreview({
 		</p>
 	);
 }
-
