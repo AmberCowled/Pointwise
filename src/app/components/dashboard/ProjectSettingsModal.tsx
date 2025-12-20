@@ -103,7 +103,7 @@ export function ProjectSettingsModal({
 				projectId,
 				data: {
 					name: name.trim(),
-					description: description.trim() || undefined,
+					description: description.trim() || null,
 					visibility,
 				},
 			}).unwrap();
