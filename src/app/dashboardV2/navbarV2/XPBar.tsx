@@ -1,7 +1,7 @@
 "use client";
 
-import Container from "@pointwise/app/components/general/Container";
 import { Button } from "@pointwise/app/components/ui/Button";
+import Container from "@pointwise/app/components/ui/Container";
 import { useGetXPQuery } from "@pointwise/lib/redux/services/xpApi";
 import clsx from "clsx";
 import { IoRefresh } from "react-icons/io5";

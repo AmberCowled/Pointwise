@@ -1,7 +1,7 @@
 "use client";
 
-import Container from "@pointwise/app/components/general/Container";
 import { Button } from "@pointwise/app/components/ui/Button";
+import Container from "@pointwise/app/components/ui/Container";
 import { Tag } from "@pointwise/app/components/ui/Tag";
 import { IoGlobe, IoLockClosed, IoSettings } from "react-icons/io5";
 
@@ -70,4 +70,3 @@ export default function ProjectCardV2Tags({
 		</Container>
 	);
 }
-

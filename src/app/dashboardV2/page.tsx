@@ -1,6 +1,7 @@
 "use client";
 
-import Page from "@pointwise/app/components/general/Page";
+import Page from "@pointwise/app/components/ui/Page";
+import CreateProjectModal from "@pointwise/app/dashboardV2/modals/CreateProjectModal";
 import NavbarV2 from "@pointwise/app/dashboardV2/navbarV2/NavbarV2";
 import ProjectsOverviewV2 from "@pointwise/app/dashboardV2/projectsOverview/ProjectsOverviewV2";
 
@@ -9,6 +10,7 @@ export default function DashboardPage() {
 		<Page>
 			<NavbarV2 />
 			<ProjectsOverviewV2 />
+			<CreateProjectModal />
 		</Page>
 	);
 }

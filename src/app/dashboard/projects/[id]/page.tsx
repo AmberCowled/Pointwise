@@ -1,5 +1,5 @@
 import type { DashboardTask } from "@pointwise/app/components/dashboard/tasks/TaskList";
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import Dashboard from "@pointwise/app/dashboard/Dashboard";
 import { ProjectProvider } from "@pointwise/contexts/ProjectContext";
 import { buildAnalyticsSnapshot } from "@pointwise/lib/analytics";

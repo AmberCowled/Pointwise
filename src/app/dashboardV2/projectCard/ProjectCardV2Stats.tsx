@@ -1,6 +1,6 @@
 "use client";
 
-import Container from "@pointwise/app/components/general/Container";
+import Container from "@pointwise/app/components/ui/Container";
 import { IoClipboard, IoPeople } from "react-icons/io5";
 
 export interface ProjectCardV2StatsProps {
@@ -37,4 +37,3 @@ export default function ProjectCardV2Stats({ taskCount, memberCount }: ProjectCa
 		</Container>
 	);
 }
-

@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import BackgroundGlow from "../general/BackgroundGlow";
 import BrandHeader from "../general/BrandHeader";
+import BackgroundGlow from "../ui/BackgroundGlow";
 import { Card } from "../ui/Card";
 import { Divider } from "../ui/Divider";
 import { Spinner } from "../ui/Spinner";

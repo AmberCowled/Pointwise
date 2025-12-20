@@ -1,6 +1,6 @@
 "use client";
 
-import Container from "@pointwise/app/components/general/Container";
+import Container from "@pointwise/app/components/ui/Container";
 import { getProjectMemberCount } from "@pointwise/lib/api/projectsV2";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";

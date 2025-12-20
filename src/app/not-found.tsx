@@ -1,8 +1,8 @@
 import { authOptions } from "@pointwise/lib/auth";
 import { getServerSession } from "next-auth";
 import { AutoRedirectNotice } from "./components/general/AutoRedirectNotice";
-import BackgroundGlow from "./components/general/BackgroundGlow";
 import BrandHeader from "./components/general/BrandHeader";
+import BackgroundGlow from "./components/ui/BackgroundGlow";
 import { Card } from "./components/ui/Card";
 
 export default async function NotFound() {

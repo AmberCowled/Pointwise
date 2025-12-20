@@ -1,6 +1,6 @@
 "use client";
 
-import BackgroundGlow from "@pointwise/app/components/general/BackgroundGlow";
+import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
 import { Card } from "@pointwise/app/components/ui/Card";
 import { Pagination } from "@pointwise/app/components/ui/Pagination";
 import { useState } from "react";

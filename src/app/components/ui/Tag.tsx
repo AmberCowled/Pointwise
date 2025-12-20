@@ -57,7 +57,9 @@ export function Tag({
 			className={clsx(baseStyle, variantStyles[variant], sizeStyles[size], className)}
 			{...props}
 		>
-			{Icon && <Icon className={clsx(iconSizeStyles[size], "mr-1.5 shrink-0")} aria-hidden="true" />}
+			{Icon && (
+				<Icon className={clsx(iconSizeStyles[size], "mr-1.5 shrink-0")} aria-hidden="true" />
+			)}
 			{children}
 		</span>
 	);
