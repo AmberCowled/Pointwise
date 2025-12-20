@@ -105,7 +105,7 @@ export function ProjectManagementModal({
 			if (mode === "create") {
 				const result = await createProject({
 					name: name.trim(),
-					description: description.trim() || undefined,
+					description: description.trim() || null,
 					visibility,
 				}).unwrap();
 
@@ -118,7 +118,7 @@ export function ProjectManagementModal({
 					projectId,
 					data: {
 						name: name.trim(),
-						description: description.trim() || undefined,
+						description: description.trim() || null,
 						visibility,
 					},
 				}).unwrap();

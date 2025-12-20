@@ -177,7 +177,7 @@ export async function updateProject(
 		},
 		data: {
 			name: request.name,
-			description: request.description,
+			description: request.description ?? null,
 			visibility: request.visibility,
 		},
 		include: {
