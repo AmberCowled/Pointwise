@@ -46,7 +46,7 @@ export default function ProjectsOverviewV2() {
 							))}
 						</Grid>
 					) : isEmpty ? (
-						<NoProjectsView />
+						<NoProjectsView onCreateClick={() => ModalV2.Manager.open("create-project-modal")} />
 					) : null}
 				</Card>
 			</Container>
