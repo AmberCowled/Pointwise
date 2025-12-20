@@ -31,7 +31,7 @@ export default function ProjectCardV2({ project }: ProjectCardProps) {
 				fullWidth={false}
 				direction="vertical"
 				className="group h-full outline outline-zinc-700 hover:outline-zinc-500 rounded-lg transition-all p-4 gap-3"
-				onClick={() => router.push(`/dashboard/projects/${project.id}`)}
+				onClick={() => router.push(`/dashboard/projects/${project.id}/v2`)}
 			>
 				<ProjectCardV2Header name={project.name} />
 				<ProjectCardV2Description description={project.description} />
