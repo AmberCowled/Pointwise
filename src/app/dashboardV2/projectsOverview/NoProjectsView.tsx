@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@pointwise/app/components/ui/Button";
-import { IoAdd, IoFolder } from "react-icons/io5";
+import { IoFolder } from "react-icons/io5";
 
 export interface NoProjectsViewProps {
 	/**
@@ -26,7 +26,6 @@ export default function NoProjectsView({ onCreateClick }: NoProjectsViewProps) {
 				Create your first project to start organizing your tasks and collaborating with your team.
 			</p>
 			<Button variant="secondary" size="sm" className="rounded-full" onClick={onCreateClick}>
-				<IoAdd className="w-4 h-4 mr-2" aria-hidden="true" />
 				Create Your First Project
 			</Button>
 		</div>

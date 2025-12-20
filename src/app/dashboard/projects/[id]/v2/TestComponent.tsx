@@ -11,6 +11,8 @@ import {
 export default function TestComponent({ projectId }: { projectId: string }) {
 	const { data: project } = useGetProjectQuery(projectId);
 	const tasks = useGetTasksQuery({ projectId });
+	console.log(tasks);
+	console.log(projectId);
 	const [createTask] = useCreateTaskMutation();
 	const [deleteTask] = useDeleteTaskMutation();
 
