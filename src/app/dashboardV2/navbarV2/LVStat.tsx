@@ -25,19 +25,19 @@ import { IoStar } from "react-icons/io5";
  * @returns {JSX.Element | null} The rendered LVStat component, or null if level is 0 and not loading/error
  */
 export default function LVStat() {
-	const { data: xp, isLoading, isFetching, isError } = useGetXPQuery();
+  const { data: xp, isLoading, isFetching, isError } = useGetXPQuery();
 
-	const level = xp?.xp.lv ?? 0;
-	const isCurrentlyLoading = isLoading || (isFetching && !xp);
+  const level = xp?.xp.lv ?? 0;
+  const isCurrentlyLoading = isLoading || (isFetching && !xp);
 
-	return (
-		<Stat
-			icon={IoStar}
-			label="Level"
-			value={level}
-			colorClass="text-indigo-400"
-			isLoading={isCurrentlyLoading}
-			isError={isError}
-		/>
-	);
+  return (
+    <Stat
+      icon={IoStar}
+      label="Level"
+      value={level}
+      colorClass="text-indigo-400"
+      isLoading={isCurrentlyLoading}
+      isError={isError}
+    />
+  );
 }

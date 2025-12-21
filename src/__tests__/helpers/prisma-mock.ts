@@ -10,32 +10,32 @@ import { vi } from "vitest";
  * Use this in tests that need database mocking
  */
 export function createMockPrisma() {
-	return {
-		user: {
-			findUnique: vi.fn(),
-			findMany: vi.fn(),
-			create: vi.fn(),
-			update: vi.fn(),
-			delete: vi.fn(),
-		},
-		task: {
-			findUnique: vi.fn(),
-			findMany: vi.fn(),
-			create: vi.fn(),
-			createMany: vi.fn(),
-			update: vi.fn(),
-			delete: vi.fn(),
-			deleteMany: vi.fn(),
-		},
-		recurringTask: {
-			findUnique: vi.fn(),
-			findMany: vi.fn(),
-			create: vi.fn(),
-			update: vi.fn(),
-			delete: vi.fn(),
-		},
-		$transaction: vi.fn((callback) => callback(createMockPrisma())),
-	};
+  return {
+    user: {
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    task: {
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      create: vi.fn(),
+      createMany: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    recurringTask: {
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    $transaction: vi.fn((callback) => callback(createMockPrisma())),
+  };
 }
 
 /**
@@ -43,12 +43,12 @@ export function createMockPrisma() {
  * Call this at the top of test files that need Prisma
  */
 export function mockPrisma() {
-	const mockPrismaClient = createMockPrisma();
+  const mockPrismaClient = createMockPrisma();
 
-	vi.mock("@pointwise/lib/prisma", () => ({
-		default: mockPrismaClient,
-		prisma: mockPrismaClient,
-	}));
+  vi.mock("@pointwise/lib/prisma", () => ({
+    default: mockPrismaClient,
+    prisma: mockPrismaClient,
+  }));
 
-	return mockPrismaClient;
+  return mockPrismaClient;
 }

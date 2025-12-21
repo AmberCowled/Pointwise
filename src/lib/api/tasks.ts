@@ -1,172 +1,187 @@
 import {
-	isProjectAdmin,
-	isProjectUserOrHigher,
-	verifyProjectAccess,
+  isProjectAdmin,
+  isProjectUserOrHigher,
+  verifyProjectAccess,
 } from "@pointwise/lib/api/projectsV2";
 import prisma from "@pointwise/lib/prisma";
 import {
-	type CreateTaskRequest,
-	type TaskV2,
-	TaskV2Schema,
-	type UpdateTaskRequest,
+  type CreateTaskRequest,
+  type TaskV2,
+  TaskV2Schema,
+  type UpdateTaskRequest,
 } from "@pointwise/lib/validation/tasks-schema";
 import type { Prisma, TaskV2 as PrismaTaskV2 } from "@prisma/client";
+import { utcToLocal } from "./date-time";
 
-export async function getTasks(projectId: string, userId: string): Promise<PrismaTaskV2[]> {
-	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
-	}
+export async function getTasks(
+  projectId: string,
+  userId: string,
+): Promise<PrismaTaskV2[]> {
+  if (!(await verifyProjectAccess(projectId, userId))) {
+    throw new Error("Forbidden: You do not have access to this project");
+  }
 
-	const tasks = await prisma.taskV2.findMany({
-		where: {
-			projectId: projectId,
-		},
-	});
+  const tasks = await prisma.taskV2.findMany({
+    where: {
+      projectId: projectId,
+    },
+  });
 
-	return tasks;
+  return tasks;
 }
 
 export async function createTask(
-	request: CreateTaskRequest,
-	userId: string,
+  request: CreateTaskRequest,
+  userId: string,
 ): Promise<PrismaTaskV2> {
-	if (!(await isProjectUserOrHigher(request.projectId, userId))) {
-		throw new Error("Forbidden: You do not have write permissions in this project");
-	}
+  if (!(await isProjectUserOrHigher(request.projectId, userId))) {
+    throw new Error(
+      "Forbidden: You do not have write permissions in this project",
+    );
+  }
 
-	const newTask = await prisma.taskV2.create({
-		data: {
-			projectId: request.projectId,
-			title: request.title,
-			description: request.description ?? null,
-			xpAward: request.xpAward ?? 0,
-			category: request.category,
-			optional: request.optional ?? false,
-			startDate: request.startDate ? new Date(request.startDate) : null,
-			startTime: request.startTime ?? null,
-			dueDate: request.dueDate ? new Date(request.dueDate) : null,
-			dueTime: request.dueTime ?? null,
-			status: "PENDING",
-		},
-	});
+  const newTask = await prisma.taskV2.create({
+    data: {
+      projectId: request.projectId,
+      title: request.title,
+      description: request.description ?? null,
+      xpAward: request.xpAward ?? 0,
+      category: request.category,
+      optional: request.optional ?? false,
+      startDate: request.startDate ?? null,
+      hasStartTime: request.hasStartTime ?? false,
+      dueDate: request.dueDate ? new Date(request.dueDate) : null,
+      hasDueTime: request.hasDueTime ?? false,
+      status: "PENDING",
+    },
+  });
 
-	return newTask;
+  return newTask;
 }
 
 // Type that only includes the fields we can update from UpdateTaskRequest
 type TaskV2UpdateFields = Pick<
-	Prisma.TaskV2UpdateInput,
-	| "title"
-	| "description"
-	| "xpAward"
-	| "category"
-	| "optional"
-	| "startDate"
-	| "startTime"
-	| "dueDate"
-	| "dueTime"
-	| "status"
-	| "completedAt"
+  Prisma.TaskV2UpdateInput,
+  | "title"
+  | "description"
+  | "xpAward"
+  | "category"
+  | "optional"
+  | "startDate"
+  | "hasStartTime"
+  | "dueDate"
+  | "hasDueTime"
+  | "status"
+  | "completedAt"
 >;
 
 export async function updateTask(
-	taskId: string,
-	request: UpdateTaskRequest,
-	userId: string,
+  taskId: string,
+  request: UpdateTaskRequest,
+  userId: string,
 ): Promise<PrismaTaskV2> {
-	const existingTask = await prisma.taskV2.findUnique({
-		where: { id: taskId },
-		select: { projectId: true },
-	});
+  const existingTask = await prisma.taskV2.findUnique({
+    where: { id: taskId },
+    select: { projectId: true },
+  });
 
-	if (!existingTask) {
-		throw new Error("Task not found");
-	}
+  if (!existingTask) {
+    throw new Error("Task not found");
+  }
 
-	if (!(await isProjectUserOrHigher(existingTask.projectId, userId))) {
-		throw new Error("Forbidden: You do not have write permissions in this project");
-	}
+  if (!(await isProjectUserOrHigher(existingTask.projectId, userId))) {
+    throw new Error(
+      "Forbidden: You do not have write permissions in this project",
+    );
+  }
 
-	const updateData: Partial<TaskV2UpdateFields> = {};
-	if (request.title !== undefined) {
-		updateData.title = request.title;
-	}
-	if (request.description !== undefined) {
-		updateData.description = request.description ?? null;
-	}
-	if (request.xpAward !== undefined) {
-		updateData.xpAward = request.xpAward;
-	}
-	if (request.category !== undefined) {
-		updateData.category = request.category;
-	}
-	if (request.optional !== undefined) {
-		updateData.optional = request.optional;
-	}
-	if (request.startDate !== undefined) {
-		updateData.startDate = request.startDate ? new Date(request.startDate) : null;
-	}
-	if (request.startTime !== undefined) {
-		updateData.startTime = request.startTime ?? null;
-	}
-	if (request.dueDate !== undefined) {
-		updateData.dueDate = request.dueDate ? new Date(request.dueDate) : null;
-	}
-	if (request.dueTime !== undefined) {
-		updateData.dueTime = request.dueTime ?? null;
-	}
-	if (request.status !== undefined) {
-		updateData.status = request.status;
-		if (request.status === "COMPLETED") {
-			updateData.completedAt = new Date();
-		} else if (request.status === "PENDING") {
-			updateData.completedAt = null;
-		}
-	}
+  const updateData: Partial<TaskV2UpdateFields> = {};
+  if (request.title !== undefined) {
+    updateData.title = request.title;
+  }
+  if (request.description !== undefined) {
+    updateData.description = request.description ?? null;
+  }
+  if (request.xpAward !== undefined) {
+    updateData.xpAward = request.xpAward;
+  }
+  if (request.category !== undefined) {
+    updateData.category = request.category;
+  }
+  if (request.optional !== undefined) {
+    updateData.optional = request.optional;
+  }
+  if (request.startDate !== undefined) {
+    updateData.startDate = request.startDate
+      ? new Date(request.startDate)
+      : null;
+  }
+  if (request.hasStartTime !== undefined) {
+    updateData.hasStartTime = request.hasStartTime;
+  }
+  if (request.dueDate !== undefined) {
+    updateData.dueDate = request.dueDate ? new Date(request.dueDate) : null;
+  }
+  if (request.hasDueTime !== undefined) {
+    updateData.hasDueTime = request.hasDueTime;
+  }
+  if (request.status !== undefined) {
+    updateData.status = request.status;
+    if (request.status === "COMPLETED") {
+      updateData.completedAt = new Date();
+    } else if (request.status === "PENDING") {
+      updateData.completedAt = null;
+    }
+  }
 
-	const updatedTask = await prisma.taskV2.update({
-		where: { id: taskId },
-		data: updateData,
-	});
+  const updatedTask = await prisma.taskV2.update({
+    where: { id: taskId },
+    data: updateData,
+  });
 
-	return updatedTask;
+  return updatedTask;
 }
 
-export async function deleteTask(taskId: string, userId: string): Promise<void> {
-	const task = await prisma.taskV2.findUnique({
-		where: { id: taskId },
-		select: { projectId: true },
-	});
+export async function deleteTask(
+  taskId: string,
+  userId: string,
+): Promise<void> {
+  const task = await prisma.taskV2.findUnique({
+    where: { id: taskId },
+    select: { projectId: true },
+  });
 
-	if (!task) {
-		throw new Error("Task not found");
-	}
+  if (!task) {
+    throw new Error("Task not found");
+  }
 
-	if (!(await isProjectAdmin(task.projectId, userId))) {
-		throw new Error("Forbidden: You must be an admin to delete tasks in this project");
-	}
+  if (!(await isProjectAdmin(task.projectId, userId))) {
+    throw new Error(
+      "Forbidden: You must be an admin to delete tasks in this project",
+    );
+  }
 
-	await prisma.taskV2.delete({
-		where: { id: taskId },
-	});
+  await prisma.taskV2.delete({
+    where: { id: taskId },
+  });
 }
 
 export function serializeTask(task: PrismaTaskV2): TaskV2 {
-	return TaskV2Schema.parse({
-		id: task.id,
-		title: task.title,
-		description: task.description,
-		xpAward: task.xpAward,
-		projectId: task.projectId,
-		category: task.category,
-		optional: task.optional,
-		startDate: task.startDate?.toISOString() ?? null,
-		startTime: task.startTime ?? null,
-		dueDate: task.dueDate?.toISOString() ?? null,
-		dueTime: task.dueTime ?? null,
-		completedAt: task.completedAt?.toISOString() ?? null,
-		status: task.status as "PENDING" | "COMPLETED",
-		createdAt: task.createdAt.toISOString(),
-		updatedAt: task.updatedAt.toISOString(),
-	});
+  return TaskV2Schema.parse({
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    xpAward: task.xpAward,
+    projectId: task.projectId,
+    category: task.category,
+    optional: task.optional,
+    startDate: task.startDate?.toString() ?? null,
+    hasStartTime: task.hasStartTime,
+    dueDate: task.dueDate?.toString() ?? null,
+    hasDueTime: task.hasDueTime,
+    completedAt: task.completedAt ?? null,
+    status: task.status as "PENDING" | "COMPLETED",
+    createdAt: task.createdAt.toString(),
+    updatedAt: task.updatedAt.toString(),
+  });
 }

@@ -4,15 +4,15 @@
 
 import type { DashboardTask } from "@pointwise/app/components/dashboard/tasks/TaskList";
 import {
-	generateRecurringInstances,
-	mergeTemplatesWithInstances,
+  generateRecurringInstances,
+  mergeTemplatesWithInstances,
 } from "@pointwise/lib/tasks/generate-instances";
 import { useMemo } from "react";
 
 export interface UseRecurringTaskInstancesOptions {
-	tasks: DashboardTask[];
-	dateRange: { start: Date; end: Date };
-	userTimeZone: string;
+  tasks: DashboardTask[];
+  dateRange: { start: Date; end: Date };
+  userTimeZone: string;
 }
 
 /**
@@ -22,13 +22,13 @@ export interface UseRecurringTaskInstancesOptions {
  * @returns Array of tasks with templates replaced by their generated instances
  */
 export function useRecurringTaskInstances({
-	tasks,
-	dateRange,
-	userTimeZone,
+  tasks,
+  dateRange,
+  userTimeZone,
 }: UseRecurringTaskInstancesOptions): DashboardTask[] {
-	return useMemo(() => {
-		return mergeTemplatesWithInstances(tasks, dateRange, userTimeZone);
-	}, [tasks, dateRange.start, dateRange.end, userTimeZone]);
+  return useMemo(() => {
+    return mergeTemplatesWithInstances(tasks, dateRange, userTimeZone);
+  }, [tasks, dateRange.start, dateRange.end, userTimeZone]);
 }
 
 /**
@@ -41,16 +41,31 @@ export function useRecurringTaskInstances({
  * @returns Array of generated instances
  */
 export function useTemplateInstances(
-	template: DashboardTask | null,
-	dateRange: { start: Date; end: Date },
-	userTimeZone: string,
-	existingInstances: DashboardTask[] = [],
+  template: DashboardTask | null,
+  dateRange: { start: Date; end: Date },
+  userTimeZone: string,
+  existingInstances: DashboardTask[] = [],
 ): DashboardTask[] {
-	return useMemo(() => {
-		if (!template || !template.recurrencePattern || template.isRecurringInstance) {
-			return [];
-		}
+  return useMemo(() => {
+    if (
+      !template ||
+      !template.recurrencePattern ||
+      template.isRecurringInstance
+    ) {
+      return [];
+    }
 
-		return generateRecurringInstances(template, dateRange, userTimeZone, existingInstances);
-	}, [template, dateRange.start, dateRange.end, userTimeZone, existingInstances]);
+    return generateRecurringInstances(
+      template,
+      dateRange,
+      userTimeZone,
+      existingInstances,
+    );
+  }, [
+    template,
+    dateRange.start,
+    dateRange.end,
+    userTimeZone,
+    existingInstances,
+  ]);
 }

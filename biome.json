@@ -1,36 +1,4 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.9/schema.json",
-	"extends": ["@canonical/biome-config"],
-	"files": {
-		"includes": ["src/**/*", "*.ts", "*.tsx", "*.js", "*.jsx", "*.json"]
-	},
-	"formatter": {
-		"indentStyle": "tab",
-		"indentWidth": 2,
-		"lineWidth": 100
-	},
-	"linter": {
-		"rules": {
-			"correctness": {
-				"noUnusedVariables": "error",
-				"noUnusedImports": "error"
-			},
-			"suspicious": {
-				"noExplicitAny": "warn",
-				"noArrayIndexKey": "warn"
-			},
-			"style": {
-				"noParameterAssign": "error",
-				"useConst": "error"
-			},
-			"security": {
-				"noDangerouslySetInnerHtml": "error"
-			}
-		}
-	},
-	"css": {
-		"parser": {
-			"tailwindDirectives": true
-		}
-	}
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "extends": ["@canonical/biome-config"]
 }
