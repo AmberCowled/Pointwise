@@ -35,19 +35,19 @@ export default function CheckboxShowcasePage() {
 						<Checkbox
 							variant="primary"
 							label="Primary variant checkbox"
-							checked={checkedStates.primary}
+							defaultChecked={checkedStates.primary}
 							onChange={() => handleChange("primary")}
 						/>
 						<Checkbox
 							variant="secondary"
 							label="Secondary variant checkbox"
-							checked={checkedStates.secondary}
+							defaultChecked={checkedStates.secondary}
 							onChange={() => handleChange("secondary")}
 						/>
 						<Checkbox
 							variant="danger"
 							label="Danger variant checkbox"
-							checked={checkedStates.danger}
+							defaultChecked={checkedStates.danger}
 							onChange={() => handleChange("danger")}
 						/>
 					</div>
@@ -175,7 +175,7 @@ export default function CheckboxShowcasePage() {
 								description="By checking this box, you agree to our terms of service and privacy policy."
 								required
 								error={!checkedStates.error ? false : "You must accept the terms to continue"}
-								checked={checkedStates.error}
+								defaultChecked={checkedStates.error}
 								onChange={() => handleChange("error")}
 							/>
 						</div>
@@ -222,7 +222,7 @@ export default function CheckboxShowcasePage() {
 							<Checkbox
 								variant="primary"
 								label="Controlled checkbox"
-								checked={checkedStates.primary}
+								defaultChecked={checkedStates.primary}
 								onChange={() => handleChange("primary")}
 							/>
 							<p className="text-xs text-zinc-500">

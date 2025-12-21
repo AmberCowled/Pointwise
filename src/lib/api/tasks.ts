@@ -10,7 +10,7 @@ import {
 	TaskV2Schema,
 	type UpdateTaskRequest,
 } from "@pointwise/lib/validation/tasks-schema";
-import type { TaskV2 as PrismaTaskV2 } from "@prisma/client";
+import type { Prisma, TaskV2 as PrismaTaskV2 } from "@prisma/client";
 
 export async function getTasks(projectId: string, userId: string): Promise<PrismaTaskV2[]> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
@@ -53,6 +53,22 @@ export async function createTask(
 	return newTask;
 }
 
+// Type that only includes the fields we can update from UpdateTaskRequest
+type TaskV2UpdateFields = Pick<
+	Prisma.TaskV2UpdateInput,
+	| "title"
+	| "description"
+	| "xpAward"
+	| "category"
+	| "optional"
+	| "startDate"
+	| "startTime"
+	| "dueDate"
+	| "dueTime"
+	| "status"
+	| "completedAt"
+>;
+
 export async function updateTask(
 	taskId: string,
 	request: UpdateTaskRequest,
@@ -67,23 +83,38 @@ export async function updateTask(
 		throw new Error("Task not found");
 	}
 
-	// Verify access using existing task's projectId
 	if (!(await isProjectUserOrHigher(existingTask.projectId, userId))) {
 		throw new Error("Forbidden: You do not have write permissions in this project");
 	}
 
-	const updateData: any = {};
-	if (request.title !== undefined) updateData.title = request.title;
-	if (request.description !== undefined) updateData.description = request.description ?? null;
-	if (request.xpAward !== undefined) updateData.xpAward = request.xpAward;
-	if (request.category !== undefined) updateData.category = request.category;
-	if (request.optional !== undefined) updateData.optional = request.optional;
-	if (request.startDate !== undefined)
+	const updateData: Partial<TaskV2UpdateFields> = {};
+	if (request.title !== undefined) {
+		updateData.title = request.title;
+	}
+	if (request.description !== undefined) {
+		updateData.description = request.description ?? null;
+	}
+	if (request.xpAward !== undefined) {
+		updateData.xpAward = request.xpAward;
+	}
+	if (request.category !== undefined) {
+		updateData.category = request.category;
+	}
+	if (request.optional !== undefined) {
+		updateData.optional = request.optional;
+	}
+	if (request.startDate !== undefined) {
 		updateData.startDate = request.startDate ? new Date(request.startDate) : null;
-	if (request.startTime !== undefined) updateData.startTime = request.startTime ?? null;
-	if (request.dueDate !== undefined)
+	}
+	if (request.startTime !== undefined) {
+		updateData.startTime = request.startTime ?? null;
+	}
+	if (request.dueDate !== undefined) {
 		updateData.dueDate = request.dueDate ? new Date(request.dueDate) : null;
-	if (request.dueTime !== undefined) updateData.dueTime = request.dueTime ?? null;
+	}
+	if (request.dueTime !== undefined) {
+		updateData.dueTime = request.dueTime ?? null;
+	}
 	if (request.status !== undefined) {
 		updateData.status = request.status;
 		if (request.status === "COMPLETED") {

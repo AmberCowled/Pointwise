@@ -63,7 +63,7 @@ export default function UpdateProjectModal({ project }: UpdateProjectModalProps)
 	return (
 		<>
 			<DeleteProjectModal project={project} />
-			<ModalV2 id={`update-project-modal-${project.id}`} size="lg" loading={isLoading}>
+			<ModalV2 id={`update-project-modal-${project.id}`} size="xl" loading={isLoading}>
 				<ModalV2.Header title="Update Project" />
 				<ModalV2.Body>
 					<Container direction="vertical" gap="md" className="items-stretch">

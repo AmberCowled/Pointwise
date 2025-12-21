@@ -13,7 +13,7 @@ import { Spinner } from "./Spinner";
 /**
  * Modal size variants
  */
-export type ModalSize = "sm" | "md" | "lg" | "xl" | "fullscreen";
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "6xl" | "fullscreen";
 
 /**
  * Modal animation presets
@@ -291,6 +291,8 @@ export function Modal({
 		md: "w-full sm:max-w-md",
 		lg: "w-full sm:max-w-lg",
 		xl: "w-full sm:max-w-xl",
+		"2xl": "w-full sm:max-w-2xl",
+		"6xl": "w-full sm:max-w-6xl",
 		fullscreen: "max-w-full h-screen",
 	};
 

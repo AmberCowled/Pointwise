@@ -2,22 +2,42 @@
 
 import clsx from "clsx";
 import type React from "react";
-import { forwardRef, useId } from "react";
+import { forwardRef, useId, useState } from "react";
 
 import { InputHeader } from "./InputHeader";
 
 export type CheckboxVariants = "primary" | "secondary" | "danger";
 export type CheckboxSizes = "xs" | "sm" | "md" | "lg" | "xl";
 
-export interface CheckboxProps
-	extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "type"> {
+/**
+ * Custom props for the Checkbox component
+ */
+export interface CheckboxCustomProps {
 	variant?: CheckboxVariants;
 	size?: CheckboxSizes;
 	error?: boolean | string;
 	label?: React.ReactNode;
 	description?: React.ReactNode;
 	required?: boolean;
+	/**
+	 * Default checked state (uncontrolled component)
+	 * @default false
+	 */
+	defaultChecked?: boolean;
+	/**
+	 * Callback fired when the checkbox checked state changes
+	 * Receives the new checked state as a boolean (not the event)
+	 * @param value - The new checked state
+	 */
+	onChange?: (value: boolean) => void;
 }
+
+/**
+ * Props for the Checkbox component
+ */
+export interface CheckboxProps
+	extends CheckboxCustomProps,
+		Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "type" | "onChange" | "checked" | "defaultChecked"> {}
 
 const baseStyle =
 	"appearance-none cursor-pointer border transition focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed";
@@ -80,8 +100,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
 		className,
 		id,
 		disabled,
-		checked,
-		defaultChecked,
+		defaultChecked = false,
+		onChange,
 		...props
 	}: CheckboxProps,
 	ref,
@@ -90,6 +110,15 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
 	const checkboxId = id || generatedId;
 	const errorMessage = typeof error === "string" ? error : undefined;
 	const hasHeader = !!required && !label;
+
+	// Internal state management (uncontrolled component)
+	const [checked, setChecked] = useState(defaultChecked);
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newChecked = e.target.checked;
+		setChecked(newChecked);
+		onChange?.(newChecked);
+	};
 
 	return (
 		<div className="space-y-2">
@@ -106,7 +135,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
 							disabled={disabled}
 							required={required}
 							checked={checked}
-							defaultChecked={defaultChecked}
+							onChange={handleChange}
 							className={clsx(
 								baseStyle,
 								"peer",

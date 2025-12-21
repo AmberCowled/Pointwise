@@ -4,9 +4,11 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import { Card } from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
+import ModalV2 from "@pointwise/app/components/ui/modalV2";
 import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
 import { useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
 import { useParams } from "next/navigation";
+import CreateTaskModal from "../modals/CreateTaskModal";
 import NoTasksView from "./NoTasksView";
 
 export default function TasksOverview() {
@@ -31,28 +33,43 @@ export default function TasksOverview() {
 	const isError = isProjectError || isTasksError;
 
 	return (
-		<Container direction="vertical" gap="sm" className="pt-3">
-			<Container>
-				<Card
-					title="Tasks"
-					label="Overview"
-					loading={isLoading}
-					className="flex-1"
-					action={hasWriteAccess ? <Button variant="secondary">Create Task</Button> : null}
-				>
-					<ErrorCard
-						display={isError}
-						message={isProjectError ? "Project could not be loaded" : "Tasks could not be loaded"}
-						onRetry={isProjectError ? refetchProject : refetchTasks}
-						className="mb-6"
-					/>
-					{hasTasks ? (
-						tasks.tasks.map((task) => <div key={task.id}>{task.title}</div>)
-					) : isEmpty ? (
-						<NoTasksView hasWriteAccess={hasWriteAccess} />
-					) : null}
-				</Card>
+		<>
+			<CreateTaskModal projectId={projectId} />
+			<Container direction="vertical" gap="sm" className="pt-3">
+				<Container>
+					<Card
+						title="Tasks"
+						label="Overview"
+						loading={isLoading}
+						className="flex-1"
+						action={
+							hasWriteAccess ? (
+								<Button
+									variant="secondary"
+									onClick={() => ModalV2.Manager.open("create-task-modal")}
+								>
+									Create Task
+								</Button>
+							) : null
+						}
+					>
+						<ErrorCard
+							display={isError}
+							message={isProjectError ? "Project could not be loaded" : "Tasks could not be loaded"}
+							onRetry={isProjectError ? refetchProject : refetchTasks}
+							className="mb-6"
+						/>
+						{hasTasks ? (
+							tasks.tasks.map((task) => <div key={task.id}>{task.title}</div>)
+						) : isEmpty ? (
+							<NoTasksView
+								hasWriteAccess={hasWriteAccess}
+								onCreateClick={() => ModalV2.Manager.open("create-task-modal")}
+							/>
+						) : null}
+					</Card>
+				</Container>
 			</Container>
-		</Container>
+		</>
 	);
 }
