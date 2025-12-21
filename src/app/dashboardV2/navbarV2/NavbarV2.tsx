@@ -11,28 +11,30 @@ import UserMenu from "./UserMenu";
 import XPBar from "./XPBar";
 
 export default function NavbarV2() {
-	return (
-		<div className="w-full border-b border-white/10 bg-zinc-950 z-1">
-			<Container direction="vertical" gap="sm">
-				<Container className="pt-2" gap="sm">
-					<BrandHeaderV2 size="sm" />
-					<Search
-						onSearch={(query, filter) => console.log("Searching:", query, "\nFilter:", filter)}
-					/>
-					<UserMenu />
-				</Container>
-				<Container className="justify-between">
-					<LVStat />
-					<Container fullWidth={false} gap="sm">
-						<MessagesMenu />
-						<NotificationMenu />
-						<FriendRequestsMenu />
-					</Container>
-				</Container>
-				<Container className="pb-2.5">
-					<XPBar />
-				</Container>
-			</Container>
-		</div>
-	);
+  return (
+    <div className="w-full border-b border-white/10 bg-zinc-950 z-1">
+      <Container direction="vertical" gap="sm">
+        <Container className="pt-2" gap="sm">
+          <BrandHeaderV2 size="sm" />
+          <Search
+            onSearch={(query, filter) =>
+              console.log("Searching:", query, "\nFilter:", filter)
+            }
+          />
+          <UserMenu />
+        </Container>
+        <Container className="justify-between">
+          <LVStat />
+          <Container fullWidth={false} gap="sm">
+            <MessagesMenu />
+            <NotificationMenu />
+            <FriendRequestsMenu />
+          </Container>
+        </Container>
+        <Container className="pb-2.5">
+          <XPBar />
+        </Container>
+      </Container>
+    </div>
+  );
 }

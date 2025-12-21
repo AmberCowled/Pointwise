@@ -23,53 +23,60 @@ import { userApi } from "./endpoints/user";
  * ```
  */
 export function useApi() {
-	const { showNotification } = useNotifications();
+  const { showNotification } = useNotifications();
 
-	// Memoize options creation to avoid recreating on every render
-	const createOptions = useCallback(
-		(): ApiRequestOptions => ({
-			onError: (message, variant = "error") => {
-				showNotification({
-					message,
-					variant,
-				});
-			},
-		}),
-		[showNotification],
-	);
+  // Memoize options creation to avoid recreating on every render
+  const createOptions = useCallback(
+    (): ApiRequestOptions => ({
+      onError: (message, variant = "error") => {
+        showNotification({
+          message,
+          variant,
+        });
+      },
+    }),
+    [showNotification],
+  );
 
-	return {
-		tasks: {
-			create: (data: Parameters<typeof tasksApi.create>[0], options?: ApiRequestOptions) =>
-				tasksApi.create(data, { ...createOptions(), ...options }),
-			update: (
-				taskId: string,
-				data: Parameters<typeof tasksApi.update>[1],
-				scope?: "single" | "series",
-				options?: ApiRequestOptions,
-			) =>
-				tasksApi.update(taskId, data, scope ?? "single", {
-					...createOptions(),
-					...options,
-				}),
-			delete: (taskId: string, scope?: "single" | "series", options?: ApiRequestOptions) =>
-				tasksApi.delete(taskId, scope, { ...createOptions(), ...options }),
-			complete: (taskId: string, options?: ApiRequestOptions) =>
-				tasksApi.complete(taskId, { ...createOptions(), ...options }),
-			getRecurring: (taskId: string, options?: ApiRequestOptions) =>
-				tasksApi.getRecurring(taskId, { ...createOptions(), ...options }),
-		},
-		user: {
-			updatePreferences: (
-				data: Parameters<typeof userApi.updatePreferences>[0],
-				options?: ApiRequestOptions,
-			) => userApi.updatePreferences(data, { ...createOptions(), ...options }),
-		},
-		auth: {
-			signup: (data: Parameters<typeof authApi.signup>[0], options?: ApiRequestOptions) =>
-				authApi.signup(data, { ...createOptions(), ...options }),
-		},
-	};
+  return {
+    tasks: {
+      create: (
+        data: Parameters<typeof tasksApi.create>[0],
+        options?: ApiRequestOptions,
+      ) => tasksApi.create(data, { ...createOptions(), ...options }),
+      update: (
+        taskId: string,
+        data: Parameters<typeof tasksApi.update>[1],
+        scope?: "single" | "series",
+        options?: ApiRequestOptions,
+      ) =>
+        tasksApi.update(taskId, data, scope ?? "single", {
+          ...createOptions(),
+          ...options,
+        }),
+      delete: (
+        taskId: string,
+        scope?: "single" | "series",
+        options?: ApiRequestOptions,
+      ) => tasksApi.delete(taskId, scope, { ...createOptions(), ...options }),
+      complete: (taskId: string, options?: ApiRequestOptions) =>
+        tasksApi.complete(taskId, { ...createOptions(), ...options }),
+      getRecurring: (taskId: string, options?: ApiRequestOptions) =>
+        tasksApi.getRecurring(taskId, { ...createOptions(), ...options }),
+    },
+    user: {
+      updatePreferences: (
+        data: Parameters<typeof userApi.updatePreferences>[0],
+        options?: ApiRequestOptions,
+      ) => userApi.updatePreferences(data, { ...createOptions(), ...options }),
+    },
+    auth: {
+      signup: (
+        data: Parameters<typeof authApi.signup>[0],
+        options?: ApiRequestOptions,
+      ) => authApi.signup(data, { ...createOptions(), ...options }),
+    },
+  };
 }
 
 export { authApi as authApiRaw } from "./endpoints/auth";

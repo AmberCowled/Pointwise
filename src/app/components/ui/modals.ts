@@ -5,8 +5,8 @@ export { XIcon, type XIconProps } from "./icons/XIcon";
 export { Modal, type ModalProps, type ModalSize } from "./Modal";
 export { ModalBody, type ModalBodyProps } from "./ModalBody";
 export {
-	ModalCloseButton,
-	type ModalCloseButtonProps,
+  ModalCloseButton,
+  type ModalCloseButtonProps,
 } from "./ModalCloseButton";
 export { type ModalContextValue, useModalContext } from "./ModalContext";
 export { ModalFooter, type ModalFooterProps } from "./ModalFooter";

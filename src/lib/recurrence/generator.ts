@@ -13,71 +13,75 @@ import { type OccurrenceGenerationInput, toRecurrenceType } from "./types";
  * Get the appropriate strategy for a recurrence type
  */
 function getStrategy(recurrenceType: string): RecurrenceStrategy | null {
-	const type = toRecurrenceType(recurrenceType);
-	if (!type) return null;
+  const type = toRecurrenceType(recurrenceType);
+  if (!type) return null;
 
-	switch (type) {
-		case "DAILY":
-			return new DailyRecurrenceStrategy();
-		case "WEEKLY":
-			return new WeeklyRecurrenceStrategy();
-		case "MONTHLY":
-			return new MonthlyRecurrenceStrategy();
-		default:
-			return null;
-	}
+  switch (type) {
+    case "DAILY":
+      return new DailyRecurrenceStrategy();
+    case "WEEKLY":
+      return new WeeklyRecurrenceStrategy();
+    case "MONTHLY":
+      return new MonthlyRecurrenceStrategy();
+    default:
+      return null;
+  }
 }
 
 /**
  * Generate occurrences for a recurring task
  */
 export function generateOccurrences(input: OccurrenceGenerationInput): Date[] {
-	const strategy = getStrategy(input.recurrence);
-	if (!strategy) return [];
+  const strategy = getStrategy(input.recurrence);
+  if (!strategy) return [];
 
-	const recurrenceType = toRecurrenceType(input.recurrence);
-	if (!recurrenceType) return [];
+  const recurrenceType = toRecurrenceType(input.recurrence);
+  if (!recurrenceType) return [];
 
-	const config = {
-		type: recurrenceType,
-		timesOfDay: input.timesOfDay,
-		daysOfWeek: input.recurrenceDays.length > 0 ? input.recurrenceDays : undefined,
-		monthDays: input.recurrenceMonthDays.length > 0 ? input.recurrenceMonthDays : undefined,
-	};
+  const config = {
+    type: recurrenceType,
+    timesOfDay: input.timesOfDay,
+    daysOfWeek:
+      input.recurrenceDays.length > 0 ? input.recurrenceDays : undefined,
+    monthDays:
+      input.recurrenceMonthDays.length > 0
+        ? input.recurrenceMonthDays
+        : undefined,
+  };
 
-	return strategy.generateOccurrences(
-		config,
-		input.startDate,
-		input.timeZone,
-		input.maxOccurrences ?? RECURRENCE_CONFIG.defaultOccurrences,
-	);
+  return strategy.generateOccurrences(
+    config,
+    input.startDate,
+    input.timeZone,
+    input.maxOccurrences ?? RECURRENCE_CONFIG.defaultOccurrences,
+  );
 }
 
 /**
  * Find the next occurrence for a recurring task
  */
 export function findNextOccurrence(input: {
-	recurrenceType: string;
-	baseDate: Date;
-	timesOfDay: string[];
-	timeZone: string;
-	daysOfWeek?: number[];
-	monthDays?: number[];
-	lastTaskDate?: Date;
+  recurrenceType: string;
+  baseDate: Date;
+  timesOfDay: string[];
+  timeZone: string;
+  daysOfWeek?: number[];
+  monthDays?: number[];
+  lastTaskDate?: Date;
 }): Date | null {
-	const recurrenceType = toRecurrenceType(input.recurrenceType);
-	if (!recurrenceType) return null;
+  const recurrenceType = toRecurrenceType(input.recurrenceType);
+  if (!recurrenceType) return null;
 
-	const strategy = getStrategy(input.recurrenceType);
-	if (!strategy) return null;
+  const strategy = getStrategy(input.recurrenceType);
+  if (!strategy) return null;
 
-	return strategy.findNextOccurrence({
-		recurrenceType,
-		baseDate: input.baseDate,
-		timesOfDay: input.timesOfDay,
-		timeZone: input.timeZone,
-		daysOfWeek: input.daysOfWeek,
-		monthDays: input.monthDays,
-		lastTaskDate: input.lastTaskDate,
-	});
+  return strategy.findNextOccurrence({
+    recurrenceType,
+    baseDate: input.baseDate,
+    timesOfDay: input.timesOfDay,
+    timeZone: input.timeZone,
+    daysOfWeek: input.daysOfWeek,
+    monthDays: input.monthDays,
+    lastTaskDate: input.lastTaskDate,
+  });
 }

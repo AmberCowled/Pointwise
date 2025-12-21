@@ -12,36 +12,39 @@ import ProjectCardV2Stats from "./ProjectCardV2Stats";
 import ProjectCardV2Tags from "./ProjectCardV2Tags";
 
 export interface ProjectCardProps {
-	project: Project;
+  project: Project;
 }
 
 export default function ProjectCardV2({ project }: ProjectCardProps) {
-	const router = useRouter();
-	const memberCount = getProjectMemberCount(project);
+  const router = useRouter();
+  const memberCount = getProjectMemberCount(project);
 
-	const handleSettingsClick = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		ModalV2.Manager.open(`update-project-modal-${project.id}`);
-	};
+  const handleSettingsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    ModalV2.Manager.open(`update-project-modal-${project.id}`);
+  };
 
-	return (
-		<>
-			<UpdateProjectModal project={project} />
-			<Container
-				fullWidth={false}
-				direction="vertical"
-				className="group h-full outline outline-zinc-700 hover:outline-zinc-500 rounded-lg transition-all p-4 gap-3"
-				onClick={() => router.push(`/dashboard/projects/${project.id}/v2`)}
-			>
-				<ProjectCardV2Header name={project.name} />
-				<ProjectCardV2Description description={project.description} />
-				<ProjectCardV2Stats taskCount={project.taskCount} memberCount={memberCount} />
-				<ProjectCardV2Tags
-					visibility={project.visibility}
-					role={project.role}
-					onSettingsClick={handleSettingsClick}
-				/>
-			</Container>
-		</>
-	);
+  return (
+    <>
+      <UpdateProjectModal project={project} />
+      <Container
+        fullWidth={false}
+        direction="vertical"
+        className="group h-full outline outline-zinc-700 hover:outline-zinc-500 rounded-lg transition-all p-4 gap-3"
+        onClick={() => router.push(`/dashboard/projects/${project.id}/v2`)}
+      >
+        <ProjectCardV2Header name={project.name} />
+        <ProjectCardV2Description description={project.description} />
+        <ProjectCardV2Stats
+          taskCount={project.taskCount}
+          memberCount={memberCount}
+        />
+        <ProjectCardV2Tags
+          visibility={project.visibility}
+          role={project.role}
+          onSettingsClick={handleSettingsClick}
+        />
+      </Container>
+    </>
+  );
 }
