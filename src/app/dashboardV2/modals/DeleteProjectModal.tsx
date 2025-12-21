@@ -52,7 +52,7 @@ export default function DeleteProjectModal({ project }: { project: Project }) {
 					/>
 				</Container>
 			</ModalV2.Body>
-			<ModalV2.Footer>
+			<ModalV2.Footer align="end">
 				<Button variant="secondary">Cancel</Button>
 				<Button
 					variant="danger"
