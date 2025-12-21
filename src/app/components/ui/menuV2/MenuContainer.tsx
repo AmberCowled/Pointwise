@@ -1,10 +1,10 @@
 "use client";
 
 import {
-	Menu as HeadlessMenu,
-	MenuButton as HeadlessMenuButton,
-	MenuItems,
-	Transition,
+  Menu as HeadlessMenu,
+  MenuButton as HeadlessMenuButton,
+  MenuItems,
+  Transition,
 } from "@headlessui/react";
 import clsx from "clsx";
 import { Fragment, type ReactNode, useMemo } from "react";
@@ -19,39 +19,39 @@ type MenuContainerSizes = "xs" | "sm" | "md" | "lg" | "xl";
  * Props for the MenuContainer component
  */
 export interface MenuContainerProps {
-	/**
-	 * Menu items, sections, and dividers
-	 */
-	children: ReactNode;
-	/**
-	 * Required trigger button - must be Button component
-	 */
-	trigger: React.ReactElement<ButtonProps>;
-	/**
-	 * Visual variant style
-	 * @default 'primary'
-	 */
-	variant?: MenuContainerVariants;
-	/**
-	 * Size of menu items
-	 * @default 'md'
-	 */
-	size?: MenuContainerSizes;
-	/**
-	 * Placement of menu dropdown
-	 * @default 'bottom end'
-	 */
-	placement?: "top start" | "top end" | "bottom start" | "bottom end";
-	/**
-	 * Additional CSS classes for the menu container
-	 */
-	className?: string;
+  /**
+   * Menu items, sections, and dividers
+   */
+  children: ReactNode;
+  /**
+   * Required trigger button - must be Button component
+   */
+  trigger: React.ReactElement<ButtonProps>;
+  /**
+   * Visual variant style
+   * @default 'primary'
+   */
+  variant?: MenuContainerVariants;
+  /**
+   * Size of menu items
+   * @default 'md'
+   */
+  size?: MenuContainerSizes;
+  /**
+   * Placement of menu dropdown
+   * @default 'bottom end'
+   */
+  placement?: "top start" | "top end" | "bottom start" | "bottom end";
+  /**
+   * Additional CSS classes for the menu container
+   */
+  className?: string;
 }
 
 const variantStyles: Record<MenuContainerVariants, string> = {
-	primary: "border-white/10 bg-zinc-900 shadow-indigo-500/20",
-	secondary: "border-white/10 bg-zinc-800 shadow-fuchsia-500/20",
-	danger: "border-rose-400/40 bg-zinc-900 shadow-rose-500/20",
+  primary: "border-white/10 bg-zinc-900 shadow-indigo-500/20",
+  secondary: "border-white/10 bg-zinc-800 shadow-fuchsia-500/20",
+  danger: "border-rose-400/40 bg-zinc-900 shadow-rose-500/20",
 };
 
 /**
@@ -83,72 +83,79 @@ const variantStyles: Record<MenuContainerVariants, string> = {
  * @returns {JSX.Element} The rendered MenuContainer component.
  */
 export function MenuContainer({
-	children,
-	trigger,
-	variant = "primary",
-	size: _size = "md", // Currently not used, but kept for API consistency
-	placement = "bottom end",
-	className,
+  children,
+  trigger,
+  variant = "primary",
+  size: _size = "md", // Currently not used, but kept for API consistency
+  placement = "bottom end",
+  className,
 }: MenuContainerProps) {
-	// Auto-add dividers between consecutive MenuSection components
-	const processedChildren = useMemo(() => {
-		const childrenArray = Array.isArray(children) ? children : [children];
-		const result: ReactNode[] = [];
-		let prevWasSection = false;
+  // Auto-add dividers between consecutive MenuSection components
+  const processedChildren = useMemo(() => {
+    const childrenArray = Array.isArray(children) ? children : [children];
+    const result: ReactNode[] = [];
+    let prevWasSection = false;
 
-		for (let i = 0; i < childrenArray.length; i++) {
-			const child = childrenArray[i];
+    for (let i = 0; i < childrenArray.length; i++) {
+      const child = childrenArray[i];
 
-			// Check if current child is a MenuSection
-			if (child && typeof child === "object" && "type" in child && child.type === MenuSection) {
-				// Add divider if previous was also a section (and not at start)
-				if (prevWasSection && result.length > 0) {
-					result.push(<MenuDivider key={`divider-${i}`} />);
-				}
-				result.push(child);
-				prevWasSection = true;
-			} else {
-				// Not a section, just add it
-				result.push(child);
-				prevWasSection = false;
-			}
-		}
+      // Check if current child is a MenuSection
+      if (
+        child &&
+        typeof child === "object" &&
+        "type" in child &&
+        child.type === MenuSection
+      ) {
+        // Add divider if previous was also a section (and not at start)
+        if (prevWasSection && result.length > 0) {
+          result.push(<MenuDivider key={`divider-${i}`} />);
+        }
+        result.push(child);
+        prevWasSection = true;
+      } else {
+        // Not a section, just add it
+        result.push(child);
+        prevWasSection = false;
+      }
+    }
 
-		return result;
-	}, [children]);
+    return result;
+  }, [children]);
 
-	return (
-		<HeadlessMenu>
-			{({ open }) => (
-				<div className={clsx("relative", className)}>
-					<HeadlessMenuButton as={Fragment}>{() => <div>{trigger}</div>}</HeadlessMenuButton>
+  return (
+    <HeadlessMenu>
+      {({ open }) => (
+        <div className={clsx("relative", className)}>
+          <HeadlessMenuButton as={Fragment}>
+            {() => <div>{trigger}</div>}
+          </HeadlessMenuButton>
 
-					<Transition
-						as={Fragment}
-						show={open}
-						enter="transition ease-out duration-100"
-						enterFrom="opacity-0 scale-95"
-						enterTo="opacity-100 scale-100"
-						leave="transition ease-in duration-75"
-						leaveFrom="opacity-100 scale-100"
-						leaveTo="opacity-0 scale-95"
-					>
-						<MenuItems
-							anchor={placement}
-							portal={true}
-							modal={false}
-							className={clsx(
-								"absolute z-50 mt-2 rounded-2xl border p-2 text-sm shadow-xl focus:outline-none",
-								"max-h-60 w-auto min-w-[160px] overflow-auto",
-								variantStyles[variant],
-							)}
-							style={{ overflowY: "auto", overflowX: "visible" }}
-						>
-							{processedChildren}
-						</MenuItems>
-					</Transition>
-				</div>
-			)}
-		</HeadlessMenu>
-	);
+          <Transition
+            as={Fragment}
+            show={open}
+            enter="transition ease-out duration-100"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <MenuItems
+              anchor={placement}
+              portal={true}
+              modal={false}
+              className={clsx(
+                "absolute z-50 mt-2 rounded-2xl border p-2 text-sm shadow-xl focus:outline-none",
+                "max-h-60 w-auto min-w-[160px] overflow-auto",
+                variantStyles[variant],
+              )}
+              style={{ overflowY: "auto", overflowX: "visible" }}
+            >
+              {processedChildren}
+            </MenuItems>
+          </Transition>
+        </div>
+      )}
+    </HeadlessMenu>
+  );
 }

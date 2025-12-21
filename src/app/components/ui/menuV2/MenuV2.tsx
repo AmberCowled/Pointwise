@@ -10,10 +10,10 @@ import { MenuSection } from "./MenuSection";
  * Props for the MenuV2 component
  */
 export interface MenuV2Props extends MenuContainerProps {
-	/**
-	 * Menu items, sections, and dividers
-	 */
-	children: ReactNode;
+  /**
+   * Menu items, sections, and dividers
+   */
+  children: ReactNode;
 }
 
 /**
@@ -64,11 +64,11 @@ export interface MenuV2Props extends MenuContainerProps {
  * @returns {JSX.Element} The rendered MenuV2 component.
  */
 function MenuV2({ trigger, children, ...props }: MenuV2Props) {
-	return (
-		<MenuContainer trigger={trigger} {...props}>
-			{children}
-		</MenuContainer>
-	);
+  return (
+    <MenuContainer trigger={trigger} {...props}>
+      {children}
+    </MenuContainer>
+  );
 }
 
 // Export sub-components for convenience

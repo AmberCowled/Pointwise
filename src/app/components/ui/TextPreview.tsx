@@ -3,50 +3,50 @@
 import clsx from "clsx";
 
 export interface TextPreviewProps {
-	/**
-	 * Text to display. If null/undefined/empty, placeholder will be shown
-	 */
-	text: string | null | undefined;
+  /**
+   * Text to display. If null/undefined/empty, placeholder will be shown
+   */
+  text: string | null | undefined;
 
-	/**
-	 * Number of lines to show before truncating
-	 * @default 2
-	 */
-	lines?: number;
+  /**
+   * Number of lines to show before truncating
+   * @default 2
+   */
+  lines?: number;
 
-	/**
-	 * Placeholder text to show when text is empty
-	 */
-	placeholder?: string;
+  /**
+   * Placeholder text to show when text is empty
+   */
+  placeholder?: string;
 
-	/**
-	 * Whether to use fixed height (reserves space for all lines even if text is shorter)
-	 * @default false
-	 */
-	fixedHeight?: boolean;
+  /**
+   * Whether to use fixed height (reserves space for all lines even if text is shorter)
+   * @default false
+   */
+  fixedHeight?: boolean;
 
-	/**
-	 * Text size variant
-	 * @default 'sm'
-	 */
-	size?: "sm" | "md" | "lg";
+  /**
+   * Text size variant
+   * @default 'sm'
+   */
+  size?: "sm" | "md" | "lg";
 
-	/**
-	 * Additional CSS classes
-	 */
-	className?: string;
+  /**
+   * Additional CSS classes
+   */
+  className?: string;
 }
 
 const sizeStyles = {
-	sm: "text-sm",
-	md: "text-base",
-	lg: "text-lg",
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-lg",
 };
 
 const lineHeightStyles = {
-	sm: "leading-5",
-	md: "leading-6",
-	lg: "leading-7",
+  sm: "leading-5",
+  md: "leading-6",
+  lg: "leading-7",
 };
 
 /**
@@ -71,64 +71,69 @@ const lineHeightStyles = {
  * ```
  */
 const lineClampStyles: Record<number, string> = {
-	1: "line-clamp-1",
-	2: "line-clamp-2",
-	3: "line-clamp-3",
-	4: "line-clamp-4",
-	5: "line-clamp-5",
-	6: "line-clamp-6",
+  1: "line-clamp-1",
+  2: "line-clamp-2",
+  3: "line-clamp-3",
+  4: "line-clamp-4",
+  5: "line-clamp-5",
+  6: "line-clamp-6",
 };
 
 export function TextPreview({
-	text,
-	lines = 2,
-	placeholder,
-	fixedHeight = false,
-	size = "sm",
-	className,
+  text,
+  lines = 2,
+  placeholder,
+  fixedHeight = false,
+  size = "sm",
+  className,
 }: TextPreviewProps) {
-	const hasText = text && text.trim().length > 0;
-	const lineClampClass = lineClampStyles[lines] ?? lineClampStyles[2];
+  const hasText = text && text.trim().length > 0;
+  const lineClampClass = lineClampStyles[lines] ?? lineClampStyles[2];
 
-	// Calculate fixed height if needed (approximate line height * number of lines)
-	const fixedHeightStyle = fixedHeight
-		? {
-				minHeight:
-					size === "sm"
-						? `${lines * 1.25}rem`
-						: size === "md"
-							? `${lines * 1.5}rem`
-							: `${lines * 1.75}rem`,
-			}
-		: undefined;
+  // Calculate fixed height if needed (approximate line height * number of lines)
+  const fixedHeightStyle = fixedHeight
+    ? {
+        minHeight:
+          size === "sm"
+            ? `${lines * 1.25}rem`
+            : size === "md"
+              ? `${lines * 1.5}rem`
+              : `${lines * 1.75}rem`,
+      }
+    : undefined;
 
-	if (!hasText && placeholder) {
-		return (
-			<p
-				className={clsx(
-					sizeStyles[size],
-					lineHeightStyles[size],
-					"text-zinc-500 italic",
-					fixedHeight && lineClampClass,
-					className,
-				)}
-				style={fixedHeightStyle}
-			>
-				{placeholder}
-			</p>
-		);
-	}
+  if (!hasText && placeholder) {
+    return (
+      <p
+        className={clsx(
+          sizeStyles[size],
+          lineHeightStyles[size],
+          "text-zinc-500 italic",
+          fixedHeight && lineClampClass,
+          className,
+        )}
+        style={fixedHeightStyle}
+      >
+        {placeholder}
+      </p>
+    );
+  }
 
-	if (!hasText) {
-		return null;
-	}
+  if (!hasText) {
+    return null;
+  }
 
-	return (
-		<p
-			className={clsx(sizeStyles[size], lineHeightStyles[size], lineClampClass, className)}
-			style={fixedHeightStyle}
-		>
-			{text}
-		</p>
-	);
+  return (
+    <p
+      className={clsx(
+        sizeStyles[size],
+        lineHeightStyles[size],
+        lineClampClass,
+        className,
+      )}
+      style={fixedHeightStyle}
+    >
+      {text}
+    </p>
+  );
 }

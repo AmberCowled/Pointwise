@@ -10,49 +10,59 @@ import ProjectName from "./ProjectName";
 import VisibilitySelector from "./VisibilitySelector";
 
 export default function CreateProjectModal() {
-	const defaultVisibility = "PRIVATE";
+  const defaultVisibility = "PRIVATE";
 
-	const [name, setName] = useState<string>("");
-	const [description, setDescription] = useState<string>("");
-	const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(defaultVisibility);
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
+    defaultVisibility,
+  );
 
-	const [createProject, { isLoading }] = useCreateProjectMutation();
+  const [createProject, { isLoading }] = useCreateProjectMutation();
 
-	const handleCreateProject = async () => {
-		try {
-			await createProject({
-				name: name.trim(),
-				description: description?.trim() || null,
-				visibility,
-			}).unwrap();
-			ModalV2.Manager.close("create-project-modal");
-		} catch (error) {
-			console.error(error);
-		}
-	};
+  const handleCreateProject = async () => {
+    try {
+      await createProject({
+        name: name.trim(),
+        description: description?.trim() || null,
+        visibility,
+      }).unwrap();
+      ModalV2.Manager.close("create-project-modal");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-	const handleReset = () => {
-		setName("");
-		setDescription("");
-		setVisibility(defaultVisibility);
-	};
+  const handleReset = () => {
+    setName("");
+    setDescription("");
+    setVisibility(defaultVisibility);
+  };
 
-	return (
-		<ModalV2 id="create-project-modal" size="xl" loading={isLoading} onAfterClose={handleReset}>
-			<ModalV2.Header title="Create Project" />
-			<ModalV2.Body>
-				<Container direction="vertical" gap="md" className="items-stretch">
-					<ProjectName onChange={setName} />
-					<ProjectDescription onChange={setDescription} />
-					<VisibilitySelector defaultValue={defaultVisibility} onChange={setVisibility} />
-				</Container>
-			</ModalV2.Body>
-			<ModalV2.Footer align="end">
-				<Button variant="secondary">Cancel</Button>
-				<Button onClick={handleCreateProject} disabled={!name.trim()}>
-					Create
-				</Button>
-			</ModalV2.Footer>
-		</ModalV2>
-	);
+  return (
+    <ModalV2
+      id="create-project-modal"
+      size="xl"
+      loading={isLoading}
+      onAfterClose={handleReset}
+    >
+      <ModalV2.Header title="Create Project" />
+      <ModalV2.Body>
+        <Container direction="vertical" gap="md" className="items-stretch">
+          <ProjectName onChange={setName} />
+          <ProjectDescription onChange={setDescription} />
+          <VisibilitySelector
+            defaultValue={defaultVisibility}
+            onChange={setVisibility}
+          />
+        </Container>
+      </ModalV2.Body>
+      <ModalV2.Footer align="end">
+        <Button variant="secondary">Cancel</Button>
+        <Button onClick={handleCreateProject} disabled={!name.trim()}>
+          Create
+        </Button>
+      </ModalV2.Footer>
+    </ModalV2>
+  );
 }

@@ -91,10 +91,10 @@ model TaskV2 {
   optional    Boolean @default(false)
 
   // Date/Time  
-  startDate   DateTime? // Date in UTC (null = no start date)
-  startTime   String? // Time as 'HH:MM' (null = no start time)
-  dueDate     DateTime? // Date in UTC (null = no due date)
-  dueTime     String? // Time as 'HH:MM' (null = no due time)
+  startDate    DateTime? // Date in UTC (null = no start date)
+  hasStartTime Boolean @default(false) // Track if user provided start time
+  dueDate      DateTime? // Date in UTC (null = no due date)
+  hasDueTime   Boolean @default(false) // Track if user provided due time
 
   // Status
   completedAt DateTime?
