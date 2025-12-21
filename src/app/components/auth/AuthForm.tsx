@@ -104,10 +104,6 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 		setLastName(e.target.value);
 	}, []);
 
-	const handleRememberChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		setRemember(e.target.checked);
-	}, []);
-
 	// Show error notifications (prevent duplicate notifications)
 	useEffect(() => {
 		const error = tab === "signup" ? signupError : signinError;
@@ -235,8 +231,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 						label="Remember me"
 						variant="secondary"
 						size="sm"
-						checked={remember}
-						onChange={handleRememberChange}
+						onChange={setRemember}
 						disabled={isLoading}
 					/>
 					<button

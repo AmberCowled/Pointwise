@@ -300,6 +300,8 @@ export function ModalContainer({
 		md: "w-full sm:max-w-md",
 		lg: "w-full sm:max-w-lg",
 		xl: "w-full sm:max-w-xl",
+		"2xl": "w-full sm:max-w-2xl",
+		"6xl": "w-full sm:max-w-6xl",
 		fullscreen: "max-w-full h-screen",
 	};
 

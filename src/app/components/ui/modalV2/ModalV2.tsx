@@ -28,7 +28,7 @@ export interface ModalV2Props extends Omit<ModalContainerProps, "id">, PropsWith
  *
  * **Props:**
  * - `id: string` - Required unique ID for manager operations
- * - `size?: "sm" | "md" | "lg" | "xl" | "fullscreen"` - Modal size (default: "md")
+ * - `size?: "sm" | "md" | "lg" | "xl" | "2xl" | "6xl" | "fullscreen"` - Modal size (default: "md")
  * - `initialFocusRef?: React.RefObject<HTMLElement>` - Element to focus when modal opens
  * - `className?: string` - Custom className for the dialog container
  * - `panelClassName?: string` - Custom className for the dialog panel
@@ -245,7 +245,7 @@ interface ModalV2Component {
 	 * - `cancelText?: string` - Text for cancel button (default: "Cancel")
 	 * - `confirmVariant?: "primary" | "secondary" | "danger"` - Confirm button variant (default: "primary")
 	 * - `cancelVariant?: "primary" | "secondary" | "danger"` - Cancel button variant (default: "secondary")
-	 * - `size?: "sm" | "md" | "lg" | "xl"` - Modal size (default: "md")
+	 * - `size?: "sm" | "md" | "lg" | "xl" | "2xl" | "6xl" | "fullscreen"` - Modal size (default: "md")
 	 *
 	 * @param options - Configuration options for the confirm modal
 	 * @returns Promise that resolves to `true` if confirmed, `false` if cancelled
@@ -277,7 +277,7 @@ interface ModalV2Component {
 	 * - `message: string` - Message/content (required)
 	 * - `buttonText?: string` - Text for the close button (default: "OK")
 	 * - `buttonVariant?: "primary" | "secondary" | "danger"` - Button variant (default: "primary")
-	 * - `size?: "sm" | "md" | "lg" | "xl"` - Modal size (default: "md")
+	 * - `size?: "sm" | "md" | "lg" | "xl" | "2xl" | "6xl" | "fullscreen"` - Modal size (default: "md")
 	 *
 	 * @param options - Configuration options for the alert modal
 	 * @returns Promise that resolves when the user clicks OK
@@ -308,7 +308,7 @@ interface ModalV2Component {
 	 * - `cancelText?: string` - Text for cancel button (default: "Cancel")
 	 * - `confirmVariant?: "primary" | "secondary" | "danger"` - Confirm button variant (default: "primary")
 	 * - `cancelVariant?: "primary" | "secondary" | "danger"` - Cancel button variant (default: "secondary")
-	 * - `size?: "sm" | "md" | "lg" | "xl"` - Modal size (default: "md")
+	 * - `size?: "sm" | "md" | "lg" | "xl" | "2xl" | "6xl" | "fullscreen"` - Modal size (default: "md")
 	 * - `inputType?: "text" | "password" | "email" | "number"` - Type of input (default: "text")
 	 *
 	 * @param options - Configuration options for the prompt modal
@@ -340,7 +340,7 @@ interface ModalV2Component {
  *
  * **Props:**
  * - `id: string` - Required unique ID for manager operations (used to open/close via ModalV2.Manager)
- * - `size?: "sm" | "md" | "lg" | "xl" | "fullscreen"` - Modal size (default: "md")
+ * - `size?: "sm" | "md" | "lg" | "xl" | "2xl" | "6xl" | "fullscreen"` - Modal size (default: "md")
  * - `initialFocusRef?: React.RefObject<HTMLElement>` - Element to focus when modal opens
  * - `className?: string` - Custom className for the dialog container
  * - `panelClassName?: string` - Custom className for the dialog panel
