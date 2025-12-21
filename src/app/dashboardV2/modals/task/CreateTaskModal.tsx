@@ -103,6 +103,7 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
 							{category === CUSTOM_CATEGORY_LABEL && (
 								<InputV2
 									label="Custom Category"
+									required
 									flex="grow"
 									maxLength={MAX_CUSTOM_CATEGORY_LENGTH}
 									onChange={setCustomCategory}

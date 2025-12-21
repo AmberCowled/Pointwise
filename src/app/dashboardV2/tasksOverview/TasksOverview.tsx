@@ -8,7 +8,7 @@ import ModalV2 from "@pointwise/app/components/ui/modalV2";
 import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
 import { useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
 import { useParams } from "next/navigation";
-import CreateTaskModal from "../modals/CreateTaskModal";
+import CreateTaskModal from "../modals/task/CreateTaskModal";
 import NoTasksView from "./NoTasksView";
 
 export default function TasksOverview() {

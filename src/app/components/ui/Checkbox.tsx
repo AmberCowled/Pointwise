@@ -37,7 +37,10 @@ export interface CheckboxCustomProps {
  */
 export interface CheckboxProps
 	extends CheckboxCustomProps,
-		Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "type" | "onChange" | "checked" | "defaultChecked"> {}
+		Omit<
+			React.InputHTMLAttributes<HTMLInputElement>,
+			"size" | "type" | "onChange" | "checked" | "defaultChecked"
+		> {}
 
 const baseStyle =
 	"appearance-none cursor-pointer border transition focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed";

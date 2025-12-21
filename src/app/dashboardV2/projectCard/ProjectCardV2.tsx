@@ -5,7 +5,7 @@ import ModalV2 from "@pointwise/app/components/ui/modalV2";
 import { getProjectMemberCount } from "@pointwise/lib/api/projectsV2";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
-import UpdateProjectModal from "../modals/UpdateProjectModal";
+import UpdateProjectModal from "../modals/project/UpdateProjectModal";
 import ProjectCardV2Description from "./ProjectCardV2Description";
 import ProjectCardV2Header from "./ProjectCardV2Header";
 import ProjectCardV2Stats from "./ProjectCardV2Stats";
