@@ -1,5 +1,5 @@
-import { TaskV2 } from "@pointwise/lib/validation/tasks-schema";
 import { utcToLocal } from "@pointwise/lib/api/date-time";
+import type { TaskV2 } from "@pointwise/lib/validation/tasks-schema";
 
 export default function TaskCardV2({ task }: { task: TaskV2 }) {
   return (
