@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@pointwise/app/components/ui/Button";
 import { IoClipboard } from "react-icons/io5";
 
