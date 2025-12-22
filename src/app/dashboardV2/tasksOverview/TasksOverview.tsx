@@ -9,8 +9,8 @@ import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
 import { useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
 import { useParams } from "next/navigation";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
-import NoTasksView from "./NoTasksView";
 import TaskCardV2 from "../taskCard/TaskCardV2";
+import NoTasksView from "./NoTasksView";
 
 export default function TasksOverview() {
   const { id: projectId } = useParams<{ id: string }>();
@@ -69,7 +69,9 @@ export default function TasksOverview() {
             />
             {hasTasks ? (
               tasks.tasks.map((task) => (
-                <TaskCardV2 key={task.id} task={task} />
+                <div key={task.id} className="py-1">
+                  <TaskCardV2 key={task.id} task={task} />
+                </div>
               ))
             ) : isEmpty ? (
               <NoTasksView
