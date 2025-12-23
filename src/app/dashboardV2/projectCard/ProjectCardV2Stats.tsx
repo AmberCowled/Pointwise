@@ -24,19 +24,11 @@ export default function ProjectCardV2Stats({
   memberCount,
 }: ProjectCardV2StatsProps) {
   return (
-    <Container fullWidth={false} className="gap-4">
-      <div className="flex items-center gap-2 text-sm text-zinc-400">
-        <IoClipboard className="w-4 h-4" aria-hidden="true" />
-        <span>
-          {taskCount} {taskCount === 1 ? "task" : "tasks"}
-        </span>
-      </div>
-      <div className="flex items-center gap-2 text-sm text-zinc-400">
-        <IoPeople className="w-4 h-4" aria-hidden="true" />
-        <span>
-          {memberCount} {memberCount === 1 ? "member" : "members"}
-        </span>
-      </div>
+    <Container width="auto" className="text-sm text-zinc-400">
+      <IoClipboard className="w-4 h-4" aria-hidden="true" />
+      {taskCount} {taskCount === 1 ? "task" : "tasks"}
+      <IoPeople className="w-4 h-4" aria-hidden="true" />
+      {memberCount} {memberCount === 1 ? "member" : "members"}
     </Container>
   );
 }

@@ -3,11 +3,13 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import { Checkbox } from "@pointwise/app/components/ui/Checkbox";
 import Container from "@pointwise/app/components/ui/Container";
+import DatePicker from "@pointwise/app/components/ui/DatePicker";
 import Grid from "@pointwise/app/components/ui/Grid";
 import InputAreaV2 from "@pointwise/app/components/ui/InputAreaV2";
 import InputSelectV2 from "@pointwise/app/components/ui/InputSelectV2";
 import InputV2 from "@pointwise/app/components/ui/InputV2";
 import ModalV2 from "@pointwise/app/components/ui/modalV2";
+import TimePicker from "@pointwise/app/components/ui/TimePicker";
 import { localToUTC } from "@pointwise/lib/api/date-time";
 import {
   CORE_TASK_CATEGORIES,
@@ -51,12 +53,12 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
       category: finalCategory,
       xpAward: xpAward,
       startDate: startDateUtc !== null ? startDateUtc?.date : null,
-      hasStartTime: startTime !== null ? true : false,
+      hasStartTime: startTime !== null,
       dueDate: dueDateUtc !== null ? dueDateUtc?.date : null,
-      hasDueTime: dueTime !== null ? true : false,
+      hasDueTime: dueTime !== null,
       optional: optional,
     }).unwrap();
-    ModalV2.Manager.close("create-task-modal");
+    ModalV2.Manager.close(`create-task-modal-${projectId}`);
   };
 
   const handleReset = () => {
@@ -82,7 +84,7 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
 
   return (
     <ModalV2
-      id="create-task-modal"
+      id={`create-task-modal-${projectId}`}
       size="2xl"
       loading={isLoading}
       onAfterClose={handleReset}
@@ -111,7 +113,7 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
               direction="vertical"
               gap="sm"
               className="items-stretch"
-              fullWidth={false}
+              width="full"
             >
               <InputSelectV2
                 label="Category"
@@ -144,18 +146,16 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
               direction="vertical"
               gap="sm"
               className="items-stretch"
-              fullWidth={false}
+              width="full"
             >
-              <InputV2
+              <DatePicker
                 label="Start Date"
-                type="date"
                 flex="grow"
-                onChange={(value: string) => setStartDate(new Date(value))}
+                onChange={setStartDate}
               />
               {startDate !== null && (
-                <InputV2
+                <TimePicker
                   label="Start Time"
-                  type="time"
                   flex="grow"
                   onChange={setStartTime}
                 />
@@ -165,18 +165,12 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
               direction="vertical"
               gap="sm"
               className="items-stretch"
-              fullWidth={false}
+              width="full"
             >
-              <InputV2
-                label="Due Date"
-                type="date"
-                flex="grow"
-                onChange={(value: string) => setDueDate(new Date(value))}
-              />
+              <DatePicker label="Due Date" flex="grow" onChange={setDueDate} />
               {dueDate !== null && (
-                <InputV2
+                <TimePicker
                   label="Due Time"
-                  type="time"
                   flex="grow"
                   onChange={setDueTime}
                 />
