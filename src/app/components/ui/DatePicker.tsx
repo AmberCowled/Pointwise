@@ -9,7 +9,12 @@ import {
 import clsx from "clsx";
 import type React from "react";
 import { Fragment, useEffect, useId, useRef, useState } from "react";
-import { IoCalendar, IoChevronBack, IoChevronForward } from "react-icons/io5";
+import {
+  IoCalendar,
+  IoChevronBack,
+  IoChevronForward,
+  IoClose,
+} from "react-icons/io5";
 
 import { InputHeader } from "./InputHeader";
 
@@ -20,9 +25,9 @@ type DatePickerFlex = "shrink" | "default" | "grow";
 type CalendarView = "calendar" | "month" | "year";
 
 /**
- * Props for the DatePickerV2 component
+ * Props for the DatePicker component
  */
-export interface DatePickerV2Props {
+export interface DatePickerProps {
   /**
    * Selected date value (controlled)
    */
@@ -261,7 +266,7 @@ function getToday(): Date {
 }
 
 /**
- * DatePickerV2 - Date picker component with calendar popover
+ * DatePicker - Date picker component with calendar popover
  *
  * **Props:**
  * - `value?: Date | null` - Selected date (controlled)
@@ -282,7 +287,7 @@ function getToday(): Date {
  *
  * @example
  * ```tsx
- * <DatePickerV2
+ * <DatePicker
  *   label="Start Date"
  *   value={startDate}
  *   onChange={setStartDate}
@@ -293,7 +298,7 @@ function getToday(): Date {
  * />
  * ```
  */
-function DatePickerV2({
+function DatePicker({
   value,
   defaultValue,
   onChange,
@@ -309,7 +314,7 @@ function DatePickerV2({
   disabled = false,
   placeholder = "Select date...",
   className,
-}: DatePickerV2Props) {
+}: DatePickerProps) {
   const generatedId = useId();
   const pickerId = generatedId;
   const errorMessage = typeof error === "string" ? error : undefined;
@@ -678,10 +683,32 @@ function DatePickerV2({
                   <span className="block truncate pr-8">
                     {selectedDate ? formatDateToISO(selectedDate) : placeholder}
                   </span>
-                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                  <span
+                    className={clsx(
+                      "pointer-events-none absolute inset-y-0 flex items-center text-zinc-400",
+                      selectedDate ? "right-11 sm:right-8" : "right-3",
+                    )}
+                  >
                     <IoCalendar className="h-4 w-4" aria-hidden="true" />
                   </span>
                 </PopoverButton>
+                {selectedDate && !disabled && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Update internal state if uncontrolled
+                      if (value === undefined) {
+                        setInternalValue(null);
+                      }
+                      onChange?.(null);
+                    }}
+                    className="absolute inset-y-0 right-0 sm:right-1 flex items-center p-2 rounded hover:bg-white/10 text-rose-400 hover:text-rose-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/40 z-10 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0"
+                    aria-label="Clear date"
+                  >
+                    <IoClose className="h-3 w-3 sm:h-3 sm:w-3" />
+                  </button>
+                )}
                 <Transition
                   as={Fragment}
                   leave="transition ease-in duration-100"
@@ -737,4 +764,4 @@ function DatePickerV2({
   );
 }
 
-export default DatePickerV2;
+export default DatePicker;

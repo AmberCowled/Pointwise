@@ -210,7 +210,7 @@ interface ModalV2Component {
    * Modals auto-register themselves when mounted and unregister when unmounted.
    *
    * **Methods:**
-   * - `open(id: string, options?: Record<string, unknown>)` - Open a modal by ID with optional data
+   * - `open(id: string)` - Open a modal by ID
    * - `close(id: string)` - Close a modal by ID
    * - `isOpen(id: string): boolean` - Check if a modal is currently open
    * - `getRegisteredIds(): string[]` - Get all registered modal IDs
@@ -219,9 +219,6 @@ interface ModalV2Component {
    * ```tsx
    * // Open a modal
    * ModalV2.Manager.open("createProject");
-   *
-   * // Open with options
-   * ModalV2.Manager.open("editProject", { projectId: "123" });
    *
    * // Close a modal
    * ModalV2.Manager.close("createProject");

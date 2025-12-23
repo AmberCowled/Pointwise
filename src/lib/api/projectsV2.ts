@@ -180,6 +180,14 @@ export async function isProjectAdmin(
   return projectAdmins.adminUserIds.includes(userId);
 }
 
+export const hasWriteAccess = (role: ProjectRole): boolean => {
+  return role === "ADMIN" || role === "USER";
+};
+
+export const hasDeleteAccess = (role: ProjectRole): boolean => {
+  return role === "ADMIN";
+};
+
 export async function updateProject(
   projectId: string,
   request: UpdateProjectRequest,

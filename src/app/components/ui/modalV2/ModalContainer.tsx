@@ -189,12 +189,8 @@ export function ModalContainer({
   useImperativeHandle(
     modalRef,
     () => ({
-      open: (options?: Record<string, unknown>) => {
+      open: () => {
         setOpen(true);
-        // Store options for potential future use
-        if (options) {
-          // Could store in a ref or state for child components to access
-        }
       },
       close: () => {
         setOpen(false);
@@ -207,12 +203,8 @@ export function ModalContainer({
   // Register/unregister with ModalManager
   useEffect(() => {
     const ref: ModalRef = {
-      open: (options?: Record<string, unknown>) => {
+      open: () => {
         setOpen(true);
-        // Store options for potential future use
-        if (options) {
-          // Could store in a ref or state for child components to access
-        }
       },
       close: () => {
         setOpen(false);
