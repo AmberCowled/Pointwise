@@ -41,6 +41,10 @@ export const GetTasksRequestSchema = z.object({
   projectId: TASK_ID_SCHEMA,
 });
 
+export const GetTasksResponseSchema = z.object({
+  tasks: z.array(TaskV2Schema),
+});
+
 export const CreateTaskRequestSchema = z.object({
   projectId: TASK_PROJECT_ID_SCHEMA,
   title: TASK_TITLE_SCHEMA,
@@ -59,21 +63,38 @@ export const CreateTaskResponseSchema = z.object({
 });
 
 export const UpdateTaskRequestSchema = z.object({
-  title: TASK_TITLE_SCHEMA.optional(),
-  description: TASK_DESCRIPTION_SCHEMA.optional(),
-  xpAward: TASK_XPAWARD_SCHEMA.optional(),
-  category: TASK_CATEGORY_SCHEMA.optional(),
-  optional: TASK_OPTIONAL_SCHEMA.optional(),
-  startDate: TASK_START_DATE_SCHEMA.optional(),
-  hasStartTime: TASK_HAS_START_TIME_SCHEMA.optional(),
-  dueDate: TASK_DUE_DATE_SCHEMA.optional(),
-  hasDueTime: TASK_HAS_DUE_TIME_SCHEMA.optional(),
-  status: TASK_STATUS_SCHEMA.optional(),
-  completedAt: TASK_COMPLETED_AT_SCHEMA.optional(),
+  projectId: TASK_PROJECT_ID_SCHEMA,
+  title: TASK_TITLE_SCHEMA,
+  description: TASK_DESCRIPTION_SCHEMA,
+  xpAward: TASK_XPAWARD_SCHEMA,
+  category: TASK_CATEGORY_SCHEMA,
+  optional: TASK_OPTIONAL_SCHEMA,
+  startDate: TASK_START_DATE_SCHEMA,
+  hasStartTime: TASK_HAS_START_TIME_SCHEMA,
+  dueDate: TASK_DUE_DATE_SCHEMA,
+  hasDueTime: TASK_HAS_DUE_TIME_SCHEMA,
+  status: TASK_STATUS_SCHEMA,
+  completedAt: TASK_COMPLETED_AT_SCHEMA,
+});
+
+export const UpdateTaskResponseSchema = z.object({
+  task: TaskV2Schema,
+});
+
+export const DeleteTaskRequestSchema = z.object({
+  taskId: TASK_ID_SCHEMA,
+});
+
+export const DeleteTaskResponseSchema = z.object({
+  success: z.boolean(),
 });
 
 export type TaskV2 = z.infer<typeof TaskV2Schema>;
 export type GetTasksRequest = z.infer<typeof GetTasksRequestSchema>;
+export type GetTasksResponse = z.infer<typeof GetTasksResponseSchema>;
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>;
 export type CreateTaskResponse = z.infer<typeof CreateTaskResponseSchema>;
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>;
+export type UpdateTaskResponse = z.infer<typeof UpdateTaskResponseSchema>;
+export type DeleteTaskRequest = z.infer<typeof DeleteTaskRequestSchema>;
+export type DeleteTaskResponse = z.infer<typeof DeleteTaskResponseSchema>;

@@ -1,13 +1,12 @@
 import type {
-  DeleteTaskRequestV2,
-  DeleteTaskResponseV2,
-  GetTasksResponse,
-  UpdateTaskRequestV2,
-  UpdateTaskResponseV2,
-} from "@pointwise/lib/api/types";
-import type {
   CreateTaskRequest,
   CreateTaskResponse,
+  DeleteTaskRequest,
+  DeleteTaskResponse,
+  GetTasksRequest,
+  GetTasksResponse,
+  UpdateTaskRequest,
+  UpdateTaskResponse,
 } from "@pointwise/lib/validation/tasks-schema";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -18,7 +17,7 @@ export const tasksApi = createApi({
   refetchOnFocus: false,
   refetchOnReconnect: true,
   endpoints: (builder) => ({
-    getTasks: builder.query<GetTasksResponse, { projectId: string }>({
+    getTasks: builder.query<GetTasksResponse, GetTasksRequest>({
       query: ({ projectId }) => `/tasksV2?projectId=${projectId}`,
       providesTags: ["Tasks"],
     }),
@@ -31,8 +30,8 @@ export const tasksApi = createApi({
       invalidatesTags: ["Tasks"],
     }),
     updateTask: builder.mutation<
-      UpdateTaskResponseV2,
-      { taskId: string; data: UpdateTaskRequestV2 }
+      UpdateTaskResponse,
+      { taskId: string; data: UpdateTaskRequest }
     >({
       query: ({ taskId, data }) => ({
         url: `/tasksV2/${taskId}`,
@@ -41,7 +40,7 @@ export const tasksApi = createApi({
       }),
       invalidatesTags: ["Tasks"],
     }),
-    deleteTask: builder.mutation<DeleteTaskResponseV2, DeleteTaskRequestV2>({
+    deleteTask: builder.mutation<DeleteTaskResponse, DeleteTaskRequest>({
       query: ({ taskId }) => ({
         url: `/tasksV2/${taskId}`,
         method: "DELETE",

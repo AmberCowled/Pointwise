@@ -1,23 +1,15 @@
 "use client";
 
 import { Button } from "@pointwise/app/components/ui/Button";
-import { Checkbox } from "@pointwise/app/components/ui/Checkbox";
-import Container from "@pointwise/app/components/ui/Container";
-import DatePicker from "@pointwise/app/components/ui/DatePicker";
-import Grid from "@pointwise/app/components/ui/Grid";
-import InputAreaV2 from "@pointwise/app/components/ui/InputAreaV2";
-import InputSelectV2 from "@pointwise/app/components/ui/InputSelectV2";
-import InputV2 from "@pointwise/app/components/ui/InputV2";
 import ModalV2 from "@pointwise/app/components/ui/modalV2";
-import TimePicker from "@pointwise/app/components/ui/TimePicker";
 import { localToUTC } from "@pointwise/lib/api/date-time";
 import {
   CORE_TASK_CATEGORIES,
   CUSTOM_CATEGORY_LABEL,
-  MAX_CUSTOM_CATEGORY_LENGTH,
 } from "@pointwise/lib/categories";
 import { useCreateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
 import { useState } from "react";
+import TaskForm from "./TaskForm";
 
 export interface CreateTaskModalProps {
   projectId: string;
@@ -36,8 +28,6 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
   const [optional, setOptional] = useState<boolean>(false);
 
   const [createTask, { isLoading }] = useCreateTaskMutation();
-
-  const categoryOptions = [...CORE_TASK_CATEGORIES, CUSTOM_CATEGORY_LABEL];
 
   const handleCreateTask = async () => {
     const finalCategory =
@@ -91,95 +81,28 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
     >
       <ModalV2.Header title="Create Task" />
       <ModalV2.Body>
-        <Container direction="vertical" gap="md" className="items-stretch">
-          <InputV2
-            label="Task Title"
-            required
-            flex="grow"
-            onChange={setTitle}
-          />
-
-          <InputAreaV2
-            label="Description"
-            rows={3}
-            flex="grow"
-            showCharCount
-            maxLength={200}
-            onChange={setDescription}
-          />
-
-          <Grid columns={{ default: 1, sm: 2 }} gap="md">
-            <Container
-              direction="vertical"
-              gap="sm"
-              className="items-stretch"
-              width="full"
-            >
-              <InputSelectV2
-                label="Category"
-                flex="grow"
-                options={categoryOptions}
-                defaultValue={category}
-                onSelect={setCategory}
-              />
-              {category === CUSTOM_CATEGORY_LABEL && (
-                <InputV2
-                  label="Custom Category"
-                  required
-                  flex="grow"
-                  maxLength={MAX_CUSTOM_CATEGORY_LENGTH}
-                  onChange={setCustomCategory}
-                />
-              )}
-            </Container>
-            <InputV2
-              label="XP Award"
-              type="number"
-              flex="grow"
-              defaultValue={"50"}
-              onChange={(value: string) => setXpAward(Number(value))}
-            />
-          </Grid>
-
-          <Grid columns={{ default: 1, sm: 2 }} gap="md">
-            <Container
-              direction="vertical"
-              gap="sm"
-              className="items-stretch"
-              width="full"
-            >
-              <DatePicker
-                label="Start Date"
-                flex="grow"
-                onChange={setStartDate}
-              />
-              {startDate !== null && (
-                <TimePicker
-                  label="Start Time"
-                  flex="grow"
-                  onChange={setStartTime}
-                />
-              )}
-            </Container>
-            <Container
-              direction="vertical"
-              gap="sm"
-              className="items-stretch"
-              width="full"
-            >
-              <DatePicker label="Due Date" flex="grow" onChange={setDueDate} />
-              {dueDate !== null && (
-                <TimePicker
-                  label="Due Time"
-                  flex="grow"
-                  onChange={setDueTime}
-                />
-              )}
-            </Container>
-          </Grid>
-
-          <Checkbox label="Optional task" onChange={setOptional} />
-        </Container>
+        <TaskForm
+          title={title}
+          onTitleChange={setTitle}
+          description={description}
+          onDescriptionChange={setDescription}
+          category={category}
+          onCategoryChange={setCategory}
+          customCategory={customCategory}
+          onCustomCategoryChange={setCustomCategory}
+          xpAward={xpAward}
+          onXpAwardChange={setXpAward}
+          startDate={startDate}
+          onStartDateChange={setStartDate}
+          startTime={startTime}
+          onStartTimeChange={setStartTime}
+          dueDate={dueDate}
+          onDueDateChange={setDueDate}
+          dueTime={dueTime}
+          onDueTimeChange={setDueTime}
+          optional={optional}
+          onOptionalChange={setOptional}
+        />
       </ModalV2.Body>
       <ModalV2.Footer align="end">
         <Button variant="secondary">Cancel</Button>

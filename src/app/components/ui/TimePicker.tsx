@@ -8,8 +8,15 @@ import {
 } from "@headlessui/react";
 import clsx from "clsx";
 import type React from "react";
-import { Fragment, useEffect, useId, useRef, useState } from "react";
-import { IoTime } from "react-icons/io5";
+import {
+  Fragment,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { IoClose, IoTime } from "react-icons/io5";
 
 import { Button } from "./Button";
 import { InputHeader } from "./InputHeader";
@@ -310,6 +317,8 @@ function TimePicker({
     currentHour !== null ? currentHour >= 12 : false,
   );
   const popoverOpenRef = useRef(false);
+  const originalValueRef = useRef<string | null>(null);
+  const lastPopoverOpenRef = useRef(false);
 
   const hasHeader = !!label;
 
@@ -335,6 +344,9 @@ function TimePicker({
 
   // Reset clock state when popover opens
   const resetClockState = () => {
+    // Store original value for cancel
+    originalValueRef.current = internalValue;
+
     const time = parseTimeString(internalValue);
     if (time) {
       setSelectedHour(time.hour);
@@ -352,13 +364,31 @@ function TimePicker({
   const handleHourSelect = (hour12: number) => {
     const hour24 = to24Hour(hour12, isPM);
     setSelectedHour(hour24);
+
+    // Update immediately with current minute (or default to 0)
+    const minuteToUse =
+      selectedMinute !== null ? selectedMinute : (currentMinute ?? 0);
+    const timeString = formatTimeForStorage(hour24, minuteToUse);
+    setInternalValue(timeString);
+    onChange?.(timeString);
+
+    // If no minute was selected yet, set it to the default
+    if (selectedMinute === null) {
+      setSelectedMinute(currentMinute ?? 0);
+    }
+
     setMode("minute");
   };
 
-  // Handle minute selection (no longer auto-closes)
+  // Handle minute selection (updates immediately)
   const handleMinuteSelect = (minute: number) => {
     if (selectedHour === null) return;
     setSelectedMinute(minute);
+
+    // Update immediately
+    const timeString = formatTimeForStorage(selectedHour, minute);
+    setInternalValue(timeString);
+    onChange?.(timeString);
   };
 
   // Handle OK button - confirm selection
@@ -373,8 +403,13 @@ function TimePicker({
 
   // Handle Cancel button - discard changes
   const handleCancel = (close: () => void) => {
+    // Restore original value
+    const originalValue = originalValueRef.current;
+    setInternalValue(originalValue);
+    onChange?.(originalValue ?? null);
+
     // Reset to original value
-    const time = parseTimeString(internalValue);
+    const time = parseTimeString(originalValue);
     if (time) {
       setSelectedHour(time.hour);
       setSelectedMinute(time.minute);
@@ -398,6 +433,13 @@ function TimePicker({
     const newHour24 = to24Hour(hour12, !isPM);
     setSelectedHour(newHour24);
     setIsPM(!isPM);
+
+    // Update immediately
+    const minuteToUse =
+      selectedMinute !== null ? selectedMinute : (currentMinute ?? 0);
+    const timeString = formatTimeForStorage(newHour24, minuteToUse);
+    setInternalValue(timeString);
+    onChange?.(timeString);
   };
 
   // Get current display time parts (from selected values or current time)
@@ -442,8 +484,8 @@ function TimePicker({
     const radius = isMobile ? 80 : 100;
 
     if (mode === "hour") {
-      // Hour selection mode
-      const hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+      // Hour selection mode - 12 at top (index 0)
+      const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
       return (
         <div
@@ -567,13 +609,22 @@ function TimePicker({
         <div className="relative mt-1">
           <Popover>
             {({ close, open }) => {
-              // Reset clock state when popover opens
-              if (open && !popoverOpenRef.current) {
-                resetClockState();
-                popoverOpenRef.current = true;
-              } else if (!open) {
+              // Track popover open state and reset clock when it opens
+              // Use a ref to avoid calling setState during render
+              const prevOpen = lastPopoverOpenRef.current;
+
+              // Only reset if popover just opened
+              if (open && !prevOpen && !popoverOpenRef.current) {
+                // Use setTimeout to schedule after render completes
+                setTimeout(() => {
+                  resetClockState();
+                  popoverOpenRef.current = true;
+                }, 0);
+              } else if (!open && prevOpen) {
                 popoverOpenRef.current = false;
               }
+
+              lastPopoverOpenRef.current = open;
 
               return (
                 <>
@@ -596,10 +647,29 @@ function TimePicker({
                     )}
                   >
                     <span className="block truncate pr-8">{displayValue}</span>
-                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                    <span
+                      className={clsx(
+                        "pointer-events-none absolute inset-y-0 flex items-center text-zinc-400",
+                        internalValue ? "right-11 sm:right-8" : "right-3",
+                      )}
+                    >
                       <IoTime className="h-4 w-4" aria-hidden="true" />
                     </span>
                   </PopoverButton>
+                  {internalValue && !disabled && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInternalValue(null);
+                        onChange?.(null);
+                      }}
+                      className="absolute inset-y-0 right-0 sm:right-1 flex items-center p-2 rounded hover:bg-white/10 text-rose-400 hover:text-rose-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/40 z-10 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0"
+                      aria-label="Clear time"
+                    >
+                      <IoClose className="h-3 w-3 sm:h-3 sm:w-3" />
+                    </button>
+                  )}
                   <Transition
                     as={Fragment}
                     leave="transition ease-in duration-100"
@@ -618,10 +688,8 @@ function TimePicker({
                       style={
                         buttonWidth
                           ? {
-                              width: `${buttonWidth}px`,
-                              minWidth: isMobile
-                                ? `${clockSize + 32}px`
-                                : undefined,
+                              width: `${Math.max(buttonWidth, clockSize + 32)}px`,
+                              minWidth: `${clockSize + 32}px`,
                               maxWidth: isMobile
                                 ? `${window.innerWidth - 32}px`
                                 : undefined,
@@ -637,9 +705,9 @@ function TimePicker({
                             }
                       }
                     >
-                      <div className="flex flex-col">
+                      <div className="flex flex-col overflow-hidden">
                         {/* Time display at top - clickable hour and minute */}
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-center overflow-hidden">
                           <div className="flex items-center gap-1">
                             <button
                               type="button"

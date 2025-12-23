@@ -61,3 +61,39 @@ export const formatTime = (date: Date | null) => {
     minute: "2-digit",
   }).format(date);
 };
+
+// Helper to compare dates (handles null cases)
+// Compares only year, month, and day (ignores time)
+export const datesEqual = (
+  d1: Date | null | undefined,
+  d2: Date | null | undefined,
+): boolean => {
+  if (d1 === d2) return true;
+  if (!d1 || !d2) return false;
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+};
+
+// Helper to compare times (handles null cases)
+// Compares only hour and minute (format: "HH:MM")
+export const timesEqual = (
+  time1: string | null | undefined,
+  time2: string | null | undefined,
+): boolean => {
+  if (time1 === time2) return true; // handles null/undefined cases
+  if (!time1 || !time2) return false;
+
+  // Normalize time strings to "HH:MM" format for comparison
+  const normalizeTime = (time: string): string => {
+    const parts = time.split(":");
+    if (parts.length < 2) return time;
+    const hours = parts[0].padStart(2, "0");
+    const minutes = parts[1].padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  return normalizeTime(time1) === normalizeTime(time2);
+};

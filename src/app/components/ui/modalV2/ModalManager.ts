@@ -6,7 +6,7 @@
  */
 
 export interface ModalRef {
-  open: (options?: Record<string, unknown>) => void;
+  open: () => void;
   close: () => void;
   isOpen: () => boolean;
 }
@@ -38,15 +38,14 @@ class ModalManagerClass {
   /**
    * Open a modal by ID
    * @param id - The modal ID
-   * @param options - Optional data to pass to the modal
    */
-  open(id: string, options?: Record<string, unknown>): void {
+  open(id: string): void {
     const modal = this.modals.get(id);
     if (!modal) {
       console.warn(`Modal with id "${id}" is not registered.`);
       return;
     }
-    modal.open(options);
+    modal.open();
   }
 
   /**
