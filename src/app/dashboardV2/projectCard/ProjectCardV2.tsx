@@ -28,7 +28,7 @@ export default function ProjectCardV2({ project }: ProjectCardProps) {
     <>
       <UpdateProjectModal project={project} />
       <Container
-        fullWidth={false}
+        width="full"
         direction="vertical"
         className="group h-full outline outline-zinc-700 hover:outline-zinc-500 rounded-lg transition-all p-4 gap-3"
         onClick={() => router.push(`/dashboard/projects/${project.id}/v2`)}

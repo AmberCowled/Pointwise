@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@pointwise/app/components/ui/Button";
-import { Card } from "@pointwise/app/components/ui/Card";
+import CardV2 from "@pointwise/app/components/ui/CardV2";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import ModalV2 from "@pointwise/app/components/ui/modalV2";
@@ -39,23 +39,29 @@ export default function TasksOverview() {
   return (
     <>
       <CreateTaskModal projectId={projectId} />
-      <Container direction="vertical" gap="sm" className="pt-3">
-        <Container>
-          <Card
-            title="Tasks"
-            label="Overview"
-            loading={isLoading}
-            className="flex-1"
-            action={
-              hasWriteAccess ? (
-                <Button
-                  variant="secondary"
-                  onClick={() => ModalV2.Manager.open("create-task-modal")}
-                >
-                  Create Task
-                </Button>
-              ) : null
-            }
+      <Container direction="vertical" gap="sm" className="py-2">
+        <CardV2
+          title="Tasks"
+          label="Overview"
+          loading={isLoading}
+          action={
+            hasWriteAccess ? (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  ModalV2.Manager.open(`create-task-modal-${projectId}`)
+                }
+              >
+                Create Task
+              </Button>
+            ) : null
+          }
+        >
+          <Container
+            direction="vertical"
+            gap="sm"
+            width="full"
+            className="pt-2"
           >
             <ErrorCard
               display={isError}
@@ -69,18 +75,18 @@ export default function TasksOverview() {
             />
             {hasTasks ? (
               tasks.tasks.map((task) => (
-                <div key={task.id} className="py-1">
-                  <TaskCardV2 key={task.id} task={task} />
-                </div>
+                <TaskCardV2 key={task.id} task={task} />
               ))
             ) : isEmpty ? (
               <NoTasksView
                 hasWriteAccess={hasWriteAccess}
-                onCreateClick={() => ModalV2.Manager.open("create-task-modal")}
+                onCreateClick={() =>
+                  ModalV2.Manager.open(`create-task-modal-${projectId}`)
+                }
               />
             ) : null}
-          </Card>
-        </Container>
+          </Container>
+        </CardV2>
       </Container>
     </>
   );

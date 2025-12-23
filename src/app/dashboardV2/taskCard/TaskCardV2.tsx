@@ -15,11 +15,11 @@ export default function TaskCardV2({ task }: { task: TaskV2 }) {
     <Container
       direction="vertical"
       gap="sm"
-      fullWidth={false}
-      className="items-stretch bg-black/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer p-4"
+      width="full"
+      className="bg-black/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer p-4"
     >
-      <Container fullWidth={false}>
-        <Container gap="sm" fullWidth={false} className="flex-1">
+      <Container width="full">
+        <Container gap="sm" width="full">
           <TextPreview
             text={task.title}
             lines={2}
@@ -29,13 +29,13 @@ export default function TaskCardV2({ task }: { task: TaskV2 }) {
           />
           <TaskCardV2Category category={task.category} />
         </Container>
-        <Container fullWidth={false} className="justify-end">
+        <Container width="auto" className="justify-end">
           <TaskCardV2XP xp={task.xpAward} />
         </Container>
       </Container>
 
-      <Container fullWidth={false}>
-        <Container fullWidth={false} className="flex-1">
+      <Container width="full">
+        <Container width="full">
           <TextPreview
             text={task.description}
             lines={3}
@@ -44,20 +44,20 @@ export default function TaskCardV2({ task }: { task: TaskV2 }) {
             className="text-zinc-400"
           />
         </Container>
-        <Container fullWidth={false} className="justify-end">
-          <Container fullWidth={false} direction="vertical" gap="xs">
+        <Container width="auto" className="justify-end">
+          <Container width="full" direction="vertical" gap="xs">
             <TaskCardV2Status status={task.status ?? "PENDING"} />
             <TaskCardV2Optional optional={task.optional} />
           </Container>
         </Container>
       </Container>
 
-      <Container fullWidth={false}>
+      <Container width="full">
         <Container
           direction="vertical"
-          fullWidth={false}
+          width="full"
           gap="xs"
-          className="flex-1 items-start"
+          className="items-start"
         >
           <TaskCardV2Date
             label="Start"
@@ -70,7 +70,7 @@ export default function TaskCardV2({ task }: { task: TaskV2 }) {
             hasTime={task.hasDueTime}
           />
         </Container>
-        <Container fullWidth={false} className="justify-end">
+        <Container width="auto" className="justify-end">
           {task.status === "PENDING" ? (
             <Button size="xs" className="min-w-25 hover:cursor-pointer">
               Complete

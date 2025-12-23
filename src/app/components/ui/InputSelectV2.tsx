@@ -116,9 +116,9 @@ const variantHoverStyles: Record<InputSelectVariants, string> = {
 };
 
 const sizeStyles: Record<InputSelectSizes, string> = {
-  xs: "text-xs px-2 py-1.5",
-  sm: "text-sm px-3 py-2",
-  md: "text-sm px-4 py-3",
+  xs: "text-[16px] px-2 py-1.5",
+  sm: "text-[16px] px-3 py-2",
+  md: "text-[16px] px-4 py-3",
   lg: "text-base px-6 py-3",
   xl: "text-lg px-8 py-4",
 };

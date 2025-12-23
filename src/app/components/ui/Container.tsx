@@ -66,10 +66,20 @@ export interface ContainerProps {
   direction?: "vertical" | "horizontal";
 
   /**
+   * Width behavior
+   * - 'full': Takes full width of parent (w-full) - use in Grid or when you need full width without padding
+   * - 'auto': Sizes to content (w-auto) - use for inline/compact layouts
+   * - 'constrained': Full width with max-width and padding - use for page-level containers
+   * @default 'constrained'
+   */
+  width?: "full" | "auto" | "constrained";
+
+  /**
    * Whether the container should take full width with max-width constraints
-   * - `true`: Container takes full width with max-width, auto margins, and padding
-   * - `false`: Container only takes width of its content (w-auto)
+   * - `true`: Container takes full width with max-width, auto margins, and padding (same as width="constrained")
+   * - `false`: Container only takes width of its content (same as width="auto")
    * @default true
+   * @deprecated Use `width` prop instead for clearer intent. This prop is kept for backward compatibility.
    */
   fullWidth?: boolean;
 
@@ -86,33 +96,41 @@ export interface ContainerProps {
  * **Props:**
  * - `children: ReactNode` - Content to be rendered inside the container
  * - `className?: string` - Additional CSS classes
- * - `maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "6xl"` - Maximum width constraint (default: "6xl", only applies when fullWidth={true})
+ * - `maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "6xl"` - Maximum width constraint (default: "6xl", only applies when width="constrained")
  * - `gap?: "none" | "xs" | "sm" | "md" | "lg" | "xl"` - Spacing between child elements (default: "md")
  * - `direction?: "vertical" | "horizontal"` - Flex direction (default: "horizontal")
- * - `fullWidth?: boolean` - Whether container takes full width with constraints (default: true)
+ * - `width?: "full" | "auto" | "constrained"` - Width behavior (default: "constrained")
+ *   - `"full"`: Takes full width of parent (w-full) - use in Grid or when you need full width without padding
+ *   - `"auto"`: Sizes to content (w-auto) - use for inline/compact layouts
+ *   - `"constrained"`: Full width with max-width and padding - use for page-level containers
+ * - `fullWidth?: boolean` - Deprecated: Use `width` prop instead (kept for backward compatibility)
  * - `onClick?: (e: React.MouseEvent<HTMLDivElement>) => void` - Click handler (only fires on non-interactive areas)
  *
- * When `fullWidth={true}`, the container applies:
- * - Full width (`w-full`)
- * - Centered with auto margins (`mx-auto`)
- * - Maximum width constraint based on `maxWidth` prop
- * - Responsive horizontal padding (`px-2 sm:px-6 lg:px-8`)
- *
- * When `fullWidth={false}`, the container only takes the width of its content.
+ * **Width Behaviors:**
+ * - `width="constrained"` (default): Full width (`w-full`), centered with auto margins (`mx-auto`), maximum width constraint, and responsive horizontal padding
+ * - `width="full"`: Full width (`w-full`) without padding or max-width - perfect for Grid items
+ * - `width="auto"`: Sizes to content (`w-auto`) - for inline/compact layouts
  *
  * When `onClick` is provided, the container becomes visually clickable (cursor-pointer, hover effects)
  * but respects nested interactive elements (Links, Buttons, etc.).
  *
  * @example
  * ```tsx
- * // Full-width container with max-width constraint
+ * // Constrained-width container (page-level, default)
  * <Container maxWidth="2xl" gap="lg" direction="vertical">
  *   <div>Content 1</div>
  *   <div>Content 2</div>
  * </Container>
  *
+ * // Full-width container in Grid (no padding/max-width)
+ * <Grid columns={{ sm: 2 }}>
+ *   <Container width="full" direction="vertical" gap="sm">
+ *     <InputV2 label="Start Date" />
+ *   </Container>
+ * </Grid>
+ *
  * // Auto-width container (shrinks to content)
- * <Container fullWidth={false} gap="sm" direction="horizontal">
+ * <Container width="auto" gap="sm" direction="horizontal">
  *   <BrandHeader />
  *   <Search />
  * </Container>
@@ -132,6 +150,7 @@ export default function Container({
   className,
   maxWidth = "6xl",
   direction = "horizontal",
+  width,
   fullWidth = true,
   gap = "md",
   onClick,
@@ -172,6 +191,26 @@ export default function Container({
     onClick(e);
   };
 
+  // Determine width behavior: use `width` prop if provided, otherwise fall back to `fullWidth` for backward compatibility
+  const widthBehavior =
+    width ?? (fullWidth ? ("constrained" as const) : ("auto" as const));
+
+  // Build width classes based on behavior
+  const getWidthClasses = () => {
+    switch (widthBehavior) {
+      case "full":
+        return "w-full min-w-0"; // min-w-0 allows grid items to shrink properly
+      case "auto":
+        return "w-auto";
+      case "constrained":
+        return [
+          "mx-auto w-full",
+          maxWidthClasses[maxWidth],
+          "px-2 sm:px-6 lg:px-8",
+        ];
+    }
+  };
+
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Container may contain nested buttons, so we cannot use <button>. Click handling respects nested interactive elements.
     // biome-ignore lint/a11y/useKeyWithClickEvents: Container is a layout component that may contain nested interactive elements. Keyboard navigation is handled by nested elements.
@@ -180,13 +219,7 @@ export default function Container({
       className={clsx(
         "flex items-center",
         gapClasses[gap],
-        fullWidth
-          ? [
-              "mx-auto w-full",
-              maxWidthClasses[maxWidth],
-              "px-2 sm:px-6 lg:px-8",
-            ]
-          : "w-auto",
+        getWidthClasses(),
         directionClasses[direction],
         onClick && "cursor-pointer hover:opacity-90 transition-opacity",
         className,

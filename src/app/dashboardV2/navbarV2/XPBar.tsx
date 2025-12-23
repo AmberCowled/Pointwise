@@ -21,28 +21,23 @@ export default function XPBar() {
   });
 
   return (
-    <Container fullWidth={false} gap="sm" className="w-full items-center">
-      <div className="flex-1 relative flex items-center">
-        <div className="w-full overflow-hidden rounded-full bg-white/10 h-1.5">
-          <div
-            className={progressBarStyles}
-            style={
-              !isCurrentlyLoading && !isError
-                ? { width: `${progressPercent}%` }
-                : { width: "100%" }
-            }
+    <Container width="full" className="bg-white/10 rounded-full h-1.5" gap="xs">
+      <div
+        className={progressBarStyles}
+        style={{ width: `${progressPercent}%` }}
+      />
+      {(isError || isCurrentlyLoading) && (
+        <Container width="full" className="justify-around">
+          <Button
+            variant="ghost"
+            size="xs"
+            icon={isLoading || isFetching ? undefined : IoRefresh}
+            onClick={() => refetch()}
+            loading={isLoading || isFetching}
+            title="Retry loading XP"
+            aria-label="Retry loading XP"
           />
-        </div>
-      </div>
-      {isError && (
-        <Button
-          variant="danger"
-          size="xs"
-          icon={IoRefresh}
-          onClick={() => refetch()}
-          title="Retry loading XP"
-          aria-label="Retry loading XP"
-        />
+        </Container>
       )}
     </Container>
   );

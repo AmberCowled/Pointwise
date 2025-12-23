@@ -19,7 +19,7 @@ export default function ProjectCardV2Description({
   description,
 }: ProjectCardV2DescriptionProps) {
   return (
-    <Container fullWidth={false}>
+    <Container width="auto">
       <TextPreview
         text={description}
         lines={2}

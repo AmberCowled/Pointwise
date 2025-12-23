@@ -38,7 +38,7 @@ export default function ProjectCardV2Tags({
   };
 
   return (
-    <Container fullWidth={false} className="gap-2 items-center">
+    <Container width="auto" className="gap-2 items-center">
       {visibility === "PUBLIC" ? (
         <Tag variant="info" size="xs" icon={IoGlobe}>
           Public

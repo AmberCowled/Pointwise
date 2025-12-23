@@ -28,7 +28,7 @@ export default function ProjectsOverviewV2() {
   return (
     <>
       <CreateProjectModal />
-      <Container direction="vertical" gap="sm" className="pt-3">
+      <Container direction="vertical" gap="sm" width="full" className="pt-3">
         <Container>
           <Card
             title="Projects"
