@@ -4,7 +4,10 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import ModalV2 from "@pointwise/app/components/ui/modalV2";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
+import { utcNow } from "@pointwise/lib/api/date-time";
 import { hasWriteAccess } from "@pointwise/lib/api/projectsV2";
+import { useUpdateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
+import { useUpdateXPMutation } from "@pointwise/lib/redux/services/xpApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { TaskV2 } from "@pointwise/lib/validation/tasks-schema";
 import UpdateTaskModal from "../modals/task/UpdateTaskModal";
@@ -21,6 +24,35 @@ export default function TaskCardV2({
   task: TaskV2;
   project: Project;
 }) {
+  const [updateTask, { isLoading: isCompletingTask }] = useUpdateTaskMutation();
+  const [updateXP] = useUpdateXPMutation();
+
+  const handleCompleteTask = async () => {
+    try {
+      const response = await updateTask({
+        taskId: task.id,
+        data: {
+          projectId: project.id,
+          completedAt: utcNow(),
+          status: "COMPLETED",
+        },
+      }).unwrap();
+      if (response.task) {
+        await handleRewardXp(response.task.xpAward);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRewardXp = async (xpAward: number) => {
+    try {
+      await updateXP({ delta: xpAward }).unwrap();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
       <UpdateTaskModal task={task} project={project} />
@@ -30,7 +62,7 @@ export default function TaskCardV2({
         width="full"
         className="bg-black/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer p-4"
         onClick={() => {
-          if (hasWriteAccess(project.role)) {
+          if (hasWriteAccess(project.role) && task.status !== "COMPLETED") {
             ModalV2.Manager.open(`update-task-modal-${task.id}`);
           }
         }}
@@ -79,17 +111,22 @@ export default function TaskCardV2({
             <TaskCardV2Date
               label="Start"
               date={task.startDate ?? ""}
-              hasTime={task.hasStartTime}
+              hasTime={task.hasStartTime ?? false}
             />
             <TaskCardV2Date
               label="Due"
               date={task.dueDate ?? ""}
-              hasTime={task.hasDueTime}
+              hasTime={task.hasDueTime ?? false}
             />
           </Container>
           <Container width="auto" className="justify-end">
             {task.status === "PENDING" && hasWriteAccess(project.role) ? (
-              <Button size="xs" className="min-w-25 hover:cursor-pointer">
+              <Button
+                size="xs"
+                className="min-w-25 hover:cursor-pointer"
+                loading={isCompletingTask}
+                onClick={handleCompleteTask}
+              >
                 Complete
               </Button>
             ) : null}

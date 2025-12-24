@@ -11,7 +11,6 @@ import {
   type UpdateTaskRequest,
 } from "@pointwise/lib/validation/tasks-schema";
 import type { Prisma, TaskV2 as PrismaTaskV2 } from "@prisma/client";
-import { utcToLocal } from "./date-time";
 
 export async function getTasks(
   projectId: string,
@@ -128,7 +127,9 @@ export async function updateTask(
   if (request.status !== undefined) {
     updateData.status = request.status;
     if (request.status === "COMPLETED") {
-      updateData.completedAt = new Date();
+      updateData.completedAt = request.completedAt
+        ? new Date(request.completedAt)
+        : null;
     } else if (request.status === "PENDING") {
       updateData.completedAt = null;
     }
@@ -179,7 +180,7 @@ export function serializeTask(task: PrismaTaskV2): TaskV2 {
     hasStartTime: task.hasStartTime,
     dueDate: task.dueDate?.toString() ?? null,
     hasDueTime: task.hasDueTime,
-    completedAt: task.completedAt ?? null,
+    completedAt: task.completedAt?.toString() ?? null,
     status: task.status as "PENDING" | "COMPLETED",
     createdAt: task.createdAt.toString(),
     updatedAt: task.updatedAt.toString(),

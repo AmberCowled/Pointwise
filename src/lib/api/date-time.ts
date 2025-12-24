@@ -45,6 +45,15 @@ export const utcToLocal = (
   };
 };
 
+export const utcNow = () => {
+  const localDate = new Date();
+  const hours = String(localDate.getHours()).padStart(2, "0");
+  const minutes = String(localDate.getMinutes()).padStart(2, "0");
+  const timeString = `${hours}:${minutes}`;
+  const completedAtUTC = localToUTC(localDate, timeString);
+  return completedAtUTC?.date;
+};
+
 export const formatDate = (date: Date | null) => {
   if (!date) return null;
   return date.toLocaleDateString("en-US", {

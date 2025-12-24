@@ -71,7 +71,7 @@ export default function TasksOverview() {
                   : "Tasks could not be loaded"
               }
               onRetry={isProjectError ? refetchProject : refetchTasks}
-              className="mb-6"
+              className="mb-6 w-full"
             />
             {hasTasks && project ? (
               tasks.tasks.map((task) => (
