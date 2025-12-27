@@ -4,7 +4,12 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import ModalV2 from "@pointwise/app/components/ui/modalV2";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
-import { utcNow } from "@pointwise/lib/api/date-time";
+import {
+  isDateBefore,
+  localDayStart,
+  utcNow,
+  utcToLocal,
+} from "@pointwise/lib/api/date-time";
 import { hasWriteAccess } from "@pointwise/lib/api/projectsV2";
 import { useUpdateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
 import { useUpdateXPMutation } from "@pointwise/lib/redux/services/xpApi";
@@ -24,6 +29,31 @@ export default function TaskCardV2({
   task: TaskV2;
   project: Project;
 }) {
+  const isOverdue = () => {
+    if (task?.status === "COMPLETED") return false;
+    if (task?.dueDate === null || task?.dueDate === undefined) return false;
+    const localDue = utcToLocal(task.dueDate);
+    const localDueDate = localDue?.date;
+    const localDueTime = localDue?.time;
+    if (localDueDate === null || localDueDate === undefined) return false;
+    const localNow = new Date();
+    if (localNow > localDueDate) {
+      if (
+        task?.hasDueTime &&
+        localDueTime !== null &&
+        localDueTime !== undefined
+      ) {
+        const localNowTime = new Date().toLocaleTimeString();
+        if (localNowTime > localDueTime) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }
+    return false;
+  };
+
   const [updateTask, { isLoading: isCompletingTask }] = useUpdateTaskMutation();
   const [updateXP] = useUpdateXPMutation();
 
@@ -95,7 +125,9 @@ export default function TaskCardV2({
           </Container>
           <Container width="auto" className="justify-end">
             <Container width="full" direction="vertical" gap="xs">
-              <TaskCardV2Status status={task.status ?? "PENDING"} />
+              <TaskCardV2Status
+                status={isOverdue() ? "OVERDUE" : (task.status ?? "PENDING")}
+              />
               <TaskCardV2Optional optional={task.optional} />
             </Container>
           </Container>
