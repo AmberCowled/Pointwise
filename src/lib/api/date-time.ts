@@ -106,3 +106,43 @@ export const timesEqual = (
 
   return normalizeTime(time1) === normalizeTime(time2);
 };
+
+export const localDayStart = () => {
+  const localDate = new Date();
+  return new Date(
+    localDate.getFullYear(),
+    localDate.getMonth(),
+    localDate.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+};
+
+export const localDayEnd = () => {
+  const localDate = new Date();
+  return new Date(
+    localDate.getFullYear(),
+    localDate.getMonth(),
+    localDate.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+};
+
+export const isDateBetween = (date: Date, startDate: Date, endDate: Date) => {
+  return date >= startDate && date <= endDate;
+};
+
+export const isDateBefore = (date: Date, startDate: Date) => {
+  if (!date || !startDate) return false;
+  return date < startDate;
+};
+
+export const isDateAfter = (date: Date, endDate: Date) => {
+  if (!date || !endDate) return false;
+  return date > endDate;
+};
