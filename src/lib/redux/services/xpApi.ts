@@ -13,12 +13,12 @@ export const xpApi = createApi({
   refetchOnReconnect: true, // Refetch when internet reconnects
   endpoints: (builder) => ({
     getXP: builder.query<GetXPResponse, void>({
-      query: () => "/userV2/xp",
+      query: () => "/user/xp",
       providesTags: ["XP"],
     }),
     updateXP: builder.mutation<UpdateXPResponse, UpdateXPRequest>({
       query: (body) => ({
-        url: "/userV2/xp",
+        url: "/user/xp",
         method: "PATCH",
         body,
       }),

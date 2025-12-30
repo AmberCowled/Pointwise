@@ -18,12 +18,12 @@ export const tasksApi = createApi({
   refetchOnReconnect: true,
   endpoints: (builder) => ({
     getTasks: builder.query<GetTasksResponse, GetTasksRequest>({
-      query: ({ projectId }) => `/tasksV2?projectId=${projectId}`,
+      query: ({ projectId }) => `/tasks?projectId=${projectId}`,
       providesTags: ["Tasks"],
     }),
     createTask: builder.mutation<CreateTaskResponse, CreateTaskRequest>({
       query: (task) => ({
-        url: "/tasksV2",
+        url: "/tasks",
         method: "POST",
         body: task,
       }),
@@ -34,7 +34,7 @@ export const tasksApi = createApi({
       { taskId: string; data: UpdateTaskRequest }
     >({
       query: ({ taskId, data }) => ({
-        url: `/tasksV2/${taskId}`,
+        url: `/tasks/${taskId}`,
         method: "PATCH",
         body: data,
       }),
@@ -42,7 +42,7 @@ export const tasksApi = createApi({
     }),
     deleteTask: builder.mutation<DeleteTaskResponse, DeleteTaskRequest>({
       query: ({ taskId }) => ({
-        url: `/tasksV2/${taskId}`,
+        url: `/tasks/${taskId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Tasks"],

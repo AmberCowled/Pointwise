@@ -5,6 +5,7 @@ import { useSignup } from "@pointwise/hooks/useSignup";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/Button";
 import { Checkbox } from "../ui/Checkbox";
+import Grid from "../ui/Grid";
 import { Input } from "../ui/Input";
 import { useNotifications } from "../ui/NotificationProvider";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
@@ -36,9 +37,6 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
   // Validation state
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
-  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const isLoading = tab === "signup" ? signupLoading : signinLoading;
 
@@ -61,55 +59,6 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
     return PASSWORD_STRENGTH_LABELS[passwordStrength];
   }, [password, passwordStrength, tab]);
 
-  // Real-time email validation (only show error if touched or submit attempted)
-  const handleEmailChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setEmail(value);
-      if (emailTouched || submitAttempted) {
-        setEmailError(validateEmail(value));
-      }
-    },
-    [emailTouched, submitAttempted],
-  );
-
-  const handleEmailBlur = useCallback(() => {
-    setEmailTouched(true);
-    setEmailError(validateEmail(email));
-  }, [email]);
-
-  // Real-time password validation (only show error if touched or submit attempted)
-  const handlePasswordChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setPassword(value);
-      if (passwordTouched || submitAttempted) {
-        setPasswordError(validatePassword(value, tab === "signup"));
-      }
-    },
-    [passwordTouched, submitAttempted, tab],
-  );
-
-  const handlePasswordBlur = useCallback(() => {
-    setPasswordTouched(true);
-    setPasswordError(validatePassword(password, tab === "signup"));
-  }, [password, tab]);
-
-  // Handlers for name fields
-  const handleFirstNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFirstName(e.target.value);
-    },
-    [],
-  );
-
-  const handleLastNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLastName(e.target.value);
-    },
-    [],
-  );
-
   // Show error notifications (prevent duplicate notifications)
   useEffect(() => {
     const error = tab === "signup" ? signupError : signinError;
@@ -124,7 +73,6 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
   const onSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      setSubmitAttempted(true);
 
       // Validate before submission
       const emailErr = validateEmail(email);
@@ -153,48 +101,44 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-4 text-left">
       {tab === "signup" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Grid columns={{ default: 2 }} gap="md">
           <Input
-            id="firstName"
+            id={"firstName"}
             name="firstName"
             type="text"
             label="First name"
             placeholder="John"
             variant="secondary"
             size="md"
-            fullWidth
-            value={firstName}
-            onChange={handleFirstNameChange}
+            flex="grow"
+            onChange={setFirstName}
             disabled={isLoading}
           />
           <Input
-            id="lastName"
+            id={"lastName"}
             name="lastName"
             type="text"
             label="Last name"
             placeholder="Smith"
             variant="secondary"
             size="md"
-            fullWidth
-            value={lastName}
-            onChange={handleLastNameChange}
+            flex="grow"
+            onChange={setLastName}
             disabled={isLoading}
           />
-        </div>
+        </Grid>
       )}
 
       <Input
-        id="email"
+        id={"email"}
         name="email"
         type="email"
         label="Email"
         placeholder="you@example.com"
         variant="secondary"
         size="md"
-        fullWidth
-        value={email}
-        onChange={handleEmailChange}
-        onBlur={handleEmailBlur}
+        flex="grow"
+        onChange={setEmail}
         autoComplete="email"
         error={emailError}
         required
@@ -203,17 +147,15 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 
       <div className="space-y-2">
         <Input
-          id="password"
+          id={"password"}
           name="password"
           type="password"
           label="Password"
           placeholder={tab === "signin" ? "••••••••" : "At least 8 characters"}
           variant="secondary"
           size="md"
-          fullWidth
-          value={password}
-          onChange={handlePasswordChange}
-          onBlur={handlePasswordBlur}
+          flex="grow"
+          onChange={setPassword}
           autoComplete={tab === "signin" ? "current-password" : "new-password"}
           showPasswordToggle
           error={passwordError}

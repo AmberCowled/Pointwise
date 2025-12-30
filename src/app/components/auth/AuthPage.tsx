@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import BrandHeader from "../general/BrandHeader";
 import BackgroundGlow from "../ui/BackgroundGlow";
-import { Card } from "../ui/Card";
+import Card from "../ui/Card";
 import { Divider } from "../ui/Divider";
 import { Spinner } from "../ui/Spinner";
 import { Tabs } from "../ui/Tabs";
@@ -45,7 +45,7 @@ export default function AuthPage() {
         <BrandHeader className="mb-8" />
         <WelcomeBlock tab={tab} />
         <main className="w-full">
-          <Card variant="primary" responsivePadding>
+          <Card variant="primary">
             <Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
             <div className="relative min-h-[400px]">
               {isLoading ? (

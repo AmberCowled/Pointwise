@@ -19,7 +19,7 @@ const TASK_COMPLETED_AT_RESPONSE_SCHEMA = z.string().optional().nullable();
 const TASK_CREATED_DATE_RESPONSE_SCHEMA = z.string();
 const TASK_UPDATED_DATE_RESPONSE_SCHEMA = z.string();
 
-export const TaskV2Schema = z.object({
+export const TaskSchema = z.object({
   id: TASK_ID_SCHEMA,
   projectId: TASK_PROJECT_ID_SCHEMA,
   title: TASK_TITLE_SCHEMA,
@@ -42,7 +42,7 @@ export const GetTasksRequestSchema = z.object({
 });
 
 export const GetTasksResponseSchema = z.object({
-  tasks: z.array(TaskV2Schema),
+  tasks: z.array(TaskSchema),
 });
 
 export const CreateTaskRequestSchema = z.object({
@@ -59,7 +59,7 @@ export const CreateTaskRequestSchema = z.object({
 });
 
 export const CreateTaskResponseSchema = z.object({
-  task: TaskV2Schema,
+  task: TaskSchema,
 });
 
 export const UpdateTaskRequestSchema = z.object({
@@ -78,7 +78,7 @@ export const UpdateTaskRequestSchema = z.object({
 });
 
 export const UpdateTaskResponseSchema = z.object({
-  task: TaskV2Schema,
+  task: TaskSchema,
 });
 
 export const DeleteTaskRequestSchema = z.object({
@@ -89,7 +89,7 @@ export const DeleteTaskResponseSchema = z.object({
   success: z.boolean(),
 });
 
-export type TaskV2 = z.infer<typeof TaskV2Schema>;
+export type Task = z.infer<typeof TaskSchema>;
 export type GetTasksRequest = z.infer<typeof GetTasksRequestSchema>;
 export type GetTasksResponse = z.infer<typeof GetTasksResponseSchema>;
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>;

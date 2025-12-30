@@ -144,7 +144,14 @@ export default function Grid({
   }
 
   return (
-    <div className={clsx("grid", columnClasses, gapClasses[gap], className)}>
+    <div
+      className={clsx(
+        "grid w-full auto-rows-fr",
+        columnClasses,
+        gapClasses[gap],
+        className,
+      )}
+    >
       {children}
     </div>
   );

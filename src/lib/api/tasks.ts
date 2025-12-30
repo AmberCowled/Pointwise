@@ -2,25 +2,25 @@ import {
   isProjectAdmin,
   isProjectUserOrHigher,
   verifyProjectAccess,
-} from "@pointwise/lib/api/projectsV2";
+} from "@pointwise/lib/api/projects";
 import prisma from "@pointwise/lib/prisma";
 import {
   type CreateTaskRequest,
-  type TaskV2,
-  TaskV2Schema,
+  type Task,
+  TaskSchema,
   type UpdateTaskRequest,
 } from "@pointwise/lib/validation/tasks-schema";
-import type { Prisma, TaskV2 as PrismaTaskV2 } from "@prisma/client";
+import type { Prisma, Task as PrismaTask } from "@prisma/client";
 
 export async function getTasks(
   projectId: string,
   userId: string,
-): Promise<PrismaTaskV2[]> {
+): Promise<PrismaTask[]> {
   if (!(await verifyProjectAccess(projectId, userId))) {
     throw new Error("Forbidden: You do not have access to this project");
   }
 
-  const tasks = await prisma.taskV2.findMany({
+  const tasks = await prisma.task.findMany({
     where: {
       projectId: projectId,
     },
@@ -32,14 +32,14 @@ export async function getTasks(
 export async function createTask(
   request: CreateTaskRequest,
   userId: string,
-): Promise<PrismaTaskV2> {
+): Promise<PrismaTask> {
   if (!(await isProjectUserOrHigher(request.projectId, userId))) {
     throw new Error(
       "Forbidden: You do not have write permissions in this project",
     );
   }
 
-  const newTask = await prisma.taskV2.create({
+  const newTask = await prisma.task.create({
     data: {
       projectId: request.projectId,
       title: request.title,
@@ -59,8 +59,8 @@ export async function createTask(
 }
 
 // Type that only includes the fields we can update from UpdateTaskRequest
-type TaskV2UpdateFields = Pick<
-  Prisma.TaskV2UpdateInput,
+type TaskUpdateFields = Pick<
+  Prisma.TaskUpdateInput,
   | "title"
   | "description"
   | "xpAward"
@@ -78,8 +78,8 @@ export async function updateTask(
   taskId: string,
   request: UpdateTaskRequest,
   userId: string,
-): Promise<PrismaTaskV2> {
-  const existingTask = await prisma.taskV2.findUnique({
+): Promise<PrismaTask> {
+  const existingTask = await prisma.task.findUnique({
     where: { id: taskId },
     select: { projectId: true },
   });
@@ -94,7 +94,7 @@ export async function updateTask(
     );
   }
 
-  const updateData: Partial<TaskV2UpdateFields> = {};
+  const updateData: Partial<TaskUpdateFields> = {};
   if (request.title !== undefined) {
     updateData.title = request.title;
   }
@@ -135,7 +135,7 @@ export async function updateTask(
     }
   }
 
-  const updatedTask = await prisma.taskV2.update({
+  const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data: updateData,
   });
@@ -147,7 +147,7 @@ export async function deleteTask(
   taskId: string,
   userId: string,
 ): Promise<void> {
-  const task = await prisma.taskV2.findUnique({
+  const task = await prisma.task.findUnique({
     where: { id: taskId },
     select: { projectId: true },
   });
@@ -162,13 +162,13 @@ export async function deleteTask(
     );
   }
 
-  await prisma.taskV2.delete({
+  await prisma.task.delete({
     where: { id: taskId },
   });
 }
 
-export function serializeTask(task: PrismaTaskV2): TaskV2 {
-  return TaskV2Schema.parse({
+export function serializeTask(task: PrismaTask): Task {
+  return TaskSchema.parse({
     id: task.id,
     title: task.title,
     description: task.description,
