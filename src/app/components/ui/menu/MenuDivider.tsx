@@ -3,18 +3,22 @@
 import { MenuSeparator } from "@headlessui/react";
 
 /**
- * MenuDivider Component
+ * MenuDivider - Visual separator between menu items or sections
  *
- * A visual separator between menu items or sections.
+ * A simple visual separator that can be manually added or automatically
+ * inserted by MenuContainer between consecutive MenuSection components.
  *
  * @example
  * ```tsx
- * <Menu triggerLabel="Menu">
- *   <MenuItem label="Profile" href="/profile" />
- *   <MenuItem label="Settings" href="/settings" />
+ * <MenuContainer trigger={<Button>Menu</Button>}>
+ *   <MenuSection title="Navigation">
+ *     <MenuOption label="Projects" />
+ *   </MenuSection>
  *   <MenuDivider />
- *   <MenuItem label="Sign out" onClick={handleSignOut} danger />
- * </Menu>
+ *   <MenuSection title="Account">
+ *     <MenuOption label="Profile" />
+ *   </MenuSection>
+ * </MenuContainer>
  * ```
  */
 export function MenuDivider() {

@@ -3,7 +3,7 @@ import {
   getProject,
   serializeProject,
   updateProject,
-} from "@pointwise/lib/api/projectsV2";
+} from "@pointwise/lib/api/projects";
 import {
   handleProtectedRoute,
   jsonResponse,

@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { IoWarning } from "react-icons/io5";
 import { Button } from "./Button";
-import { Card } from "./Card";
+import Card from "./Card";
 
 export interface ErrorCardProps {
   /**

@@ -3,28 +3,127 @@
 import clsx from "clsx";
 import type React from "react";
 import { forwardRef, useId, useState } from "react";
+import { IoSearch } from "react-icons/io5";
 import { CharCount } from "./CharCount";
 import { InputHeader } from "./InputHeader";
 import { ProgressBar } from "./ProgressBar";
 import { VisibilityToggle } from "./VisibilityToggle";
 
-export type InputVariants = "primary" | "secondary" | "danger";
-export type InputSizes = "xs" | "sm" | "md" | "lg" | "xl";
+type InputVariants = "primary" | "secondary" | "danger";
+type InputSizes = "xs" | "sm" | "md" | "lg" | "xl";
+type InputFlex = "shrink" | "default" | "grow";
 
-export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+/**
+ * Custom props for the Input component
+ *
+ * These props appear first in IntelliSense autocomplete when using the component.
+ * All standard HTML input attributes are also supported.
+ */
+export interface InputCustomProps {
+  /**
+   * Visual variant style
+   * @default 'primary'
+   */
   variant?: InputVariants;
+
+  /**
+   * Size of the input
+   * @default 'md'
+   */
   size?: InputSizes;
-  fullWidth?: boolean;
+
+  /**
+   * Flex behavior for the input wrapper
+   * - 'shrink': Prevents the input from shrinking (flex-shrink-0)
+   * - 'default': Normal flex behavior
+   * - 'grow': Input takes up available space (flex-1 min-w-0)
+   * @default 'default'
+   */
+  flex?: InputFlex;
+
+  /**
+   * Error state. Can be a boolean to show error styling, or a string to display an error message
+   */
   error?: boolean | string;
+
+  /**
+   * Label text displayed above the input
+   */
   label?: React.ReactNode;
+
+  /**
+   * Description text displayed below the input
+   */
   description?: React.ReactNode;
+
+  /**
+   * Whether to show a password visibility toggle button (only applies when type="password")
+   * @default false
+   */
   showPasswordToggle?: boolean;
+
+  /**
+   * Whether to show character count indicator (requires maxLength to be set)
+   * @default false
+   */
   showCharCount?: boolean;
+
+  /**
+   * Whether to show a progress bar indicating character usage (requires maxLength to be set)
+   * @default false
+   */
   showProgressBar?: boolean;
+
+  /**
+   * Percentage threshold at which the character count shows a warning (amber color)
+   * @default 70
+   */
   charCountWarningThreshold?: number;
+
+  /**
+   * Percentage threshold at which the character count shows an error (red color)
+   * @default 90
+   */
   charCountErrorThreshold?: number;
+
+  /**
+   * Callback fired when user submits search (Enter key or button click)
+   * Optional - button can be shown without callback for visual consistency
+   * @param value - The current input value
+   */
+  onSearch?: (value: string) => void;
+
+  /**
+   * Whether to show the search button on the right side
+   * Works independently of `onSearch` - button will appear if `true` even without callback
+   * Useful for front-end only implementations where backend will wire up later
+   * Button will be disabled (non-functional) if `showSearchButton={true}` but `onSearch` is not provided
+   * @default false
+   */
+  showSearchButton?: boolean;
+
+  /**
+   * Default value for the input (uncontrolled component)
+   * @default ''
+   */
+  defaultValue?: string;
+
+  /**
+   * Callback fired when the input value changes
+   * Receives the new value as a string (not the event)
+   * @param value - The new input value
+   */
+  onChange?: (value: string) => void;
 }
+
+/**
+ * Props for the Input component
+ */
+export type InputProps = InputCustomProps &
+  Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "size" | "onChange" | "value" | "defaultValue"
+  >;
 
 const baseStyle =
   "border text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:outline-none";
@@ -55,11 +154,7 @@ const sizeStyles: Record<InputSizes, string> = {
   xl: "text-lg px-8 py-4",
 };
 
-const variantDisabledStyles: Record<InputVariants, string> = {
-  primary: "opacity-50 cursor-not-allowed",
-  secondary: "opacity-50 cursor-not-allowed",
-  danger: "opacity-50 cursor-not-allowed",
-};
+const disabledStyle = "opacity-50 cursor-not-allowed";
 
 const variantErrorStyles: Record<InputVariants, string> = {
   primary: "border-rose-400/60 focus:border-rose-400/80",
@@ -67,11 +162,66 @@ const variantErrorStyles: Record<InputVariants, string> = {
   danger: "border-rose-500/80 focus:border-rose-500/90",
 };
 
+const flexClasses: Record<InputFlex, string> = {
+  shrink: "flex-shrink-0",
+  default: "",
+  grow: "flex-1 min-w-0",
+};
+
+const innerWidthClasses: Record<InputFlex, string> = {
+  shrink: "w-auto",
+  default: "inline-block",
+  grow: "w-full",
+};
+
+/**
+ * Input - Enhanced input component with variants, sizes, and optional features
+ *
+ * Uncontrolled component that manages its own internal state. Use `onChange` to track value changes
+ * in parent components.
+ *
+ * **Custom Props:**
+ * - `variant?: "primary" | "secondary" | "danger"` - Visual style (default: "primary")
+ * - `size?: "xs" | "sm" | "md" | "lg" | "xl"` - Input size (default: "md")
+ * - `flex?: "shrink" | "default" | "grow"` - Flex behavior (default: "default")
+ * - `error?: boolean | string` - Error state or error message
+ * - `label?: ReactNode` - Label text above input
+ * - `description?: ReactNode` - Description text below input
+ * - `defaultValue?: string` - Initial value (default: "")
+ * - `onChange?: (value: string) => void` - Callback fired when value changes (receives string, not event)
+ * - `showPasswordToggle?: boolean` - Show password visibility toggle (default: false)
+ * - `showCharCount?: boolean` - Show character count (default: false, requires maxLength)
+ * - `showProgressBar?: boolean` - Show progress bar (default: false, requires maxLength)
+ * - `charCountWarningThreshold?: number` - Warning threshold % (default: 70)
+ * - `charCountErrorThreshold?: number` - Error threshold % (default: 90)
+ * - `onSearch?: (value: string) => void` - Callback fired when user submits search (Enter key or button click)
+ * - `showSearchButton?: boolean` - Show search button on the right side (default: false). Works independently of `onSearch` for better DX
+ *
+ * All standard HTML input attributes (except `onChange`, `value`, `defaultValue`) are also supported.
+ *
+ * @example
+ * ```tsx
+ * const [name, setName] = useState("");
+ *
+ * <Input
+ *   label="Project Name"
+ *   defaultValue=""
+ *   onChange={setName}
+ * />
+ *
+ * // With search button
+ * <Input
+ *   placeholder="Search..."
+ *   showSearchButton
+ *   onSearch={(value) => console.log("Searching:", value)}
+ * />
+ * ```
+ */
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     variant = "primary",
     size = "md",
-    fullWidth = false,
+    flex = "default",
     error,
     label,
     description,
@@ -80,15 +230,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     showProgressBar = false,
     charCountWarningThreshold = 70,
     charCountErrorThreshold = 90,
+    onSearch,
+    showSearchButton = false,
+    defaultValue = "",
+    onChange,
     className,
     id,
     disabled,
     required,
     type = "text",
-    value,
-    defaultValue,
     maxLength,
-    onChange,
     ...props
   }: InputProps,
   ref,
@@ -98,35 +249,48 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const errorMessage = typeof error === "string" ? error : undefined;
 
   const shouldShowPassword = showPasswordToggle && type === "password";
-
   const [showPassword, setShowPassword] = useState(false);
 
-  const effectiveShowPassword = shouldShowPassword ? showPassword : false;
+  // Internal state management (uncontrolled component)
+  const [internalValue, setInternalValue] = useState(defaultValue);
 
-  const isControlled = value !== undefined;
-  const [internalValue, setInternalValue] = useState(
-    String(defaultValue ?? ""),
-  );
-
-  const inputValue = isControlled ? String(value ?? "") : internalValue;
-  const charCount = inputValue.length;
+  const charCount = internalValue.length;
   const maxChars = maxLength ?? 0;
   const shouldShowCharCount = showCharCount && maxChars > 0;
   const shouldShowProgressBar = showProgressBar && maxChars > 0;
   const hasHeader = !!label || !!required || shouldShowCharCount;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isControlled) {
-      setInternalValue(e.target.value);
-    }
-    if (onChange) {
-      onChange(e);
+    const newValue = e.target.value;
+    setInternalValue(newValue);
+    onChange?.(newValue);
+  };
+
+  const handleSearch = () => {
+    if (!disabled && onSearch) {
+      onSearch(internalValue);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !disabled && onSearch) {
+      e.preventDefault();
+      handleSearch();
+    }
+    props.onKeyDown?.(e);
+  };
+
+  const getProgressBarColor = (normalisedUsage: number) => {
+    if (normalisedUsage * maxChars >= charCountErrorThreshold)
+      return "bg-rose-400";
+    if (normalisedUsage * maxChars >= charCountWarningThreshold)
+      return "bg-amber-400";
+    return "bg-indigo-400";
+  };
+
   return (
-    <div className="space-y-2">
-      <div className={clsx(fullWidth ? "w-full" : "inline-block")}>
+    <div className={clsx("space-y-2", flexClasses[flex])}>
+      <div className={innerWidthClasses[flex]}>
         {hasHeader && (
           <InputHeader
             htmlFor={inputId}
@@ -150,19 +314,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             {...props}
             id={inputId}
             ref={ref}
-            type={effectiveShowPassword ? "text" : type}
+            type={shouldShowPassword && showPassword ? "text" : type}
             disabled={disabled}
             required={required}
-            {...(isControlled ? { value } : { defaultValue })}
+            value={internalValue}
             maxLength={maxLength}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
             className={clsx(
               baseStyle,
               variantStyles[variant],
               sizeStyles[size],
               "w-full",
-              showPasswordToggle ? "pr-10" : "",
-              disabled && variantDisabledStyles[variant],
+              (showPasswordToggle || showSearchButton) && "pr-10",
+              disabled && disabledStyle,
               !disabled && error && variantErrorStyles[variant],
               !disabled && !error && variantFocusStyles[variant],
               !disabled && !error && variantHoverStyles[variant],
@@ -170,12 +335,31 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             )}
           />
 
-          {showPasswordToggle && (
-            <VisibilityToggle
-              visible={effectiveShowPassword}
-              onToggle={() => setShowPassword(!showPassword)}
-            />
-          )}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
+            {showSearchButton && (
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={disabled || !onSearch}
+                className={clsx(
+                  "rounded-lg p-1.5 text-zinc-400 transition-all duration-200",
+                  "hover:text-zinc-100 hover:bg-white/10 hover:scale-110",
+                  "active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
+                  (disabled || !onSearch) &&
+                    "cursor-not-allowed opacity-50 hover:scale-100 hover:bg-transparent",
+                )}
+                aria-label="Search"
+              >
+                <IoSearch className="h-4 w-4" />
+              </button>
+            )}
+            {showPasswordToggle && (
+              <VisibilityToggle
+                visible={showPassword}
+                onToggle={() => setShowPassword((prev) => !prev)}
+              />
+            )}
+          </div>
         </div>
 
         {shouldShowProgressBar && (
@@ -184,13 +368,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             value={charCount}
             maxValue={maxChars}
             heightClass="h-1.5"
-            overwriteColorClass={(normalisedUsage) =>
-              normalisedUsage * maxChars >= charCountErrorThreshold
-                ? "bg-rose-400"
-                : normalisedUsage * maxChars >= charCountWarningThreshold
-                  ? "bg-amber-400"
-                  : "bg-indigo-400"
-            }
+            overwriteColorClass={getProgressBarColor}
           />
         )}
       </div>
@@ -205,3 +383,5 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 });
 
 Input.displayName = "Input";
+
+export default Input;
