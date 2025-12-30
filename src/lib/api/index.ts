@@ -5,7 +5,6 @@ import { useCallback } from "react";
 import type { ApiRequestOptions } from "./client";
 import { authApi } from "./endpoints/auth";
 import { tasksApi } from "./endpoints/tasks";
-import { userApi } from "./endpoints/user";
 
 /**
  * Hook to get API client with automatic error notifications
@@ -64,12 +63,6 @@ export function useApi() {
       getRecurring: (taskId: string, options?: ApiRequestOptions) =>
         tasksApi.getRecurring(taskId, { ...createOptions(), ...options }),
     },
-    user: {
-      updatePreferences: (
-        data: Parameters<typeof userApi.updatePreferences>[0],
-        options?: ApiRequestOptions,
-      ) => userApi.updatePreferences(data, { ...createOptions(), ...options }),
-    },
     auth: {
       signup: (
         data: Parameters<typeof authApi.signup>[0],
@@ -82,7 +75,6 @@ export function useApi() {
 export { authApi as authApiRaw } from "./endpoints/auth";
 // Export raw API functions (for use outside React components)
 export { tasksApi } from "./endpoints/tasks";
-export { userApi as userApiRaw } from "./endpoints/user";
 export * from "./errors";
 // Export types
 export * from "./types";

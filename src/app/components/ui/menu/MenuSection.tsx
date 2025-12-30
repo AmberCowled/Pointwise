@@ -7,23 +7,7 @@ import {
 import type { ReactNode } from "react";
 
 /**
- * MenuSection Component
- *
- * Groups related menu items together with an optional section title.
- * Useful for organizing menu items into logical sections.
- *
- * @example
- * ```tsx
- * <Menu triggerLabel="User Menu">
- *   <MenuSection title="Account">
- *     <MenuItem label="Profile" href="/profile" />
- *     <MenuItem label="Settings" href="/settings" />
- *   </MenuSection>
- *   <MenuSection title="Actions">
- *     <MenuItem label="Sign out" onClick={handleSignOut} danger />
- *   </MenuSection>
- * </Menu>
- * ```
+ * Props for the MenuSection component
  */
 export interface MenuSectionProps {
   /**
@@ -31,11 +15,34 @@ export interface MenuSectionProps {
    */
   title?: ReactNode;
   /**
-   * Menu items to display in this section
+   * Menu options to display in this section
    */
   children: ReactNode;
 }
 
+/**
+ * MenuSection - Groups related menu options together with an optional section title
+ *
+ * Useful for organizing menu options into logical sections.
+ * MenuContainer automatically adds MenuDivider between consecutive MenuSection components.
+ *
+ * @example
+ * ```tsx
+ * <MenuContainer trigger={<Button>Menu</Button>}>
+ *   <MenuSection title="Navigation">
+ *     <MenuOption label="Projects" href="/dashboard" />
+ *     <MenuOption label="Tasks" href="/tasks" />
+ *   </MenuSection>
+ *   <MenuSection title="Account">
+ *     <MenuOption label="Profile" href="/profile" />
+ *     <MenuOption label="Settings" href="/settings" />
+ *   </MenuSection>
+ * </MenuSection>
+ * ```
+ *
+ * @param {MenuSectionProps} props - The props for the MenuSection component.
+ * @returns {JSX.Element} The rendered MenuSection component.
+ */
 export function MenuSection({ title, children }: MenuSectionProps) {
   return (
     <HeadlessMenuSection>

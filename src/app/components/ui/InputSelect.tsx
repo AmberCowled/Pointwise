@@ -14,33 +14,83 @@ import { IoChevronDown } from "react-icons/io5";
 
 import { InputHeader } from "./InputHeader";
 
-export type InputSelectVariants = "primary" | "secondary" | "danger";
-export type InputSelectSizes = "xs" | "sm" | "md" | "lg" | "xl";
+type InputSelectVariants = "primary" | "secondary" | "danger";
+type InputSelectSizes = "xs" | "sm" | "md" | "lg" | "xl";
+type InputFlex = "shrink" | "default" | "grow";
 
-export type InputSelectOption<TValue> = {
-  value: TValue;
-  label: React.ReactNode;
-  description?: React.ReactNode;
-  key?: string | number;
-  disabled?: boolean;
-};
+/**
+ * Props for the InputSelect component
+ */
+export interface InputSelectProps {
+  /**
+   * Array of string options to display in the dropdown
+   * The first option will be auto-selected if no defaultValue is provided
+   */
+  options: string[];
 
-export interface InputSelectProps<TValue> {
+  /**
+   * Callback fired when an option is selected
+   * Also fires on mount with the initial selected value
+   * @param value - The selected option value
+   */
+  onSelect?: (value: string) => void;
+
+  /**
+   * Default selected value. If not provided, the first option from the options array will be selected
+   */
+  defaultValue?: string;
+
+  /**
+   * Visual variant style
+   * @default 'primary'
+   */
   variant?: InputSelectVariants;
+
+  /**
+   * Size of the select button
+   * @default 'md'
+   */
   size?: InputSelectSizes;
-  fullWidth?: boolean;
-  error?: boolean | string;
-  label?: React.ReactNode;
-  description?: React.ReactNode;
-  required?: boolean;
-  id?: string;
-  value: TValue;
-  onChange: (value: TValue) => void;
-  options: Array<InputSelectOption<TValue>>;
-  placeholder?: React.ReactNode;
+
+  /**
+   * Flex behavior for the select wrapper
+   * - 'shrink': Prevents the select from shrinking (flex-shrink-0)
+   * - 'default': Normal flex behavior
+   * - 'grow': Select takes up available space (flex-1 min-w-0)
+   * @default 'default'
+   */
+  flex?: InputFlex;
+
+  /**
+   * Placeholder text displayed when no option is selected
+   * @default 'Select...'
+   */
+  placeholder?: string;
+
+  /**
+   * Whether the select is disabled
+   * @default false
+   */
   disabled?: boolean;
-  renderValue?: (option: InputSelectOption<TValue>) => React.ReactNode;
-  by?: (a: TValue, b: TValue) => boolean;
+
+  /**
+   * Error state. Can be a boolean to show error styling, or a string to display an error message
+   */
+  error?: boolean | string;
+
+  /**
+   * Label text displayed above the select
+   */
+  label?: React.ReactNode;
+
+  /**
+   * Description text displayed below the select
+   */
+  description?: React.ReactNode;
+
+  /**
+   * Additional CSS classes for the select button
+   */
   className?: string;
 }
 
@@ -91,36 +141,100 @@ const listVariantStyles: Record<InputSelectVariants, string> = {
   danger: "rounded-2xl border-rose-400/40 shadow-rose-500/20",
 };
 
-export function InputSelect<TValue>({
+const flexClasses: Record<InputFlex, string> = {
+  shrink: "flex-shrink-0",
+  default: "",
+  grow: "flex-1 min-w-0",
+};
+
+const innerWidthClasses: Record<InputFlex, string> = {
+  shrink: "w-auto",
+  default: "inline-block",
+  grow: "w-full",
+};
+
+/**
+ * InputSelect - Dropdown select component with variants, sizes, and flexible layout
+ *
+ * **Props:**
+ * - `options: string[]` - Array of string options (required)
+ * - `onSelect?: (value: string) => void` - Callback when option is selected (fires on mount with initial value)
+ * - `defaultValue?: string` - Default selected value (defaults to first option)
+ * - `variant?: "primary" | "secondary" | "danger"` - Visual style (default: "primary")
+ * - `size?: "xs" | "sm" | "md" | "lg" | "xl"` - Select size (default: "md")
+ * - `flex?: "shrink" | "default" | "grow"` - Flex behavior (default: "default")
+ * - `placeholder?: string` - Placeholder text (default: "Select...")
+ * - `disabled?: boolean` - Disable the select (default: false)
+ * - `error?: boolean | string` - Error state or error message
+ * - `label?: ReactNode` - Label text above select
+ * - `description?: ReactNode` - Description text below select
+ * - `className?: string` - Additional CSS classes
+ *
+ * The component automatically selects the first option on mount if no defaultValue is provided.
+ * The onSelect callback fires on mount with the initial selected value.
+ *
+ * @example
+ * ```tsx
+ * <InputSelect
+ *   options={["Projects", "Tasks", "Settings"]}
+ *   onSelect={(value) => console.log(value)}
+ *   label="Select an option"
+ *   variant="primary"
+ *   size="md"
+ *   flex="grow"
+ * />
+ * ```
+ */
+function InputSelect({
+  options,
+  onSelect,
+  defaultValue,
   variant = "primary",
   size = "md",
-  fullWidth = false,
+  flex = "default",
+  placeholder,
+  disabled,
   error,
   label,
   description,
-  required,
-  id,
-  value,
-  onChange,
-  options,
-  placeholder,
-  disabled,
-  renderValue,
-  by,
   className,
-}: InputSelectProps<TValue>) {
+}: InputSelectProps) {
   const generatedId = useId();
-  const selectId = id || generatedId;
+  const selectId = generatedId;
   const errorMessage = typeof error === "string" ? error : undefined;
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [buttonWidth, setButtonWidth] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const hasFiredInitialSelect = useRef(false);
 
-  const activeOption = options.find((option) =>
-    by ? by(option.value, value) : option.value === value,
+  // Convert string array to option objects
+  const optionObjects = options.map((str) => ({ label: str, value: str }));
+
+  // Internal state management - auto-select first option
+  const [selectedValue, setSelectedValue] = useState<string>(
+    defaultValue ?? options[0] ?? "",
   );
 
-  const hasHeader = !!label || !!required;
+  // Find active option
+  const activeOption = optionObjects.find(
+    (option) => option.value === selectedValue,
+  );
+
+  const hasHeader = !!label;
+
+  // Handle selection change
+  const handleChange = (value: string) => {
+    setSelectedValue(value);
+    onSelect?.(value);
+  };
+
+  // Fire onSelect with initial value on mount
+  useEffect(() => {
+    if (!hasFiredInitialSelect.current && selectedValue && onSelect) {
+      hasFiredInitialSelect.current = true;
+      onSelect(selectedValue);
+    }
+  }, [selectedValue, onSelect]);
 
   // Measure button width for dropdown matching and detect mobile
   useEffect(() => {
@@ -142,18 +256,15 @@ export function InputSelect<TValue>({
   }, []);
 
   return (
-    <div className="space-y-2">
-      <div className={clsx(fullWidth ? "w-full" : "inline-block")}>
-        {hasHeader && (
-          <InputHeader htmlFor={selectId} label={label} required={required} />
-        )}
+    <div className={clsx("space-y-2", flexClasses[flex])}>
+      <div className={innerWidthClasses[flex]}>
+        {hasHeader && <InputHeader htmlFor={selectId} label={label} />}
 
         <div className="relative mt-1">
           <Listbox
-            value={value}
-            onChange={onChange}
+            value={selectedValue}
+            onChange={handleChange}
             disabled={disabled}
-            by={by}
           >
             <ListboxButton
               ref={buttonRef}
@@ -175,9 +286,7 @@ export function InputSelect<TValue>({
             >
               <span className="block truncate pr-8">
                 {activeOption
-                  ? renderValue
-                    ? renderValue(activeOption)
-                    : activeOption.label
+                  ? activeOption.label
                   : (placeholder ?? "Select...")}
               </span>
               <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
@@ -205,11 +314,10 @@ export function InputSelect<TValue>({
                     : { width: "100%", minWidth: "160px" }
                 }
               >
-                {options.map((option, index) => (
+                {optionObjects.map((option) => (
                   <ListboxOption
-                    key={option.key ?? index}
+                    key={option.value}
                     value={option.value}
-                    disabled={option.disabled}
                     className={({ focus, selected, disabled: isDisabled }) =>
                       clsx(
                         "cursor-pointer rounded-xl px-3 py-2 transition text-zinc-100",
@@ -219,14 +327,7 @@ export function InputSelect<TValue>({
                       )
                     }
                   >
-                    <div className="flex flex-col">
-                      <span className="font-medium">{option.label}</span>
-                      {option.description ? (
-                        <span className="text-xs text-zinc-500">
-                          {option.description}
-                        </span>
-                      ) : null}
-                    </div>
+                    <span className="font-medium">{option.label}</span>
                   </ListboxOption>
                 ))}
               </ListboxOptions>
@@ -243,3 +344,5 @@ export function InputSelect<TValue>({
     </div>
   );
 }
+
+export default InputSelect;
