@@ -4,7 +4,10 @@
  * Validates project creation and update requests
  */
 
-import type { CreateProjectRequest, UpdateProjectRequest } from "../api/types";
+import type {
+  CreateProjectRequest,
+  UpdateProjectRequest,
+} from "../validation/projects-schema";
 
 interface ValidationResult<T> {
   success: boolean;
@@ -116,7 +119,11 @@ export function parseUpdateProjectBody(
   }
 
   const data = body as Record<string, unknown>;
-  const updates: UpdateProjectRequest = {};
+  const updates: UpdateProjectRequest = {
+    name: "",
+    description: undefined,
+    visibility: "PRIVATE",
+  };
 
   // Validate name (optional)
   if (data.name !== undefined) {

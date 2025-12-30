@@ -1,10 +1,10 @@
 "use client";
 
 import clsx from "clsx";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "./Button";
-import { InputSelect } from "./InputSelect";
+import InputSelect from "./InputSelect";
 
 export type PaginationVariant = "primary" | "secondary";
 export type PaginationSize = "xs" | "sm" | "md" | "lg" | "xl";
@@ -315,7 +315,7 @@ export function Pagination({
 
   // Accessibility: Track previous page for aria-live announcements
   const previousPageRef = useRef(validatedCurrentPage);
-  const navigationRef = useRef<HTMLDivElement>(null);
+  const navigationRef = useRef<HTMLFieldSetElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // State for dynamic width calculation on mobile
@@ -387,6 +387,19 @@ export function Pagination({
     onPageSizeChange?.(validatedValue);
     // Reset to page 1 when page size changes
     onPageChange(1);
+  };
+
+  // Convert pageSizeOptions to string array for InputSelect
+  const pageSizeOptionsStrings = (
+    pageSizeOptions ?? DEFAULT_PAGE_SIZE_OPTIONS
+  ).map((opt) => String(opt.value));
+
+  // Handle InputSelect's onSelect (receives string, converts to number)
+  const handlePageSizeSelect = (value: string) => {
+    const numValue = parseInt(value, 10);
+    if (Number.isFinite(numValue)) {
+      handlePageSizeChange(numValue);
+    }
   };
 
   const startItem =
@@ -510,12 +523,11 @@ export function Pagination({
             : "flex-1 justify-center flex-wrap sm:flex-nowrap",
         )}
       >
-        <div
+        <fieldset
           ref={navigationRef}
-          role="group"
           aria-label="Page navigation"
           className={clsx(
-            "flex items-center w-full sm:w-auto",
+            "flex items-center w-full sm:w-auto border-none p-0 m-0",
             "justify-center flex-wrap sm:flex-nowrap",
           )}
         >
@@ -551,7 +563,7 @@ export function Pagination({
                     if (page === "ellipsis") {
                       return (
                         <span
-                          key={`ellipsis-${index}`}
+                          key={`ellipsis-${index}-${pageNumbers[index - 1] ?? "start"}-${pageNumbers[index + 1] ?? "end"}`}
                           className={clsx(
                             sizePageButtonStyles[size],
                             "hidden sm:flex items-center justify-center text-zinc-500 shrink-0",
@@ -608,7 +620,7 @@ export function Pagination({
               ›
             </Button>
           </div>
-        </div>
+        </fieldset>
       </div>
 
       {/* Right section: Page size selector (hidden on mobile) */}
@@ -620,9 +632,10 @@ export function Pagination({
                 Show:
               </span>
               <InputSelect
-                value={validatedPageSize}
-                onChange={handlePageSizeChange}
-                options={pageSizeOptions ?? DEFAULT_PAGE_SIZE_OPTIONS}
+                key={validatedPageSize}
+                defaultValue={String(validatedPageSize)}
+                onSelect={handlePageSizeSelect}
+                options={pageSizeOptionsStrings}
                 variant={inputSelectVariant}
                 size={size}
                 className="w-20"

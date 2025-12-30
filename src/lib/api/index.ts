@@ -4,23 +4,7 @@ import { useNotifications } from "@pointwise/app/components/ui/NotificationProvi
 import { useCallback } from "react";
 import type { ApiRequestOptions } from "./client";
 import { authApi } from "./endpoints/auth";
-import { tasksApi } from "./endpoints/tasks";
 
-/**
- * Hook to get API client with automatic error notifications
- *
- * @example
- * ```tsx
- * const api = useApi();
- *
- * const task = await api.tasks.create({
- *   title: 'My Task',
- *   category: 'work',
- *   xpValue: 100,
- *   recurrence: 'none',
- * });
- * ```
- */
 export function useApi() {
   const { showNotification } = useNotifications();
 
@@ -38,31 +22,6 @@ export function useApi() {
   );
 
   return {
-    tasks: {
-      create: (
-        data: Parameters<typeof tasksApi.create>[0],
-        options?: ApiRequestOptions,
-      ) => tasksApi.create(data, { ...createOptions(), ...options }),
-      update: (
-        taskId: string,
-        data: Parameters<typeof tasksApi.update>[1],
-        scope?: "single" | "series",
-        options?: ApiRequestOptions,
-      ) =>
-        tasksApi.update(taskId, data, scope ?? "single", {
-          ...createOptions(),
-          ...options,
-        }),
-      delete: (
-        taskId: string,
-        scope?: "single" | "series",
-        options?: ApiRequestOptions,
-      ) => tasksApi.delete(taskId, scope, { ...createOptions(), ...options }),
-      complete: (taskId: string, options?: ApiRequestOptions) =>
-        tasksApi.complete(taskId, { ...createOptions(), ...options }),
-      getRecurring: (taskId: string, options?: ApiRequestOptions) =>
-        tasksApi.getRecurring(taskId, { ...createOptions(), ...options }),
-    },
     auth: {
       signup: (
         data: Parameters<typeof authApi.signup>[0],
@@ -74,7 +33,6 @@ export function useApi() {
 
 export { authApi as authApiRaw } from "./endpoints/auth";
 // Export raw API functions (for use outside React components)
-export { tasksApi } from "./endpoints/tasks";
 export * from "./errors";
 // Export types
 export * from "./types";
