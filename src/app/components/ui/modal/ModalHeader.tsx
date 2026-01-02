@@ -5,7 +5,7 @@ import clsx from "clsx";
 import type { PropsWithChildren, ReactNode } from "react";
 import { useId } from "react";
 
-import { ModalCloseButton } from "../ModalCloseButton";
+import { ModalCloseButton } from "./ModalCloseButton";
 import { useModalContext } from "./ModalContext";
 
 /**

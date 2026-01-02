@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 
-import type { ModalSize } from "../Modal";
+import type { ModalSize } from "./ModalContainer";
 
 /**
  * Context for Modal component coordination

@@ -5,7 +5,7 @@ import clsx from "clsx";
 import type { PropsWithChildren } from "react";
 import { Fragment } from "react";
 
-type ModalAnimation = "fade" | "slide" | "scale" | "none";
+import type { ModalAnimation } from "./ModalContainer";
 
 interface ModalPanelProps extends PropsWithChildren {
   /**
