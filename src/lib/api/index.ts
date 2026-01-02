@@ -2,8 +2,8 @@
 
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { useCallback } from "react";
+import { authApi } from "./auth";
 import type { ApiRequestOptions } from "./client";
-import { authApi } from "./endpoints/auth";
 
 export function useApi() {
   const { showNotification } = useNotifications();
@@ -31,7 +31,7 @@ export function useApi() {
   };
 }
 
-export { authApi as authApiRaw } from "./endpoints/auth";
+export { authApi as authApiRaw } from "./auth";
 // Export raw API functions (for use outside React components)
 export * from "./errors";
 // Export types
