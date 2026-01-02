@@ -12,12 +12,28 @@ import {
   useState,
 } from "react";
 
-import type { ModalAnimation, ModalSize } from "../Modal";
-import { ModalOverlay } from "../ModalOverlay";
-import { ModalPanel } from "../ModalPanel";
 import { Spinner } from "../Spinner";
 import { ModalContextProvider, type ModalContextValue } from "./ModalContext";
 import { ModalManager, type ModalRef } from "./ModalManager";
+import { ModalOverlay } from "./ModalOverlay";
+import { ModalPanel } from "./ModalPanel";
+
+/**
+ * Modal size variants
+ */
+export type ModalSize =
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | "6xl"
+  | "fullscreen";
+
+/**
+ * Modal animation presets
+ */
+export type ModalAnimation = "fade" | "slide" | "scale" | "none";
 
 /**
  * Props for ModalContainer component
