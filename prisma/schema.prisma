@@ -129,5 +129,6 @@ model Project {
   updatedAt DateTime @updatedAt
 
   @@index([name])
+  @@index([description])
   @@index([visibility])
 }

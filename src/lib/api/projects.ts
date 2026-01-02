@@ -7,7 +7,7 @@ import {
   ProjectSchema,
   type UpdateProjectRequest,
 } from "@pointwise/lib/validation/projects-schema";
-import type { Project as PrismaProject } from "@prisma/client";
+import type { Prisma, Project as PrismaProject } from "@prisma/client";
 
 export async function createProject(
   request: CreateProjectRequest,
@@ -86,6 +86,113 @@ export async function getProjects(
   });
 
   return projects as (PrismaProject & { _count: { tasks: number } })[];
+}
+
+export async function searchPublicProjects(
+  query?: string,
+  limit: number = 50,
+  offset: number = 0,
+): Promise<{
+  projects: (PrismaProject & { _count: { tasks: number } })[];
+  total: number;
+}> {
+  const searchTerm = query?.trim();
+
+  // Use MongoDB text search if query provided, otherwise use regular Prisma query
+  if (searchTerm) {
+    // Use MongoDB $text search via findRaw for case-insensitive text search
+    // Fetch enough results to handle offset + limit (with reasonable max of 1000)
+    const fetchLimit = Math.min(offset + limit, 1000);
+    const rawResults = await prisma.project.findRaw({
+      filter: {
+        $and: [{ visibility: "PUBLIC" }, { $text: { $search: searchTerm } }],
+      },
+      options: {
+        limit: fetchLimit,
+        sort: { score: { $meta: "textScore" } }, // Sort by text search relevance
+      },
+    });
+
+    // Get all matching IDs from text search, sorted by relevance
+    const allMatchingIds = (
+      rawResults as unknown as { _id: { $oid: string } }[]
+    ).map((doc) => doc._id.$oid);
+
+    // Apply offset and limit to get the page we need
+    const matchingIds = allMatchingIds.slice(offset, offset + limit);
+
+    // Fetch full typed data for the matching IDs using Prisma's type-safe API
+    const projects = await prisma.project.findMany({
+      where: {
+        id: { in: matchingIds },
+        visibility: "PUBLIC",
+      },
+      include: {
+        _count: {
+          select: {
+            tasks: true,
+          },
+        },
+      },
+    });
+
+    // Sort projects to match the text search relevance order
+    const idOrder = new Map(matchingIds.map((id, index) => [id, index]));
+    projects.sort((a, b) => {
+      const aIndex = idOrder.get(a.id) ?? Infinity;
+      const bIndex = idOrder.get(b.id) ?? Infinity;
+      return aIndex - bIndex;
+    });
+
+    // Get total count for text search results using aggregation
+    const countResult = await prisma.project.aggregateRaw({
+      pipeline: [
+        {
+          $match: {
+            $and: [
+              { visibility: "PUBLIC" },
+              { $text: { $search: searchTerm } },
+            ],
+          },
+        },
+        { $count: "total" },
+      ],
+    });
+    const total =
+      (countResult as unknown as [{ total: number }] | [])[0]?.total ?? 0;
+
+    return {
+      projects: projects as (PrismaProject & { _count: { tasks: number } })[],
+      total,
+    };
+  }
+
+  // No search query - use regular Prisma query
+  const where: Prisma.ProjectWhereInput = {
+    visibility: "PUBLIC",
+  };
+
+  const [projects, total] = await Promise.all([
+    prisma.project.findMany({
+      where,
+      include: {
+        _count: {
+          select: {
+            tasks: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.project.count({ where }),
+  ]);
+
+  return {
+    projects: projects as (PrismaProject & { _count: { tasks: number } })[],
+    total,
+  };
 }
 
 export function getUserRoleInProject(

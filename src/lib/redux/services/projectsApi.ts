@@ -4,6 +4,8 @@ import type {
   DeleteProjectResponse,
   GetProjectResponse,
   GetProjectsResponse,
+  SearchPublicProjectsRequest,
+  SearchPublicProjectsResponse,
   UpdateProjectRequest,
   UpdateProjectResponse,
 } from "@pointwise/lib/validation/projects-schema";
@@ -22,6 +24,13 @@ export const projectApi = createApi({
     }),
     getProjects: builder.query<GetProjectsResponse, void>({
       query: () => "/projects",
+      providesTags: ["Projects"],
+    }),
+    searchPublicProjects: builder.query<
+      SearchPublicProjectsResponse,
+      SearchPublicProjectsRequest
+    >({
+      query: () => "/projects/public",
       providesTags: ["Projects"],
     }),
     createProject: builder.mutation<
@@ -59,6 +68,7 @@ export const projectApi = createApi({
 export const {
   useGetProjectsQuery,
   useGetProjectQuery,
+  useSearchPublicProjectsQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
   useDeleteProjectMutation,

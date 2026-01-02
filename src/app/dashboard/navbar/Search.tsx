@@ -1,8 +1,6 @@
 "use client";
 
 import Input from "@pointwise/app/components/ui/Input";
-import InputSelect from "@pointwise/app/components/ui/InputSelect";
-import { useState } from "react";
 
 /**
  * Props for the Search component
@@ -11,26 +9,21 @@ export interface SearchProps {
   /**
    * Callback fired when search is submitted (Enter key or search button click)
    * @param query - The current search query text
-   * @param filter - The currently selected filter option
    */
-  onSearch?: (query: string, filter: string) => void;
+  onSearch?: (query: string) => void;
 }
 
 /**
  * Search - Combined search input and filter dropdown component
  *
  * **Props:**
- * - `onSearch?: (query: string, filter: string) => void` - Callback fired when search is submitted (Enter key or search button click)
- *
- * The component manages its own state for both the search query and filter selection.
- * The search input includes a search button that appears on the right side.
- * The filter dropdown automatically selects the first option ("Projects") on mount.
+ * - `onSearch?: (query: string) => void` - Callback fired when search is submitted (Enter key or search button click)
  *
  * @example
  * ```tsx
  * <Search
- *   onSearch={(query, filter) => {
- *     console.log("Searching:", query, "Filter:", filter);
+ *   onSearch={(query) => {
+ *     console.log("Searching:", query);
  *     // Perform search logic here
  *   }}
  * />
@@ -40,23 +33,13 @@ export interface SearchProps {
  * @returns {JSX.Element} The rendered Search component.
  */
 export default function Search({ onSearch }: SearchProps) {
-  const [searchFilter, setSearchFilter] = useState("Projects");
-
   return (
-    <>
-      <Input
-        size="sm"
-        placeholder="Search..."
-        flex="grow"
-        showSearchButton
-        onSearch={(value: string) => onSearch?.(value, searchFilter)}
-      />
-      <InputSelect
-        size="sm"
-        options={["Projects", "Tasks", "People"]}
-        flex="shrink"
-        onSelect={(value: string) => setSearchFilter(value)}
-      />
-    </>
+    <Input
+      size="sm"
+      placeholder="Search..."
+      flex="grow"
+      showSearchButton
+      onSearch={(value: string) => onSearch?.(value)}
+    />
   );
 }

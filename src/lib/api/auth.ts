@@ -1,8 +1,8 @@
 "use client";
 
-import type { ApiRequestOptions } from "../client";
-import { apiClient } from "../client";
-import type { SignupRequest, SignupResponse } from "../types";
+import type { ApiRequestOptions } from "./client";
+import { apiClient } from "./client";
+import type { SignupRequest, SignupResponse } from "./types";
 
 /**
  * Auth API endpoints
