@@ -1,3 +1,5 @@
+"use client";
+
 import Container from "@pointwise/app/components/ui/Container";
 import { getProjectMemberCount } from "@pointwise/lib/api/projects";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
@@ -33,12 +35,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           taskCount={project.taskCount}
           memberCount={memberCount}
         />
-        <ProjectCardTags
-          projectId={project.id}
-          visibility={project.visibility}
-          role={project.role}
-          joinRequestUserIds={project.joinRequestUserIds}
-        />
+        <ProjectCardTags project={project} />
       </Container>
     </>
   );

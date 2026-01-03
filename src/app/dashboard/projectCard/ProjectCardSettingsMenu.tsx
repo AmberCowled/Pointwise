@@ -4,19 +4,17 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useUserId } from "@pointwise/hooks/useUserId";
+import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
 import { IoSettings } from "react-icons/io5";
+import DeleteProjectModal from "../modals/project/DeleteProjectModal";
 
 export interface ProjectCardSettingsMenuProps {
-  role: "ADMIN" | "USER" | "VIEWER" | "NONE";
-  projectId: string;
-  joinRequestUserIds?: string[];
+  project: Project;
 }
 
 export default function ProjectCardSettingsMenu({
-  role,
-  projectId,
-  joinRequestUserIds = [],
+  project,
 }: ProjectCardSettingsMenuProps) {
   const userId = useUserId();
   const router = useRouter();
@@ -32,11 +30,11 @@ export default function ProjectCardSettingsMenu({
   };
 
   const handleViewProject = () => {
-    router.push(`/dashboard/${projectId}`);
+    router.push(`/dashboard/${project.id}`);
   };
 
   const handleEditProject = () => {
-    Modal.Manager.open(`update-project-modal-${projectId}`);
+    Modal.Manager.open(`update-project-modal-${project.id}`);
   };
 
   const handleLeave = () => {
@@ -45,45 +43,60 @@ export default function ProjectCardSettingsMenu({
   };
 
   const handleDelete = () => {
-    console.log("delete project");
-    // TODO: Implement delete project API call
+    Modal.Manager.open(`delete-project-modal-${project.id}`);
   };
 
   return (
-    <Menu trigger={<Button variant="ghost" size="xs" icon={IoSettings} />}>
-      {role === "NONE" && (
-        <Menu.Section>
-          {userId && joinRequestUserIds?.includes(userId) ? (
-            <Menu.Option label="Cancel Request" onClick={handleCancelRequest} />
-          ) : (
-            <Menu.Option label="Request to Join" onClick={handleRequestJoin} />
-          )}
-          <Menu.Option label="View Project" onClick={handleViewProject} />
-        </Menu.Section>
-      )}
+    <>
+      <DeleteProjectModal project={project} />
+      <Menu trigger={<Button variant="ghost" size="xs" icon={IoSettings} />}>
+        {project.role === "NONE" && (
+          <Menu.Section>
+            {userId && project.joinRequestUserIds?.includes(userId) ? (
+              <Menu.Option
+                label="Cancel Request"
+                onClick={handleCancelRequest}
+              />
+            ) : (
+              <Menu.Option
+                label="Request to Join"
+                onClick={handleRequestJoin}
+              />
+            )}
+            <Menu.Option label="View Project" onClick={handleViewProject} />
+          </Menu.Section>
+        )}
 
-      {role === "ADMIN" && (
-        <>
+        {project.role === "ADMIN" && (
+          <>
+            <Menu.Section>
+              <Menu.Option
+                label="View Project"
+                href={`/dashboard/${project.id}`}
+              />
+              <Menu.Option label="Edit Project" onClick={handleEditProject} />
+            </Menu.Section>
+            <Menu.Section>
+              <Menu.Option label="Leave Project" onClick={handleLeave} />
+              <Menu.Option
+                label="Delete Project"
+                danger
+                onClick={handleDelete}
+              />
+            </Menu.Section>
+          </>
+        )}
+
+        {(project.role === "USER" || project.role === "VIEWER") && (
           <Menu.Section>
             <Menu.Option
               label="View Project"
-              href={`/dashboard/${projectId}`}
+              href={`/dashboard/${project.id}`}
             />
-            <Menu.Option label="Edit Project" onClick={handleEditProject} />
-          </Menu.Section>
-          <Menu.Section>
             <Menu.Option label="Leave Project" onClick={handleLeave} />
-            <Menu.Option label="Delete Project" danger onClick={handleDelete} />
           </Menu.Section>
-        </>
-      )}
-
-      {(role === "USER" || role === "VIEWER") && (
-        <Menu.Section>
-          <Menu.Option label="View Project" href={`/dashboard/${projectId}`} />
-          <Menu.Option label="Leave Project" onClick={handleLeave} />
-        </Menu.Section>
-      )}
-    </Menu>
+        )}
+      </Menu>
+    </>
   );
 }
