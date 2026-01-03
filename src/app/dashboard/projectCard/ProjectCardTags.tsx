@@ -1,11 +1,15 @@
 "use client";
 
-import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import { Tag } from "@pointwise/app/components/ui/Tag";
-import { IoGlobe, IoLockClosed, IoSettings } from "react-icons/io5";
+import { IoGlobe, IoLockClosed } from "react-icons/io5";
+import ProjectCardSettingsMenu from "./ProjectCardSettingsMenu";
 
 export interface ProjectCardTagsProps {
+  /**
+   * Project ID
+   */
+  projectId: string;
   /**
    * Project visibility setting
    */
@@ -15,28 +19,22 @@ export interface ProjectCardTagsProps {
    */
   role: "ADMIN" | "USER" | "VIEWER" | "NONE";
   /**
-   * Optional callback when settings button is clicked
-   */
-  onSettingsClick?: (e: React.MouseEvent) => void;
+   * User IDs who have requested to join the project
+   **/
+  joinRequestUserIds?: string[];
 }
 
 /**
  * ProjectCardTags - Displays visibility tag, role tag, and settings button
  *
- * Shows project visibility, user role, and settings button (for admins only).
+ * Shows project visibility, user role, and settings menu.
  */
 export default function ProjectCardTags({
+  projectId,
   visibility,
   role,
-  onSettingsClick,
+  joinRequestUserIds = [],
 }: ProjectCardTagsProps) {
-  const handleSettingsClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onSettingsClick) {
-      onSettingsClick(e);
-    }
-  };
-
   return (
     <Container width="auto" className="gap-2 items-center">
       {visibility === "PUBLIC" ? (
@@ -62,17 +60,11 @@ export default function ProjectCardTags({
           {role === "ADMIN" ? "Admin" : role === "USER" ? "Member" : "Viewer"}
         </Tag>
       )}
-      {role === "ADMIN" && (
-        <Button
-          variant="ghost"
-          size="xs"
-          icon={IoSettings}
-          onClick={handleSettingsClick}
-          className="ml-auto shrink-0 p-1"
-          aria-label="Project settings"
-          title="Project settings"
-        />
-      )}
+      <ProjectCardSettingsMenu
+        projectId={projectId}
+        role={role}
+        joinRequestUserIds={joinRequestUserIds}
+      />
     </Container>
   );
 }

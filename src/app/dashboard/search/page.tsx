@@ -17,7 +17,7 @@ export default function SearchPage() {
   return (
     <Page>
       <Navbar />
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense>
         <SearchContent />
       </Suspense>
     </Page>

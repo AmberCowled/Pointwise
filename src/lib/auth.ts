@@ -11,14 +11,14 @@ export const authOptions: NextAuthOptions = {
 
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
       authorization: { params: { scope: "openid email profile" } },
       allowDangerousEmailAccountLinking: true,
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      clientId: process.env.GITHUB_CLIENT_ID ?? "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
       authorization: { params: { scope: "read:user user:email" } },
       allowDangerousEmailAccountLinking: true,
     }),
@@ -66,12 +66,20 @@ export const authOptions: NextAuthOptions = {
       return `${baseUrl}/dashboard`;
     },
 
-    async jwt({ token, session }) {
-      if (session?.remember === false) token.shortSession = true;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      if (token.shortSession) {
+        token.shortSession = true;
+      }
       return token;
     },
 
     async session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = token.id;
+      }
       if (token.shortSession) {
         session.remember = false;
       }

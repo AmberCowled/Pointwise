@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { NotificationProviderWrapper } from "./components/providers/NotificationProviderWrapper";
+import { SessionProviderWrapper } from "./components/providers/SessionProviderWrapper";
 import { ModalProvider } from "./components/ui/modal";
 import { StoreProvider } from "./StoreProvider";
 
@@ -37,13 +38,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StoreProvider>
-          <ModalProvider>
-            <NotificationProviderWrapper>
-              {children}
-            </NotificationProviderWrapper>
-          </ModalProvider>
-        </StoreProvider>
+        <SessionProviderWrapper>
+          <StoreProvider>
+            <ModalProvider>
+              <NotificationProviderWrapper>
+                {children}
+              </NotificationProviderWrapper>
+            </ModalProvider>
+          </StoreProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
