@@ -66,12 +66,20 @@ export const authOptions: NextAuthOptions = {
       return `${baseUrl}/dashboard`;
     },
 
-    async jwt({ token, session }) {
-      if (session?.remember === false) token.shortSession = true;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      if (token.shortSession) {
+        token.shortSession = true;
+      }
       return token;
     },
 
     async session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = token.id;
+      }
       if (token.shortSession) {
         session.remember = false;
       }

@@ -1,7 +1,4 @@
-"use client";
-
 import Container from "@pointwise/app/components/ui/Container";
-import Modal from "@pointwise/app/components/ui/modal/index";
 import { getProjectMemberCount } from "@pointwise/lib/api/projects";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
@@ -18,11 +15,6 @@ export interface ProjectCardProps {
 export default function ProjectCard({ project }: ProjectCardProps) {
   const router = useRouter();
   const memberCount = getProjectMemberCount(project);
-
-  const handleSettingsClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    Modal.Manager.open(`update-project-modal-${project.id}`);
-  };
 
   return (
     <>
@@ -42,9 +34,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           memberCount={memberCount}
         />
         <ProjectCardTags
+          projectId={project.id}
           visibility={project.visibility}
           role={project.role}
-          onSettingsClick={handleSettingsClick}
+          joinRequestUserIds={project.joinRequestUserIds}
         />
       </Container>
     </>
