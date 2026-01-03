@@ -27,7 +27,6 @@ export default function SearchOverview({ query }: { query: string }) {
           />
           {!isError &&
             searchResults?.projects.map((project) => (
-              // TODO: Change to project search card (Different things or edit project card)
               <ProjectCard key={project.id} project={project} />
             ))}
         </Container>
