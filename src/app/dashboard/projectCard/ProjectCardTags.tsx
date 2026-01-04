@@ -7,10 +7,10 @@ import { IoGlobe, IoLockClosed } from "react-icons/io5";
 import ProjectCardSettingsMenu from "./ProjectCardSettingsMenu";
 
 export interface ProjectCardTagsProps {
-  /**
-   * Project
-   */
-  project: Project;
+	/**
+	 * Project
+	 */
+	project: Project;
 }
 
 /**
@@ -19,40 +19,40 @@ export interface ProjectCardTagsProps {
  * Shows project visibility, user role, and settings menu.
  */
 export default function ProjectCardTags({ project }: ProjectCardTagsProps) {
-  return (
-    <Container width="auto" className="gap-2 items-center">
-      {project.visibility === "PUBLIC" ? (
-        <Tag variant="info" size="xs" icon={IoGlobe}>
-          Public
-        </Tag>
-      ) : (
-        <Tag variant="secondary" size="xs" icon={IoLockClosed}>
-          Private
-        </Tag>
-      )}
-      {(project.role === "ADMIN" ||
-        project.role === "USER" ||
-        project.role === "VIEWER") && (
-        <Tag
-          variant={
-            project.role === "ADMIN"
-              ? "primary"
-              : project.role === "USER"
-                ? "secondary"
-                : project.role === "VIEWER"
-                  ? "info"
-                  : "secondary"
-          }
-          size="xs"
-        >
-          {project.role === "ADMIN"
-            ? "Admin"
-            : project.role === "USER"
-              ? "Member"
-              : "Viewer"}
-        </Tag>
-      )}
-      <ProjectCardSettingsMenu project={project} />
-    </Container>
-  );
+	return (
+		<Container width="auto" className="gap-2 items-center">
+			{project.visibility === "PUBLIC" ? (
+				<Tag variant="info" size="xs" icon={IoGlobe}>
+					Public
+				</Tag>
+			) : (
+				<Tag variant="secondary" size="xs" icon={IoLockClosed}>
+					Private
+				</Tag>
+			)}
+			{(project.role === "ADMIN" ||
+				project.role === "USER" ||
+				project.role === "VIEWER") && (
+				<Tag
+					variant={
+						project.role === "ADMIN"
+							? "primary"
+							: project.role === "USER"
+								? "secondary"
+								: project.role === "VIEWER"
+									? "info"
+									: "secondary"
+					}
+					size="xs"
+				>
+					{project.role === "ADMIN"
+						? "Admin"
+						: project.role === "USER"
+							? "Member"
+							: "Viewer"}
+				</Tag>
+			)}
+			<ProjectCardSettingsMenu project={project} />
+		</Container>
+	);
 }

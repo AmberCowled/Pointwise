@@ -4,21 +4,21 @@
 
 // Signup request
 export interface SignupRequest {
-  name?: string;
-  email: string;
-  password: string;
+	name?: string;
+	email: string;
+	password: string;
 }
 
 // Signup response
 export interface SignupResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
+	user: {
+		id: string;
+		email: string;
+		name: string | null;
+	};
 }
 
 // API error response (standard format from server)
 export interface ApiErrorResponse {
-  error: string;
+	error: string;
 }

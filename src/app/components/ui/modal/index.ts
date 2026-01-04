@@ -9,8 +9,8 @@ export type { ModalProps } from "./Modal";
 export { default, default as Modal } from "./Modal";
 export { ModalBody, type ModalBodyProps } from "./ModalBody";
 export {
-  ModalCloseButton,
-  type ModalCloseButtonProps,
+	ModalCloseButton,
+	type ModalCloseButtonProps,
 } from "./ModalCloseButton";
 // Core components (for advanced usage)
 export { ModalContainer, type ModalContainerProps } from "./ModalContainer";

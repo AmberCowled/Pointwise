@@ -4,8 +4,8 @@ import Link from "next/link";
  * Parameters for determining link vs button props
  */
 interface LinkPropsParams {
-  href?: string;
-  onClick?: () => void;
+	href?: string;
+	onClick?: () => void;
 }
 
 /**
@@ -18,21 +18,21 @@ interface LinkPropsParams {
  * @returns Props object for either Link or button component
  */
 export function getLinkProps({
-  href,
-  onClick,
+	href,
+	onClick,
 }: LinkPropsParams):
-  | { as: typeof Link; href: string }
-  | { as: "button"; onClick?: () => void } {
-  if (href) {
-    return {
-      as: Link,
-      href,
-    };
-  }
-  return {
-    as: "button" as const,
-    onClick,
-  };
+	| { as: typeof Link; href: string }
+	| { as: "button"; onClick?: () => void } {
+	if (href) {
+		return {
+			as: Link,
+			href,
+		};
+	}
+	return {
+		as: "button" as const,
+		onClick,
+	};
 }
 
 /**
@@ -41,9 +41,9 @@ export function getLinkProps({
  * @returns True if props are for a Link
  */
 export function isLinkProps(
-  props: ReturnType<typeof getLinkProps>,
+	props: ReturnType<typeof getLinkProps>,
 ): props is { as: typeof Link; href: string } {
-  return "href" in props && props.as === Link;
+	return "href" in props && props.as === Link;
 }
 
 /**
@@ -52,7 +52,7 @@ export function isLinkProps(
  * @returns True if props are for a button
  */
 export function isButtonProps(
-  props: ReturnType<typeof getLinkProps>,
+	props: ReturnType<typeof getLinkProps>,
 ): props is { as: "button"; onClick?: () => void } {
-  return props.as === "button";
+	return props.as === "button";
 }

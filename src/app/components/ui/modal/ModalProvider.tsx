@@ -20,31 +20,31 @@ import { ModalRenderQueue, type QueuedModal } from "./modalRenderQueue";
  * ```
  */
 export function ModalProvider({ children }: PropsWithChildren) {
-  const [queuedModals, setQueuedModals] = useState<QueuedModal[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
+	const [queuedModals, setQueuedModals] = useState<QueuedModal[]>([]);
+	const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    // Mark as mounted to prevent hydration mismatch
-    setIsMounted(true);
+	useEffect(() => {
+		// Mark as mounted to prevent hydration mismatch
+		setIsMounted(true);
 
-    const updateModals = () => {
-      setQueuedModals(ModalRenderQueue.getAll());
-    };
+		const updateModals = () => {
+			setQueuedModals(ModalRenderQueue.getAll());
+		};
 
-    updateModals();
-    const unsubscribe = ModalRenderQueue.subscribe(updateModals);
+		updateModals();
+		const unsubscribe = ModalRenderQueue.subscribe(updateModals);
 
-    return unsubscribe;
-  }, []);
+		return unsubscribe;
+	}, []);
 
-  return (
-    <>
-      {children}
-      {isMounted &&
-        queuedModals.map((modal) => {
-          const Component = modal.component;
-          return <Component key={modal.id} id={modal.id} {...modal.props} />;
-        })}
-    </>
-  );
+	return (
+		<>
+			{children}
+			{isMounted &&
+				queuedModals.map((modal) => {
+					const Component = modal.component;
+					return <Component key={modal.id} id={modal.id} {...modal.props} />;
+				})}
+		</>
+	);
 }

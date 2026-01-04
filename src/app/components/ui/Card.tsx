@@ -16,103 +16,103 @@ type CardFlex = "shrink" | "default" | "grow";
  * All standard HTML div attributes are also supported via Container.
  */
 export interface CardCustomProps {
-  /**
-   * Visual variant style
-   * @default 'primary'
-   */
-  variant?: CardVariants;
+	/**
+	 * Visual variant style
+	 * @default 'primary'
+	 */
+	variant?: CardVariants;
 
-  /**
-   * Size of the card (affects padding)
-   * @default 'md'
-   */
-  size?: CardSizes;
+	/**
+	 * Size of the card (affects padding)
+	 * @default 'md'
+	 */
+	size?: CardSizes;
 
-  /**
-   * Flex behavior for the card wrapper
-   * - 'shrink': Prevents the card from shrinking (flex-shrink-0)
-   * - 'default': Normal flex behavior
-   * - 'grow': Card takes up available space (flex-1 min-w-0)
-   * @default 'default'
-   */
-  flex?: CardFlex;
+	/**
+	 * Flex behavior for the card wrapper
+	 * - 'shrink': Prevents the card from shrinking (flex-shrink-0)
+	 * - 'default': Normal flex behavior
+	 * - 'grow': Card takes up available space (flex-1 min-w-0)
+	 * @default 'default'
+	 */
+	flex?: CardFlex;
 
-  /**
-   * Callback fired when the card is clicked
-   * Only fires when clicking the card itself, not interactive elements inside
-   * Receives no parameters (just a notification that the card was clicked)
-   * Disabled during loading state
-   */
-  onClick?: () => void;
+	/**
+	 * Callback fired when the card is clicked
+	 * Only fires when clicking the card itself, not interactive elements inside
+	 * Receives no parameters (just a notification that the card was clicked)
+	 * Disabled during loading state
+	 */
+	onClick?: () => void;
 
-  /**
-   * Main title displayed in the card header
-   */
-  title?: React.ReactNode;
+	/**
+	 * Main title displayed in the card header
+	 */
+	title?: React.ReactNode;
 
-  /**
-   * Small uppercase label displayed above the title
-   */
-  label?: React.ReactNode;
+	/**
+	 * Small uppercase label displayed above the title
+	 */
+	label?: React.ReactNode;
 
-  /**
-   * Action buttons/elements displayed on the right side of the header
-   * Can be a single element or an array of elements
-   * Hidden during loading state
-   */
-  action?: React.ReactNode | React.ReactNode[];
+	/**
+	 * Action buttons/elements displayed on the right side of the header
+	 * Can be a single element or an array of elements
+	 * Hidden during loading state
+	 */
+	action?: React.ReactNode | React.ReactNode[];
 
-  /**
-   * Whether to show loading state
-   * When true, displays spinner instead of children but keeps header visible
-   * @default false
-   */
-  loading?: boolean;
+	/**
+	 * Whether to show loading state
+	 * When true, displays spinner instead of children but keeps header visible
+	 * @default false
+	 */
+	loading?: boolean;
 
-  /**
-   * Optional loading message to display below spinner
-   */
-  loadingMessage?: string;
+	/**
+	 * Optional loading message to display below spinner
+	 */
+	loadingMessage?: string;
 
-  /**
-   * Content to be rendered inside the card
-   * Renders directly without a wrapper for full layout control
-   */
-  children?: React.ReactNode;
+	/**
+	 * Content to be rendered inside the card
+	 * Renders directly without a wrapper for full layout control
+	 */
+	children?: React.ReactNode;
 
-  /**
-   * Additional CSS classes to apply to the card
-   */
-  className?: string;
+	/**
+	 * Additional CSS classes to apply to the card
+	 */
+	className?: string;
 }
 
 /**
  * Props for the Card component
  */
 export type CardProps = CardCustomProps &
-  Omit<React.HTMLAttributes<HTMLDivElement>, "onClick" | "className">;
+	Omit<React.HTMLAttributes<HTMLDivElement>, "onClick" | "className">;
 
 const baseStyle = "bg-zinc-900/60 backdrop-blur";
 
 const variantStyles: Record<CardVariants, string> = {
-  primary: "rounded-2xl border border-white/10 shadow-2xl shadow-black/40",
-  secondary: "rounded-3xl border border-white/5",
-  danger:
-    "rounded-2xl border border-rose-400/40 bg-rose-500/25 backdrop-blur text-zinc-100",
+	primary: "rounded-2xl border border-white/10 shadow-2xl shadow-black/40",
+	secondary: "rounded-3xl border border-white/5",
+	danger:
+		"rounded-2xl border border-rose-400/40 bg-rose-500/25 backdrop-blur text-zinc-100",
 };
 
 const sizeStyles: Record<CardSizes, string> = {
-  xs: "p-2",
-  sm: "p-3",
-  md: "p-4",
-  lg: "p-6",
-  xl: "p-8",
+	xs: "p-2",
+	sm: "p-3",
+	md: "p-4",
+	lg: "p-6",
+	xl: "p-8",
 };
 
 const flexClasses: Record<CardFlex, string> = {
-  shrink: "flex-shrink-0",
-  default: "",
-  grow: "flex-1 min-w-0",
+	shrink: "flex-shrink-0",
+	default: "",
+	grow: "flex-1 min-w-0",
 };
 
 /**
@@ -189,99 +189,99 @@ const flexClasses: Record<CardFlex, string> = {
  * ```
  */
 export default function Card({
-  variant = "primary",
-  size = "md",
-  flex = "default",
-  onClick,
-  title,
-  label,
-  action,
-  loading = false,
-  loadingMessage,
-  children,
-  className,
-  ...props
+	variant = "primary",
+	size = "md",
+	flex = "default",
+	onClick,
+	title,
+	label,
+	action,
+	loading = false,
+	loadingMessage,
+	children,
+	className,
+	...props
 }: CardProps) {
-  const actions = Array.isArray(action) ? action : action ? [action] : [];
-  const hasHeader = title || label || actions.length > 0;
-  const shouldShowActions = actions.length > 0 && !loading;
+	const actions = Array.isArray(action) ? action : action ? [action] : [];
+	const hasHeader = title || label || actions.length > 0;
+	const shouldShowActions = actions.length > 0 && !loading;
 
-  // Convert no-param onClick to Container's event handler
-  const handleClick =
-    onClick && !loading
-      ? (_e: React.MouseEvent<HTMLDivElement>) => {
-          onClick();
-        }
-      : undefined;
+	// Convert no-param onClick to Container's event handler
+	const handleClick =
+		onClick && !loading
+			? (_e: React.MouseEvent<HTMLDivElement>) => {
+					onClick();
+				}
+			: undefined;
 
-  return (
-    <Container
-      {...props}
-      direction="vertical"
-      width="full"
-      gap="none"
-      onClick={handleClick}
-      className={clsx(
-        baseStyle,
-        variantStyles[variant],
-        sizeStyles[size],
-        flexClasses[flex],
-        className,
-      )}
-    >
-      {hasHeader && (
-        <Container direction="vertical" width="full" gap="sm">
-          <Container
-            direction="horizontal"
-            width="full"
-            gap="sm"
-            className="flex-wrap justify-between"
-          >
-            <Container direction="vertical" width="auto" gap="xs">
-              {label && (
-                <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                  {label}
-                </p>
-              )}
-              {title && (
-                <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
-              )}
-            </Container>
-            {shouldShowActions && (
-              <Container width="auto" gap="sm" className="flex-wrap">
-                {actions.map((actionItem, index) => {
-                  // If actionItem is a React element with a key, use it; otherwise use index
-                  const key =
-                    React.isValidElement(actionItem) && actionItem.key
-                      ? actionItem.key
-                      : `action-${index}`;
-                  return (
-                    <React.Fragment key={key}>{actionItem}</React.Fragment>
-                  );
-                })}
-              </Container>
-            )}
-          </Container>
-        </Container>
-      )}
+	return (
+		<Container
+			{...props}
+			direction="vertical"
+			width="full"
+			gap="none"
+			onClick={handleClick}
+			className={clsx(
+				baseStyle,
+				variantStyles[variant],
+				sizeStyles[size],
+				flexClasses[flex],
+				className,
+			)}
+		>
+			{hasHeader && (
+				<Container direction="vertical" width="full" gap="sm">
+					<Container
+						direction="horizontal"
+						width="full"
+						gap="sm"
+						className="flex-wrap justify-between"
+					>
+						<Container direction="vertical" width="auto" gap="xs">
+							{label && (
+								<p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+									{label}
+								</p>
+							)}
+							{title && (
+								<h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
+							)}
+						</Container>
+						{shouldShowActions && (
+							<Container width="auto" gap="sm" className="flex-wrap">
+								{actions.map((actionItem, index) => {
+									// If actionItem is a React element with a key, use it; otherwise use index
+									const key =
+										React.isValidElement(actionItem) && actionItem.key
+											? actionItem.key
+											: `action-${index}`;
+									return (
+										<React.Fragment key={key}>{actionItem}</React.Fragment>
+									);
+								})}
+							</Container>
+						)}
+					</Container>
+				</Container>
+			)}
 
-      {loading ? (
-        <Container
-          direction="vertical"
-          gap="md"
-          width="full"
-          className="justify-center py-12"
-        >
-          <Spinner size="lg" variant="primary" />
-          {loadingMessage && (
-            <p className="text-sm text-zinc-400">{loadingMessage}</p>
-          )}
-        </Container>
-      ) : (
-        children
-      )}
-    </Container>
-  );
+			{loading ? (
+				<Container
+					direction="vertical"
+					gap="md"
+					width="full"
+					className="justify-center py-12"
+				>
+					<Spinner size="lg" variant="primary" />
+					{loadingMessage && (
+						<p className="text-sm text-zinc-400">{loadingMessage}</p>
+					)}
+				</Container>
+			) : (
+				children
+			)}
+		</Container>
+	);
 }
 
 // Named export for compatibility with both import styles
