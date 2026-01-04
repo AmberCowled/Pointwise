@@ -3,13 +3,13 @@
 import { NotificationProvider } from "../ui/NotificationProvider";
 
 export function NotificationProviderWrapper({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <NotificationProvider position="top-right" maxNotifications={5}>
-      {children}
-    </NotificationProvider>
-  );
+	return (
+		<NotificationProvider position="top-right" maxNotifications={5}>
+			{children}
+		</NotificationProvider>
+	);
 }

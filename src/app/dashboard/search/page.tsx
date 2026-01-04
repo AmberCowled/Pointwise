@@ -7,19 +7,19 @@ import { Suspense } from "react";
 import SearchOverview from "./SearchOverview";
 
 function SearchContent() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get("query") || "";
+	const searchParams = useSearchParams();
+	const query = searchParams.get("query") || "";
 
-  return <SearchOverview query={query} />;
+	return <SearchOverview query={query} />;
 }
 
 export default function SearchPage() {
-  return (
-    <Page>
-      <Navbar />
-      <Suspense>
-        <SearchContent />
-      </Suspense>
-    </Page>
-  );
+	return (
+		<Page>
+			<Navbar />
+			<Suspense>
+				<SearchContent />
+			</Suspense>
+		</Page>
+	);
 }

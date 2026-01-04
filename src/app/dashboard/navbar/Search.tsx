@@ -6,11 +6,11 @@ import Input from "@pointwise/app/components/ui/Input";
  * Props for the Search component
  */
 export interface SearchProps {
-  /**
-   * Callback fired when search is submitted (Enter key or search button click)
-   * @param query - The current search query text
-   */
-  onSearch?: (query: string) => void;
+	/**
+	 * Callback fired when search is submitted (Enter key or search button click)
+	 * @param query - The current search query text
+	 */
+	onSearch?: (query: string) => void;
 }
 
 /**
@@ -33,13 +33,13 @@ export interface SearchProps {
  * @returns {JSX.Element} The rendered Search component.
  */
 export default function Search({ onSearch }: SearchProps) {
-  return (
-    <Input
-      size="sm"
-      placeholder="Search..."
-      flex="grow"
-      showSearchButton
-      onSearch={(value: string) => onSearch?.(value)}
-    />
-  );
+	return (
+		<Input
+			size="sm"
+			placeholder="Search..."
+			flex="grow"
+			showSearchButton
+			onSearch={(value: string) => onSearch?.(value)}
+		/>
+	);
 }

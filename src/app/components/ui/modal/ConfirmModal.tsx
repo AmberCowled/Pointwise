@@ -9,50 +9,50 @@ import { ModalRenderQueue } from "./modalRenderQueue";
  * Options for ConfirmModal
  */
 export interface ConfirmModalOptions {
-  /**
-   * Title of the confirm dialog
-   */
-  title?: string;
-  /**
-   * Message/content of the confirm dialog
-   */
-  message: string;
-  /**
-   * Text for the confirm button
-   * @default 'Confirm'
-   */
-  confirmText?: string;
-  /**
-   * Text for the cancel button
-   * @default 'Cancel'
-   */
-  cancelText?: string;
-  /**
-   * Variant for the confirm button
-   * @default 'primary'
-   */
-  confirmVariant?: "primary" | "secondary" | "danger";
-  /**
-   * Variant for the cancel button
-   * @default 'secondary'
-   */
-  cancelVariant?: "primary" | "secondary" | "danger";
-  /**
-   * Size of the modal
-   * @default 'md'
-   */
-  size?: "sm" | "md" | "lg" | "xl";
+	/**
+	 * Title of the confirm dialog
+	 */
+	title?: string;
+	/**
+	 * Message/content of the confirm dialog
+	 */
+	message: string;
+	/**
+	 * Text for the confirm button
+	 * @default 'Confirm'
+	 */
+	confirmText?: string;
+	/**
+	 * Text for the cancel button
+	 * @default 'Cancel'
+	 */
+	cancelText?: string;
+	/**
+	 * Variant for the confirm button
+	 * @default 'primary'
+	 */
+	confirmVariant?: "primary" | "secondary" | "danger";
+	/**
+	 * Variant for the cancel button
+	 * @default 'secondary'
+	 */
+	cancelVariant?: "primary" | "secondary" | "danger";
+	/**
+	 * Size of the modal
+	 * @default 'md'
+	 */
+	size?: "sm" | "md" | "lg" | "xl";
 }
 
 /**
  * Registry for tracking pending confirm modals
  */
 const confirmRegistry = new Map<
-  string,
-  {
-    resolve: (value: boolean) => void;
-    reject: (reason?: unknown) => void;
-  }
+	string,
+	{
+		resolve: (value: boolean) => void;
+		reject: (reason?: unknown) => void;
+	}
 >();
 
 let confirmCounter = 0;
@@ -62,60 +62,60 @@ let confirmCounter = 0;
  * @internal - Used by Modal.Confirm static method
  */
 export function ConfirmModalComponent({
-  id,
-  options,
+	id,
+	options,
 }: {
-  id: string;
-  options: ConfirmModalOptions;
+	id: string;
+	options: ConfirmModalOptions;
 }) {
-  const handleConfirm = () => {
-    const entry = confirmRegistry.get(id);
-    if (entry) {
-      entry.resolve(true);
-      confirmRegistry.delete(id);
-    }
-    Modal.Manager.close(id);
-    // Remove from render queue after a short delay to allow transition
-    setTimeout(() => {
-      ModalRenderQueue.remove(id);
-    }, 300);
-  };
+	const handleConfirm = () => {
+		const entry = confirmRegistry.get(id);
+		if (entry) {
+			entry.resolve(true);
+			confirmRegistry.delete(id);
+		}
+		Modal.Manager.close(id);
+		// Remove from render queue after a short delay to allow transition
+		setTimeout(() => {
+			ModalRenderQueue.remove(id);
+		}, 300);
+	};
 
-  const handleCancel = () => {
-    const entry = confirmRegistry.get(id);
-    if (entry) {
-      entry.resolve(false);
-      confirmRegistry.delete(id);
-    }
-    Modal.Manager.close(id);
-    // Remove from render queue after a short delay to allow transition
-    setTimeout(() => {
-      ModalRenderQueue.remove(id);
-    }, 300);
-  };
+	const handleCancel = () => {
+		const entry = confirmRegistry.get(id);
+		if (entry) {
+			entry.resolve(false);
+			confirmRegistry.delete(id);
+		}
+		Modal.Manager.close(id);
+		// Remove from render queue after a short delay to allow transition
+		setTimeout(() => {
+			ModalRenderQueue.remove(id);
+		}, 300);
+	};
 
-  return (
-    <Modal id={id} size={options.size || "md"}>
-      <Modal.Header title={options.title || "Confirm"} showCloseButton />
-      <Modal.Body>
-        <p className="text-zinc-300">{options.message}</p>
-      </Modal.Body>
-      <Modal.Footer align="end">
-        <Button
-          variant={options.cancelVariant || "secondary"}
-          onClick={handleCancel}
-        >
-          {options.cancelText || "Cancel"}
-        </Button>
-        <Button
-          variant={options.confirmVariant || "primary"}
-          onClick={handleConfirm}
-        >
-          {options.confirmText || "Confirm"}
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  );
+	return (
+		<Modal id={id} size={options.size || "md"}>
+			<Modal.Header title={options.title || "Confirm"} showCloseButton />
+			<Modal.Body>
+				<p className="text-zinc-300">{options.message}</p>
+			</Modal.Body>
+			<Modal.Footer align="end">
+				<Button
+					variant={options.cancelVariant || "secondary"}
+					onClick={handleCancel}
+				>
+					{options.cancelText || "Cancel"}
+				</Button>
+				<Button
+					variant={options.confirmVariant || "primary"}
+					onClick={handleConfirm}
+				>
+					{options.confirmText || "Confirm"}
+				</Button>
+			</Modal.Footer>
+		</Modal>
+	);
 }
 
 /**
@@ -141,27 +141,27 @@ export function ConfirmModalComponent({
  * ```
  */
 export async function ConfirmModal(
-  options: ConfirmModalOptions,
+	options: ConfirmModalOptions,
 ): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    const id = `confirm-modal-${confirmCounter++}`;
+	return new Promise((resolve, reject) => {
+		const id = `confirm-modal-${confirmCounter++}`;
 
-    // Store promise resolvers
-    confirmRegistry.set(id, { resolve, reject });
+		// Store promise resolvers
+		confirmRegistry.set(id, { resolve, reject });
 
-    // Add to render queue
-    ModalRenderQueue.add({
-      id,
-      component: ConfirmModalComponent as ComponentType<{
-        id: string;
-        [key: string]: unknown;
-      }>,
-      props: { options },
-    });
+		// Add to render queue
+		ModalRenderQueue.add({
+			id,
+			component: ConfirmModalComponent as ComponentType<{
+				id: string;
+				[key: string]: unknown;
+			}>,
+			props: { options },
+		});
 
-    // Open the modal via manager
-    setTimeout(() => {
-      Modal.Manager.open(id);
-    }, 0);
-  });
+		// Open the modal via manager
+		setTimeout(() => {
+			Modal.Manager.open(id);
+		}, 0);
+	});
 }

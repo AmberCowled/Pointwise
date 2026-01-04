@@ -1,4 +1,52 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
-	"extends": ["@canonical/biome-config"]
+	"$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+	"extends": ["@canonical/biome-config"],
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": [
+		  "**/*",
+		  "!**/node_modules/**",
+		  "!**/*.css",
+		  "!**/.next/**",
+		  "!**/.pnp/**",
+		  "!**/.vercel/**",
+		  "!**/build/**",
+		  "!**/out/**",
+		  "!**/dist/**",
+		  "!**/generated/**",
+		  "!**/coverage/**",
+		  "!**/logs/**",
+		  "!**/temp/**",
+		  "!**/tmp/**",
+		  "!**/cache/**"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
 }

@@ -1,11 +1,11 @@
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint",
     "biomejs.biome",
     "bradlc.vscode-tailwindcss",
-    "ms-vscode.vscode-typescript-next",
     "prisma.prisma",
-    "usernamehw.errorlens"
+    "usernamehw.errorlens",
+    "typescriptteam.native-preview",
+    "yoavbls.pretty-ts-errors"
   ],
   "unwantedRecommendations": [
     "esbenp.prettier-vscode"

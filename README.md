@@ -66,7 +66,6 @@
 ### Development Tools
 
 - **Biome** - Fast linter and formatter
-- **Vitest** - Fast unit testing
 - **TypeScript** - Static type checking
 
 ## 📁 Project Structure
@@ -172,7 +171,6 @@ pointwise/
 - `pnpm format` - Format code with Biome
 - `pnpm check` - Run Biome check (lint + format)
 - `pnpm check:fix` - Run Biome check and fix issues
-- `pnpm test` - Run tests with Vitest
 
 ## 🎨 UI Component Library
 
@@ -216,14 +214,6 @@ Visit `/showcase/[component]` routes to see all components in action.
 ## 📚 Documentation
 
 - [Task Validation Rules](./docs/validation.md) - API validation constraints and rules
-
-## 🧪 Testing
-
-Run the test suite:
-
-```bash
-pnpm test
-```
 
 ## 🚢 Deployment
 
