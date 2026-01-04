@@ -14,10 +14,11 @@ import type * as z from "zod";
  */
 export interface RouteHandlerOptions {
 	/**
-	 * Custom error handler function
-	 * If provided, this will be called before the default error handling
+	 * Middleware-style error handlers
+	 * Processed in sequence until one returns a response
+	 * If all handlers return null, default error handling is used
 	 */
-	onError?: (error: unknown) => NextResponse | null;
+	errorHandlers?: Array<(error: unknown) => NextResponse | null>;
 }
 
 /**
@@ -36,12 +37,42 @@ export interface RouteHandlerOptions {
  * // With validation
  * export async function POST(req: Request) {
  *   return handleRoute(req, async ({ body }) => {
- *     // body is typed and validated
+ *     // body is typed and validated (required, not optional)
  *     return jsonResponse({ result: body });
  *   }, CreateItemSchema);
  * }
  * ```
  */
+
+// Overload 1: No schema - body and query are optional
+export async function handleRoute<TResponse = unknown>(
+	req: Request,
+	handler: (
+		context: RouteContext<undefined, undefined>,
+	) => Promise<NextResponse<TResponse>>,
+): Promise<NextResponse>;
+
+// Overload 2: Body schema provided - body is required
+export async function handleRoute<TBody, TResponse = unknown>(
+	req: Request,
+	handler: (
+		context: RouteContext<TBody, undefined>,
+	) => Promise<NextResponse<TResponse>>,
+	schema: z.ZodSchema<TBody>,
+	options?: RouteHandlerOptions,
+): Promise<NextResponse>;
+
+// Overload 3: Query schema provided - query is required
+export async function handleRoute<TQuery, TResponse = unknown>(
+	req: Request,
+	handler: (
+		context: RouteContext<undefined, TQuery>,
+	) => Promise<NextResponse<TResponse>>,
+	schema: z.ZodSchema<TQuery>,
+	options?: RouteHandlerOptions,
+): Promise<NextResponse>;
+
+// Implementation
 export async function handleRoute<
 	TBody = unknown,
 	TQuery = unknown,
@@ -59,17 +90,21 @@ export async function handleRoute<
 		const { body, query } = await parseAndValidateRequest(req, schema);
 
 		// Call handler with context
+		// When schema is provided, body or query is guaranteed to be present
+		// The overloads ensure type safety at the call site
 		return await handler({
-			body: body as TBody,
-			query: query as TQuery,
+			body: body as TBody extends undefined ? undefined : TBody,
+			query: query as TQuery extends undefined ? undefined : TQuery,
 			req,
-		});
+		} as RouteContext<TBody, TQuery>);
 	} catch (error) {
-		// Allow custom error handler to override
-		if (options.onError) {
-			const customResponse = options.onError(error);
-			if (customResponse) {
-				return customResponse;
+		// Process error handlers in sequence (middleware-style)
+		if (options.errorHandlers) {
+			for (const errorHandler of options.errorHandlers) {
+				const response = errorHandler(error);
+				if (response) {
+					return response;
+				}
 			}
 		}
 
@@ -195,35 +230,33 @@ export function errorResponse(
 const QUERY_METHODS = ["GET", "DELETE", "HEAD", "OPTIONS"] as const;
 
 /**
- * HTTP methods that use request body
- */
-const BODY_METHODS = ["POST", "PATCH", "PUT"] as const;
-
-/**
  * Parse and validate request data based on HTTP method
+ * When schema is provided, the corresponding body or query is guaranteed to be returned
  */
 async function parseAndValidateRequest<T>(
 	req: Request,
 	schema?: z.ZodSchema<T>,
 ): Promise<{ body?: T; query?: T }> {
-	const method = req.method.toUpperCase();
+	const method = req.method.toUpperCase() as Uppercase<string>;
 
 	// Determine if we should parse query or body
-	const isQueryMethod = QUERY_METHODS.includes(method as any);
+	const isQueryMethod = QUERY_METHODS.includes(
+		method as (typeof QUERY_METHODS)[number],
+	);
 
 	if (isQueryMethod) {
 		// Parse query parameters
 		if (!schema) {
-			return { query: {} as T };
+			return { query: undefined };
 		}
 
 		const url = new URL(req.url);
-		const params: Record<string, any> = {};
+		const params: Record<string, string | number> = {};
 
 		url.searchParams.forEach((value, key) => {
 			// Attempt to parse numbers
 			const numValue = Number(value);
-			params[key] = isNaN(numValue) ? value : numValue;
+			params[key] = Number.isNaN(numValue) ? value : numValue;
 		});
 
 		const result = schema.safeParse(params);
@@ -231,17 +264,18 @@ async function parseAndValidateRequest<T>(
 			throw new ValidationError(result.error);
 		}
 
+		// When schema is provided, query is guaranteed to be present
 		return { query: result.data };
 	} else {
 		// Parse request body
 		if (!schema) {
-			return { body: {} as T };
+			return { body: undefined };
 		}
 
 		let body: unknown;
 		try {
 			body = await req.json();
-		} catch (error) {
+		} catch (_error) {
 			throw new ValidationError("Invalid JSON in request body");
 		}
 
@@ -250,6 +284,7 @@ async function parseAndValidateRequest<T>(
 			throw new ValidationError(result.error);
 		}
 
+		// When schema is provided, body is guaranteed to be present
 		return { body: result.data };
 	}
 }
@@ -273,10 +308,17 @@ class ValidationError extends Error {
 
 /**
  * Base context passed to route handlers
+ * When TBody or TQuery is not undefined, the corresponding property is required (non-nullable)
+ * When undefined, the property is also undefined (but still present)
+ * Using a helper type to ensure required properties are never undefined
  */
+type RequiredIfDefined<T> = T extends undefined
+	? undefined
+	: Exclude<T, undefined>;
+
 export interface RouteContext<TBody = unknown, TQuery = unknown> {
-	body?: TBody;
-	query?: TQuery;
+	body: RequiredIfDefined<TBody>;
+	query: RequiredIfDefined<TQuery>;
 	req: Request;
 }
 
@@ -316,13 +358,43 @@ export interface AuthContext<TBody = unknown, TQuery = unknown>
  * // With validation
  * export async function PATCH(req: Request) {
  *   return handleProtectedRoute(req, async ({ user, body }) => {
- *     // body is typed and validated
+ *     // body is typed and validated (required, not optional)
  *     const xp = await updateXP(user.id, body.delta);
  *     return jsonResponse({ xp });
  *   }, UpdateXPRequestSchema);
  * }
  * ```
  */
+
+// Overload 1: No schema - body and query are optional
+export async function handleProtectedRoute<TResponse = unknown>(
+	req: Request,
+	handler: (
+		context: AuthContext<undefined, undefined>,
+	) => Promise<NextResponse<TResponse>>,
+): Promise<NextResponse>;
+
+// Overload 2: Body schema provided - body is required
+export async function handleProtectedRoute<TBody, TResponse = unknown>(
+	req: Request,
+	handler: (
+		context: AuthContext<TBody, undefined>,
+	) => Promise<NextResponse<TResponse>>,
+	schema: z.ZodSchema<TBody>,
+	options?: RouteHandlerOptions,
+): Promise<NextResponse>;
+
+// Overload 3: Query schema provided - query is required
+export async function handleProtectedRoute<TQuery, TResponse = unknown>(
+	req: Request,
+	handler: (
+		context: AuthContext<undefined, TQuery>,
+	) => Promise<NextResponse<TResponse>>,
+	schema: z.ZodSchema<TQuery>,
+	options?: RouteHandlerOptions,
+): Promise<NextResponse>;
+
+// Implementation
 export async function handleProtectedRoute<
 	TBody = unknown,
 	TQuery = unknown,
@@ -333,16 +405,36 @@ export async function handleProtectedRoute<
 		context: AuthContext<TBody, TQuery>,
 	) => Promise<NextResponse<TResponse>>,
 	schema?: z.ZodSchema<TBody | TQuery>,
+	options: RouteHandlerOptions = {},
 ): Promise<NextResponse> {
-	return handleRoute(
+	// Call handleRoute implementation with proper typing
+	// We need to use the implementation signature which accepts optional schema
+	const handleRouteImpl = handleRoute as <
+		TBodyImpl = unknown,
+		TQueryImpl = unknown,
+		TResponseImpl = unknown,
+	>(
+		req: Request,
+		handler: (
+			context: RouteContext<TBodyImpl, TQueryImpl>,
+		) => Promise<NextResponse<TResponseImpl>>,
+		schema?: z.ZodSchema<TBodyImpl | TQueryImpl>,
+		options?: RouteHandlerOptions,
+	) => Promise<NextResponse>;
+
+	return handleRouteImpl<TBody, TQuery, TResponse>(
 		req,
-		async ({ body, query, req: request }) => {
+		async ({
+			body,
+			query,
+			req: request,
+		}: RouteContext<TBody, TQuery>): Promise<NextResponse<TResponse>> => {
 			// 1. Get session
 			const session = await getServerSession(authOptions);
 			const email = session?.user?.email;
 
 			if (!email) {
-				return errorResponse("Unauthorized", 401);
+				return errorResponse("Unauthorized", 401) as NextResponse<TResponse>;
 			}
 
 			// 2. Get user from database
@@ -356,7 +448,7 @@ export async function handleProtectedRoute<
 			});
 
 			if (!user || !user.email) {
-				return errorResponse("User not found", 404);
+				return errorResponse("User not found", 404) as NextResponse<TResponse>;
 			}
 
 			// 3. Call handler with authenticated user context and validated data
@@ -367,11 +459,12 @@ export async function handleProtectedRoute<
 					email: user.email,
 					name: user.name,
 				},
-				body: body as TBody,
-				query: query as TQuery,
+				body: body as RequiredIfDefined<TBody>,
+				query: query as RequiredIfDefined<TQuery>,
 				req: request,
-			});
+			} as AuthContext<TBody, TQuery>);
 		},
 		schema,
+		options,
 	);
 }

@@ -1,51 +1,53 @@
 {
-	"compilerOptions": {
-		"target": "ES2017",
-		"lib": [
-			"dom",
-			"dom.iterable",
-			"esnext"
-		],
-		"allowJs": true,
-		"skipLibCheck": true,
-		"strict": true,
-		"noEmit": true,
-		"esModuleInterop": true,
-		"module": "esnext",
-		"moduleResolution": "bundler",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"jsx": "react-jsx",
-		"incremental": true,
-		"plugins": [
-			{
-				"name": "next"
-			}
-		],
-		"paths": {
-			"@pointwise/*": [
-				"./src/*"
-			]
-		},
-		// Intellisense improvements
-		"declaration": false,
-		"declarationMap": false,
-		"sourceMap": false,
-		"composite": false,
-		"forceConsistentCasingInFileNames": true
-	},
-	"include": [
-		"next-env.d.ts",
-		"**/*.ts",
-		"**/*.tsx",
-		"**/*.d.ts",
-		"**/*.mts"
-	],
-	"exclude": [
-		"node_modules",
-		"dist",
-		"build",
-		"generated",
-		".next"
-	]
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@pointwise/*": [
+        "./src/*"
+      ]
+    },
+    // Intellisense improvements
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "composite": false,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    "**/*.mts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "generated",
+    ".next"
+  ]
 }

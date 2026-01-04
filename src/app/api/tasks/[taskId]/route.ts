@@ -22,7 +22,7 @@ export async function PATCH(
 				return errorResponse("Task ID required", 400);
 			}
 
-			const prismaTask = await updateTask(taskId, body!, user.id);
+			const prismaTask = await updateTask(taskId, body, user.id);
 			const task = serializeTask(prismaTask);
 			return jsonResponse({ task });
 		},

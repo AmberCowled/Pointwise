@@ -30,7 +30,7 @@ export async function PATCH(
 		req,
 		async ({ user, body }) => {
 			const { id } = await params;
-			const prismaProject = await updateProject(id, body!, user.id);
+			const prismaProject = await updateProject(id, body, user.id);
 			const project = serializeProject(prismaProject, user.id);
 			return jsonResponse({ project });
 		},

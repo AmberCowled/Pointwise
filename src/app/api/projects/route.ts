@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 	return handleProtectedRoute(
 		req,
 		async ({ user, body }) => {
-			const prismaProject = await createProject(body!, user.id);
+			const prismaProject = await createProject(body, user.id);
 			const project = serializeProject(prismaProject, user.id);
 			return jsonResponse({ project });
 		},
