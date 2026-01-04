@@ -60,8 +60,7 @@ export function SkeletonCard({
 }: SkeletonCardProps) {
 	return (
 		<div
-			role="status"
-			aria-label="Loading card"
+			aria-hidden="true"
 			className={clsx(
 				"rounded-2xl border border-white/10 bg-white/5 p-4 space-y-4",
 				className,

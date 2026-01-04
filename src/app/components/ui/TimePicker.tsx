@@ -8,14 +8,7 @@ import {
 } from "@headlessui/react";
 import clsx from "clsx";
 import type React from "react";
-import {
-	Fragment,
-	useEffect,
-	useId,
-	useLayoutEffect,
-	useRef,
-	useState,
-} from "react";
+import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { IoClose, IoTime } from "react-icons/io5";
 
 import { Button } from "./Button";

@@ -101,6 +101,22 @@ export const DeleteProjectResponseSchema = z.object({
 	success: z.boolean(),
 });
 
+export const RequestToJoinProjectRequestSchema = z.object({
+	projectId: PROJECT_ID_SCHEMA,
+});
+
+export const RequestToJoinProjectResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
+export const CancelRequestToJoinProjectRequestSchema = z.object({
+	projectId: PROJECT_ID_SCHEMA,
+});
+
+export const CancelRequestToJoinProjectResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
 export type Project = z.infer<typeof ProjectSchema>;
 export type Projects = z.infer<typeof ProjectsSchema>;
 export type ProjectRole = z.infer<typeof PROJECT_ROLE_SCHEMA>;
@@ -117,3 +133,15 @@ export type SearchPublicProjectsResponse = z.infer<
 export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
 export type UpdateProjectResponse = z.infer<typeof UpdateProjectResponseSchema>;
 export type DeleteProjectResponse = z.infer<typeof DeleteProjectResponseSchema>;
+export type RequestToJoinProjectRequest = z.infer<
+	typeof RequestToJoinProjectRequestSchema
+>;
+export type RequestToJoinProjectResponse = z.infer<
+	typeof RequestToJoinProjectResponseSchema
+>;
+export type CancelRequestToJoinProjectRequest = z.infer<
+	typeof CancelRequestToJoinProjectRequestSchema
+>;
+export type CancelRequestToJoinProjectResponse = z.infer<
+	typeof CancelRequestToJoinProjectResponseSchema
+>;

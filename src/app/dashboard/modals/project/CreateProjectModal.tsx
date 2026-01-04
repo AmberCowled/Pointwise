@@ -11,6 +11,7 @@ import VisibilitySelector from "./VisibilitySelector";
 
 export default function CreateProjectModal() {
 	const defaultVisibility = "PRIVATE";
+	const CREATE_PROJECT_MODAL_ID = "create-project-modal";
 
 	const [name, setName] = useState<string>("");
 	const [description, setDescription] = useState<string>("");
@@ -41,7 +42,7 @@ export default function CreateProjectModal() {
 
 	return (
 		<Modal
-			id="create-project-modal"
+			id={CREATE_PROJECT_MODAL_ID}
 			size="xl"
 			loading={isLoading}
 			onAfterClose={handleReset}

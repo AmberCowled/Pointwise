@@ -346,3 +346,90 @@ export async function deleteProject(
 	});
 	return true;
 }
+
+export async function requestToJoin(
+	projectId: string,
+	userId: string,
+): Promise<PrismaProject & { _count: { tasks: number } }> {
+	const prismaProject = await prisma.project.findUniqueOrThrow({
+		where: {
+			id: projectId,
+		},
+		include: {
+			_count: {
+				select: {
+					tasks: true,
+				},
+			},
+		},
+	});
+
+	if (getUserRoleInProject(prismaProject, userId) !== "NONE") {
+		throw new ApiError("You are already a member of this project", 400);
+	}
+
+	if (prismaProject.joinRequestUserIds.includes(userId)) {
+		throw new ApiError("You already have a pending join request", 400);
+	}
+
+	const updatedProject = (await prisma.project.update({
+		where: {
+			id: projectId,
+		},
+		data: {
+			joinRequestUserIds: {
+				push: userId,
+			},
+		},
+		include: {
+			_count: {
+				select: {
+					tasks: true,
+				},
+			},
+		},
+	})) as PrismaProject & { _count: { tasks: number } };
+
+	return updatedProject;
+}
+
+export async function cancelRequestToJoin(
+	projectId: string,
+	userId: string,
+): Promise<PrismaProject & { _count: { tasks: number } }> {
+	const prismaProject = await prisma.project.findUniqueOrThrow({
+		where: {
+			id: projectId,
+		},
+		include: {
+			_count: {
+				select: {
+					tasks: true,
+				},
+			},
+		},
+	});
+
+	if (!prismaProject.joinRequestUserIds.includes(userId)) {
+		throw new ApiError("You do not have a pending join request", 400);
+	}
+
+	const updatedProject = (await prisma.project.update({
+		where: {
+			id: projectId,
+		},
+		data: {
+			joinRequestUserIds: {
+				set: prismaProject.joinRequestUserIds.filter((id) => id !== userId),
+			},
+		},
+		include: {
+			_count: {
+				select: {
+					tasks: true,
+				},
+			},
+		},
+	})) as PrismaProject & { _count: { tasks: number } };
+	return updatedProject;
+}

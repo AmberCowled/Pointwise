@@ -9,7 +9,9 @@ import {
 import { SearchPublicProjectsRequestSchema } from "@pointwise/lib/validation/projects-schema";
 import type { z } from "zod";
 
-type SearchPublicProjectsQuery = z.infer<typeof SearchPublicProjectsRequestSchema>;
+type SearchPublicProjectsQuery = z.infer<
+	typeof SearchPublicProjectsRequestSchema
+>;
 
 export async function GET(req: Request) {
 	return handleProtectedRoute(

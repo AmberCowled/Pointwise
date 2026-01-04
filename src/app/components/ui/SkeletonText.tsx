@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
+import { useMemo } from "react";
 import { Skeleton, type SkeletonVariant } from "./Skeleton";
 
 export interface SkeletonTextProps
@@ -59,45 +60,32 @@ export function SkeletonText({
 	style,
 	...props
 }: SkeletonTextProps) {
-	const spacingValue = typeof spacing === "number" ? `${spacing}px` : spacing;
-
-	const getWidth = (index: number): string | number => {
-		if (Array.isArray(width)) {
-			return width[index] ?? width[width.length - 1] ?? "full";
-		}
-		return width;
-	};
+	const skeletonLines = useMemo(() => {
+		return Array.from({ length: lines }).map((_, index) => ({
+			id: `skeleton-line-${index}`,
+			width,
+		}));
+	}, [lines, width]);
 
 	return (
 		<div
-			role="status"
-			aria-label="Loading text"
+			aria-hidden="true"
 			className={clsx("flex flex-col", className)}
 			style={{
-				gap: spacingValue,
+				gap: typeof spacing === "number" ? `${spacing}px` : spacing,
 				...style,
 			}}
 			{...props}
 		>
-			{Array.from({ length: lines }).map((_, index) => {
-				const lineWidth = getWidth(index);
-				const isLastLine = index === lines - 1;
-				// Last line is often shorter
-				const finalWidth =
-					isLastLine && !Array.isArray(width) && width === "full"
-						? "75%"
-						: lineWidth;
-
-				return (
-					<Skeleton
-						key={index}
-						width={finalWidth}
-						height={height}
-						variant={variant}
-						speed={speed}
-					/>
-				);
-			})}
+			{skeletonLines.map((line) => (
+				<Skeleton
+					key={line.id}
+					width={line.width as string | number}
+					height={height}
+					variant={variant}
+					speed={speed}
+				/>
+			))}
 		</div>
 	);
 }

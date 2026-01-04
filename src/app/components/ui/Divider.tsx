@@ -113,13 +113,12 @@ export function Divider({
 	// Vertical divider
 	return (
 		<div
+			aria-hidden="true"
 			className={clsx(
 				"relative flex items-center",
 				spacingStyles[spacing].vertical,
 				className,
 			)}
-			role="separator"
-			aria-orientation="vertical"
 			{...props}
 		>
 			{hasLabel ? (

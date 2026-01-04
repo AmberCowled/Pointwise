@@ -84,8 +84,7 @@ export function Spinner({
 	if (type === "circular") {
 		return (
 			<div
-				role="status"
-				aria-label={ariaLabel}
+				aria-hidden="true"
 				className={clsx("inline-block", className)}
 				{...props}
 			>
@@ -130,8 +129,7 @@ export function Spinner({
 
 		return (
 			<div
-				role="status"
-				aria-label={ariaLabel}
+				aria-hidden="true"
 				className={clsx("inline-flex items-center gap-1.5", className)}
 				{...props}
 			>
@@ -173,8 +171,7 @@ export function Spinner({
 
 		return (
 			<div
-				role="status"
-				aria-label={ariaLabel}
+				aria-hidden="true"
 				className={clsx("inline-flex items-end gap-1", className)}
 				{...props}
 			>

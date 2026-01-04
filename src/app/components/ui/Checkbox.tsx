@@ -166,6 +166,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
 							{/* Custom checkmark */}
 							<svg
+								aria-hidden="true"
 								className={clsx(
 									"absolute pointer-events-none text-white opacity-0 transition-opacity peer-checked:opacity-100",
 									checkmarkStyles[size],

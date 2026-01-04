@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react";
-
 function EyeIcon({ className }: { className?: string }) {
 	return (
 		<svg
+			aria-hidden="true"
 			className={className}
 			fill="none"
 			viewBox="0 0 24 24"
@@ -29,6 +28,7 @@ function EyeIcon({ className }: { className?: string }) {
 function EyeOffIcon({ className }: { className?: string }) {
 	return (
 		<svg
+			aria-hidden="true"
 			className={className}
 			fill="none"
 			viewBox="0 0 24 24"

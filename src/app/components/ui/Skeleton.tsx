@@ -62,8 +62,7 @@ export function Skeleton({
 
 	return (
 		<div
-			role="status"
-			aria-label="Loading"
+			aria-hidden="true"
 			className={clsx(
 				"animate-pulse",
 				variantStyles[variant],

@@ -1,9 +1,13 @@
 import type {
+	CancelRequestToJoinProjectRequest,
+	CancelRequestToJoinProjectResponse,
 	CreateProjectRequest,
 	CreateProjectResponse,
 	DeleteProjectResponse,
 	GetProjectResponse,
 	GetProjectsResponse,
+	RequestToJoinProjectRequest,
+	RequestToJoinProjectResponse,
 	SearchPublicProjectsRequest,
 	SearchPublicProjectsResponse,
 	UpdateProjectRequest,
@@ -62,6 +66,28 @@ export const projectApi = createApi({
 			}),
 			invalidatesTags: ["Projects"],
 		}),
+		requestToJoinProject: builder.mutation<
+			RequestToJoinProjectResponse,
+			RequestToJoinProjectRequest
+		>({
+			query: (body) => ({
+				url: `/projects/${body.projectId}/join-request`,
+				method: "POST",
+				body,
+			}),
+			invalidatesTags: ["Projects"],
+		}),
+		cancelRequestToJoinProject: builder.mutation<
+			CancelRequestToJoinProjectResponse,
+			CancelRequestToJoinProjectRequest
+		>({
+			query: (body) => ({
+				url: `/projects/${body.projectId}/join-request`,
+				method: "DELETE",
+				body,
+			}),
+			invalidatesTags: ["Projects"],
+		}),
 	}),
 });
 
@@ -72,4 +98,6 @@ export const {
 	useCreateProjectMutation,
 	useUpdateProjectMutation,
 	useDeleteProjectMutation,
+	useRequestToJoinProjectMutation,
+	useCancelRequestToJoinProjectMutation,
 } = projectApi;

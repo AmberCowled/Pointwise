@@ -7,6 +7,10 @@ import { useUserId } from "@pointwise/hooks/useUserId";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
 import { IoSettings } from "react-icons/io5";
+import {
+	useCancelRequestToJoinProjectMutation,
+	useRequestToJoinProjectMutation,
+} from "../../../lib/redux/services/projectsApi";
 import DeleteProjectModal from "../modals/project/DeleteProjectModal";
 
 export interface ProjectCardSettingsMenuProps {
@@ -18,15 +22,15 @@ export default function ProjectCardSettingsMenu({
 }: ProjectCardSettingsMenuProps) {
 	const userId = useUserId();
 	const router = useRouter();
+	const [requestToJoinProject] = useRequestToJoinProjectMutation();
+	const [cancelRequestToJoinProject] = useCancelRequestToJoinProjectMutation();
 
 	const handleCancelRequest = () => {
-		console.log("cancel request");
-		// TODO: Implement cancel request API call
+		cancelRequestToJoinProject({ projectId: project.id });
 	};
 
 	const handleRequestJoin = () => {
-		console.log("request join");
-		// TODO: Implement request join API call
+		requestToJoinProject({ projectId: project.id });
 	};
 
 	const handleViewProject = () => {
