@@ -7,7 +7,24 @@
 		"useIgnoreFile": false
 	},
 	"files": {
-		"ignoreUnknown": false
+		"ignoreUnknown": true,
+		"includes": [
+		  "**/*",
+		  "!**/node_modules/**",
+		  "!**/*.css",
+		  "!**/.next/**",
+		  "!**/.pnp/**",
+		  "!**/.vercel/**",
+		  "!**/build/**",
+		  "!**/out/**",
+		  "!**/dist/**",
+		  "!**/generated/**",
+		  "!**/coverage/**",
+		  "!**/logs/**",
+		  "!**/temp/**",
+		  "!**/tmp/**",
+		  "!**/cache/**"
+		]
 	},
 	"formatter": {
 		"enabled": true,
