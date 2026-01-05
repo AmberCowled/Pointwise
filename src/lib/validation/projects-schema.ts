@@ -117,6 +117,14 @@ export const CancelRequestToJoinProjectResponseSchema = z.object({
 	project: ProjectSchema,
 });
 
+export const LeaveProjectRequestSchema = z.object({
+	projectId: PROJECT_ID_SCHEMA,
+});
+
+export const LeaveProjectResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
 export type Project = z.infer<typeof ProjectSchema>;
 export type Projects = z.infer<typeof ProjectsSchema>;
 export type ProjectRole = z.infer<typeof PROJECT_ROLE_SCHEMA>;
@@ -145,3 +153,5 @@ export type CancelRequestToJoinProjectRequest = z.infer<
 export type CancelRequestToJoinProjectResponse = z.infer<
 	typeof CancelRequestToJoinProjectResponseSchema
 >;
+export type LeaveProjectRequest = z.infer<typeof LeaveProjectRequestSchema>;
+export type LeaveProjectResponse = z.infer<typeof LeaveProjectResponseSchema>;

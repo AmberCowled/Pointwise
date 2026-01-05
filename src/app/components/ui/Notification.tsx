@@ -76,7 +76,7 @@ export interface NotificationProps {
 }
 
 const baseStyle =
-	"relative flex items-start gap-3 rounded-2xl border shadow-lg backdrop-blur-sm transition-all duration-300 ease-out";
+	"relative flex items-center gap-3 rounded-2xl border shadow-lg backdrop-blur-sm transition-all duration-300 ease-out";
 
 const variantStyles: Record<NotificationVariant, string> = {
 	success:
@@ -178,32 +178,36 @@ export function Notification({
 			)}
 		>
 			{displayIcon && (
-				<div className={clsx("flex-shrink-0", iconSizeStyles[size], "mt-0.5")}>
+				<div
+					className={clsx("shrink-0 flex items-center", iconSizeStyles[size])}
+				>
 					{displayIcon}
 				</div>
 			)}
 
-			<div className="flex-1 min-w-0">
-				{title && (
-					<div className="font-semibold mb-1 text-current">{title}</div>
-				)}
-				<div className="text-current">{message}</div>
-				{action && (
-					<button
-						type="button"
-						onClick={action.onClick}
-						className="mt-2 text-xs font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2 focus:ring-offset-transparent rounded"
-					>
-						{action.label}
-					</button>
-				)}
+			<div className="flex-1 min-w-0 flex items-center">
+				<div>
+					{title && (
+						<div className="font-semibold mb-1 text-current">{title}</div>
+					)}
+					<div className="text-current">{message}</div>
+					{action && (
+						<button
+							type="button"
+							onClick={action.onClick}
+							className="mt-2 text-xs font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2 focus:ring-offset-transparent rounded"
+						>
+							{action.label}
+						</button>
+					)}
+				</div>
 			</div>
 
 			{dismissible && (
 				<button
 					type="button"
 					onClick={handleDismiss}
-					className="flex-shrink-0 rounded-lg p-1 text-current/60 hover:text-current hover:bg-current/10 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2 focus:ring-offset-transparent transition"
+					className="shrink-0 rounded-lg p-1 text-current/60 hover:text-current hover:bg-current/10 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2 focus:ring-offset-transparent transition flex items-center justify-center"
 					aria-label="Dismiss notification"
 				>
 					<IoClose className={iconSizeStyles[size]} />

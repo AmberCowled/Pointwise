@@ -8,7 +8,7 @@ export function NotificationProviderWrapper({
 	children: React.ReactNode;
 }) {
 	return (
-		<NotificationProvider position="top-right" maxNotifications={5}>
+		<NotificationProvider position="bottom-center" maxNotifications={5}>
 			{children}
 		</NotificationProvider>
 	);

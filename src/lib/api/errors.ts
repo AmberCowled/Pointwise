@@ -62,3 +62,25 @@ export class ServerError extends ApiError {
 		this.name = "ServerError";
 	}
 }
+
+/**
+ * Extracts error message from RTK Query errors or standard Error objects
+ */
+export const getErrorMessage = (error: unknown): string => {
+	if (error && typeof error === "object") {
+		// RTK Query FetchBaseQueryError structure: { data: { error: "message" } }
+		if (
+			"data" in error &&
+			error.data &&
+			typeof error.data === "object" &&
+			"error" in error.data
+		) {
+			return String(error.data.error);
+		}
+		// Standard Error object
+		if ("message" in error) {
+			return String(error.message);
+		}
+	}
+	return "An error occurred";
+};

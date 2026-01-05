@@ -6,6 +6,8 @@ import type {
 	DeleteProjectResponse,
 	GetProjectResponse,
 	GetProjectsResponse,
+	LeaveProjectRequest,
+	LeaveProjectResponse,
 	RequestToJoinProjectRequest,
 	RequestToJoinProjectResponse,
 	SearchPublicProjectsRequest,
@@ -88,6 +90,14 @@ export const projectApi = createApi({
 			}),
 			invalidatesTags: ["Projects"],
 		}),
+		leaveProject: builder.mutation<LeaveProjectResponse, LeaveProjectRequest>({
+			query: (body) => ({
+				url: `/projects/${body.projectId}/leave`,
+				method: "DELETE",
+				body,
+			}),
+			invalidatesTags: ["Projects"],
+		}),
 	}),
 });
 
@@ -100,4 +110,5 @@ export const {
 	useDeleteProjectMutation,
 	useRequestToJoinProjectMutation,
 	useCancelRequestToJoinProjectMutation,
+	useLeaveProjectMutation,
 } = projectApi;
