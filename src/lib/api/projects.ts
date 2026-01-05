@@ -433,3 +433,52 @@ export async function cancelRequestToJoin(
 	})) as PrismaProject & { _count: { tasks: number } };
 	return updatedProject;
 }
+
+export async function leaveProject(
+	projectId: string,
+	userId: string,
+): Promise<PrismaProject & { _count: { tasks: number } }> {
+	const prismaProject = await prisma.project.findUniqueOrThrow({
+		where: {
+			id: projectId,
+		},
+		include: {
+			_count: {
+				select: {
+					tasks: true,
+				},
+			},
+		},
+	});
+
+	const role = getUserRoleInProject(prismaProject, userId);
+	if (role === "NONE") {
+		throw new ApiError("You are not a member of this project", 403);
+	}
+
+	if (role === "ADMIN" && prismaProject.adminUserIds.length === 1) {
+		throw new ApiError(
+			"You are the only admin of this project and cannot leave",
+			400,
+		);
+	}
+
+	const updatedProject = await prisma.project.update({
+		where: {
+			id: projectId,
+		},
+		data: {
+			projectUserIds: {
+				set: prismaProject.projectUserIds.filter((id) => id !== userId),
+			},
+		},
+		include: {
+			_count: {
+				select: {
+					tasks: true,
+				},
+			},
+		},
+	});
+	return updatedProject as PrismaProject & { _count: { tasks: number } };
+}
