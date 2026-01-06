@@ -28,6 +28,9 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  
+  sentInvites     Invite[] @relation("Inviter")
+  receivedInvites Invite[] @relation("Invitee")
 
   xp Int @default(0)
 
@@ -111,6 +114,36 @@ enum ProjectVisibility {
   PUBLIC
 }
 
+enum ProjectRole {
+  ADMIN
+  USER
+  VIEWER
+}
+
+model Invite {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  
+  inviterId     String      @db.ObjectId
+  inviter       User        @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  
+  invitedUserId String      @db.ObjectId
+  invitedUser   User        @relation("Invitee", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  
+  projectId     String      @db.ObjectId
+  project       Project     @relation("ProjectInvites", fields: [projectId], references: [id], onDelete: Cascade)
+  
+  inviteRole    ProjectRole @default(VIEWER)
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([projectId, invitedUserId]) // Prevent duplicate invites
+  @@index([inviterId])
+  @@index([invitedUserId])
+  @@index([projectId])
+  @@index([inviteRole])
+}
+
 model Project {
   id          String            @id @default(auto()) @map("_id") @db.ObjectId
   name        String
@@ -121,12 +154,15 @@ model Project {
   adminUserIds       String[] @default([]) @db.ObjectId // Users with admin access
   projectUserIds     String[] @default([]) @db.ObjectId // Users with standard access
   viewerUserIds      String[] @default([]) @db.ObjectId // Users with read-only access
+  
+  // Join requests and invites
   joinRequestUserIds String[] @default([]) @db.ObjectId // Pending join requests for public projects
+  projectInvites     Invite[] @relation("ProjectInvites") // Invites to the project
 
-  tasks           Task[]
+  tasks              Task[] // Tasks in the project
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@index([name])
   @@index([description])
