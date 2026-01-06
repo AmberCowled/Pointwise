@@ -1,34 +1,36 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
+import { getProjectMemberCount } from "@pointwise/lib/api/projects";
+import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { IoClipboard, IoPeople } from "react-icons/io5";
 
 export interface ProjectCardStatsProps {
-	/**
-	 * Number of tasks in the project
-	 */
-	taskCount: number;
-	/**
-	 * Number of members in the project
-	 */
-	memberCount: number;
+	project: Project;
 }
 
-/**
- * ProjectCardStats - Displays task count and member count
- *
- * Shows statistics about the project including number of tasks and members.
- */
-export default function ProjectCardStats({
-	taskCount,
-	memberCount,
-}: ProjectCardStatsProps) {
+export default function ProjectCardStats({ project }: ProjectCardStatsProps) {
+	const memberCount = getProjectMemberCount(project);
+	const taskCount = project.taskCount ?? 0;
+
 	return (
-		<Container width="auto" className="text-sm text-zinc-400">
-			<IoClipboard className="w-4 h-4" aria-hidden="true" />
-			{taskCount} {taskCount === 1 ? "task" : "tasks"}
-			<IoPeople className="w-4 h-4" aria-hidden="true" />
-			{memberCount} {memberCount === 1 ? "member" : "members"}
-		</Container>
+		<>
+			<Container width="auto" gap="sm" className="pt-1 text-xs text-zinc-400">
+				<IoPeople className="size-4.5" />
+				<span>
+					{memberCount} {memberCount === 1 ? "Member" : "Members"}
+				</span>
+			</Container>
+			<Container
+				width="auto"
+				gap="sm"
+				className="px-2 pt-1 text-xs text-zinc-400"
+			>
+				<IoClipboard className="size-4.5" />
+				<span>
+					{taskCount} {taskCount === 1 ? "Task" : "Tasks"}
+				</span>
+			</Container>
+		</>
 	);
 }

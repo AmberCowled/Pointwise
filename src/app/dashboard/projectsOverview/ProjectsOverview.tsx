@@ -4,7 +4,6 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Card from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
-import Grid from "@pointwise/app/components/ui/Grid";
 import Modal from "@pointwise/app/components/ui/modal/index";
 import { useGetProjectsQuery } from "@pointwise/lib/redux/services/projectsApi";
 import CreateProjectModal from "../modals/project/CreateProjectModal";
@@ -56,11 +55,9 @@ export default function ProjectsOverview() {
 							className="mb-6"
 						/>
 						{hasProjects ? (
-							<Grid columns={{ default: 1, md: 2, lg: 3 }} gap="md">
-								{projects.projects.map((project) => (
-									<ProjectCard key={project.id} project={project} />
-								))}
-							</Grid>
+							projects.projects.map((project) => (
+								<ProjectCard key={project.id} project={project} />
+							))
 						) : isEmpty ? (
 							<NoProjectsView
 								onCreateClick={() => Modal.Manager.open("create-project-modal")}

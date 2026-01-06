@@ -34,7 +34,9 @@ export async function createProject(
 export async function getProject(
 	projectId: string,
 	userId: string,
-): Promise<PrismaProject & { _count: { tasks: number } }> {
+): Promise<
+	PrismaProject & { _count: { tasks: number; projectInvites?: number } }
+> {
 	const project = await prisma.project.findUniqueOrThrow({
 		where: {
 			id: projectId,
@@ -43,6 +45,7 @@ export async function getProject(
 			_count: {
 				select: {
 					tasks: true,
+					projectInvites: true,
 				},
 			},
 		},
@@ -56,7 +59,9 @@ export async function getProject(
 			...project.viewerUserIds,
 		].includes(userId)
 	) {
-		return project as PrismaProject & { _count: { tasks: number } };
+		return project as PrismaProject & {
+			_count: { tasks: number; projectInvites?: number };
+		};
 	}
 
 	throw new ApiError("Forbidden: You do not have access to this project", 403);
@@ -64,7 +69,9 @@ export async function getProject(
 
 export async function getProjects(
 	userId: string,
-): Promise<(PrismaProject & { _count: { tasks: number } })[]> {
+): Promise<
+	(PrismaProject & { _count: { tasks: number; projectInvites?: number } })[]
+> {
 	const projects = await prisma.project.findMany({
 		where: {
 			OR: [
@@ -77,6 +84,7 @@ export async function getProjects(
 			_count: {
 				select: {
 					tasks: true,
+					projectInvites: true,
 				},
 			},
 		},
@@ -131,6 +139,7 @@ export async function searchPublicProjects(
 				_count: {
 					select: {
 						tasks: true,
+						projectInvites: true,
 					},
 				},
 			},
@@ -222,7 +231,9 @@ export function getProjectMemberCount(
 }
 
 export function serializeProject(
-	project: PrismaProject & { _count?: { tasks: number } },
+	project: PrismaProject & {
+		_count?: { tasks: number; projectInvites?: number };
+	},
 	userId: string,
 ): Project {
 	return ProjectSchema.parse({
@@ -237,6 +248,7 @@ export function serializeProject(
 		createdAt: project.createdAt.toISOString(),
 		updatedAt: project.updatedAt.toISOString(),
 		taskCount: project._count?.tasks ?? 0,
+		inviteCount: project._count?.projectInvites ?? 0,
 		role: getUserRoleInProject(project, userId),
 	});
 }

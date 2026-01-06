@@ -31,6 +31,7 @@ const PROJECT_JOIN_REQUEST_USER_IDS_SCHEMA = z
 const PROJECT_CREATED_DATE_RESPONSE_SCHEMA = z.string();
 const PROJECT_UPDATED_DATE_RESPONSE_SCHEMA = z.string();
 const PROJECT_TASK_COUNT_SCHEMA = z.number().optional().default(0);
+const PROJECT_INVITE_COUNT_SCHEMA = z.number().optional().default(0);
 const PROJECT_ROLE_SCHEMA = z
 	.enum(["ADMIN", "USER", "VIEWER", "NONE"])
 	.optional()
@@ -48,6 +49,7 @@ export const ProjectSchema = z.object({
 	createdAt: PROJECT_CREATED_DATE_RESPONSE_SCHEMA,
 	updatedAt: PROJECT_UPDATED_DATE_RESPONSE_SCHEMA,
 	taskCount: PROJECT_TASK_COUNT_SCHEMA,
+	inviteCount: PROJECT_INVITE_COUNT_SCHEMA,
 	role: PROJECT_ROLE_SCHEMA,
 });
 
@@ -128,6 +130,7 @@ export const LeaveProjectResponseSchema = z.object({
 export type Project = z.infer<typeof ProjectSchema>;
 export type Projects = z.infer<typeof ProjectsSchema>;
 export type ProjectRole = z.infer<typeof PROJECT_ROLE_SCHEMA>;
+export type ProjectVisibility = z.infer<typeof PROJECT_VISIBILITY_SCHEMA>;
 export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchema>;
 export type CreateProjectResponse = z.infer<typeof CreateProjectResponseSchema>;
 export type GetProjectResponse = z.infer<typeof GetProjectResponseSchema>;

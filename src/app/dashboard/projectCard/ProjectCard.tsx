@@ -1,14 +1,16 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
-import { getProjectMemberCount } from "@pointwise/lib/api/projects";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
-import UpdateProjectModal from "../modals/project/UpdateProjectModal";
+import DeleteProjectModal from "../modals/project/DeleteProjectModal";
 import ProjectCardDescription from "./ProjectCardDescription";
-import ProjectCardHeader from "./ProjectCardHeader";
+import ProjectCardJoinRequestButton from "./ProjectCardJoinRequestButton";
+import ProjectCardMenu from "./ProjectCardMenu";
+import ProjectCardRole from "./ProjectCardRole";
 import ProjectCardStats from "./ProjectCardStats";
-import ProjectCardTags from "./ProjectCardTags";
+import ProjectCardTitle from "./ProjectCardTitle";
+import ProjectCardVisibility from "./ProjectCardVisibility";
 
 export interface ProjectCardProps {
 	project: Project;
@@ -16,26 +18,40 @@ export interface ProjectCardProps {
 
 export default function ProjectCard({ project }: ProjectCardProps) {
 	const router = useRouter();
-	const memberCount = getProjectMemberCount(project);
 
 	return (
 		<>
-			<UpdateProjectModal project={project} />
+			<DeleteProjectModal project={project} />
 			<Container
 				width="full"
 				direction="vertical"
-				className="group h-full outline outline-zinc-700 hover:outline-zinc-500 rounded-lg transition-all p-4 gap-3 cursor-pointer"
+				gap="none"
+				className="bg-black/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer px-4 py-2"
 				onClick={() => {
-					router.push(`/dashboard/${project.id}`);
+					if (project.visibility === "PUBLIC" || project.role !== "NONE") {
+						router.push(`/dashboard/${project.id}`);
+					}
 				}}
 			>
-				<ProjectCardHeader name={project.name} />
-				<ProjectCardDescription description={project.description} />
-				<ProjectCardStats
-					taskCount={project.taskCount}
-					memberCount={memberCount}
-				/>
-				<ProjectCardTags project={project} />
+				<Container width="full">
+					<Container width="full" gap="sm">
+						<ProjectCardTitle title={project.name} />
+						<ProjectCardVisibility visibility={project.visibility} />
+						<ProjectCardRole role={project.role} />
+					</Container>
+					<Container width="auto" className="justify-end">
+						<ProjectCardMenu project={project} />
+					</Container>
+				</Container>
+
+				<Container width="full" gap="none">
+					<ProjectCardStats project={project} />
+				</Container>
+
+				<Container width="full" gap="none">
+					<ProjectCardDescription project={project} />
+					<ProjectCardJoinRequestButton project={project} />
+				</Container>
 			</Container>
 		</>
 	);
