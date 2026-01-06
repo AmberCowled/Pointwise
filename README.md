@@ -16,16 +16,20 @@
 ### Project Management
 
 - **Create & Organize Projects** - Create projects with descriptions, visibility settings (Public/Private)
-- **Team Collaboration** - Invite team members with role-based access (Admin, User, Viewer)
-- **Project Sharing** - Public projects allow other users to request access
+- **Team Collaboration** - Role-based access control (Admin, User, Viewer) with granular permissions
+- **Project Invites** - Admins can invite users to projects with specific roles
+- **Join Requests** - Public projects allow users to request access
+- **Leave Projects** - Users can leave projects (with validation to prevent orphaned projects)
 - **Project Analytics** - Track task completion and team productivity per project
 
 ### Task Management
 
 - **Create & Organize Tasks** - Add tasks with descriptions, categories, and due dates
-- **Recurring Tasks** - Set up daily, weekly, or monthly recurring tasks
-- **Task Board View** - Visualize tasks by status (upcoming, today, overdue, completed)
-- **Task Analytics** - Track completion rates and productivity trends
+- **Task Status Tracking** - Track tasks as pending or completed
+- **Date & Time Management** - Set start dates, due dates, and optional times
+- **Task Filtering** - Filter tasks by project, status, and date ranges
+- **Recurring Tasks** - Automated daily recurring task generation via cron jobs
+- **Task XP Rewards** - Assign experience points to tasks upon completion
 
 ### Gamification
 
@@ -35,12 +39,13 @@
 
 ### User Experience
 
-- **Modern UI** - Beautiful dark theme with gradient accents
+- **Modern UI** - Beautiful dark theme with gradient accents and role-based color coding
 - **Responsive Design** - Works seamlessly on desktop and mobile
-- **Real-time Updates** - Instant feedback with toast notifications
-- **Social Authentication** - Sign in with Google or GitHub
-- **Custom UI Components** - Comprehensive component library with V2 component system
-- **Modal System** - Advanced modal system with self-managed state (ModalV2)
+- **Toast Notifications** - Instant feedback with success, error, and info notifications
+- **Authentication** - Sign in with email/password, Google, or GitHub OAuth
+- **Custom UI Components** - Comprehensive component library with reusable components
+- **Modal System** - Advanced modal system for project and task management
+- **Search Functionality** - Search for public projects
 
 ## 🛠️ Tech Stack
 
@@ -75,35 +80,58 @@ pointwise/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/                # API routes
-│   │   │   ├── auth/          # Authentication endpoints
+│   │   │   ├── auth/          # Authentication endpoints (NextAuth, signup)
 │   │   │   ├── projects/      # Project management endpoints
+│   │   │   │   ├── [id]/      # Single project operations (GET, PATCH, DELETE)
+│   │   │   │   │   └── join-request/ # Join request endpoints
+│   │   │   │   └── public/    # Public project search
 │   │   │   ├── tasks/         # Task management endpoints
-│   │   │   └── user/          # User endpoints (XP, preferences)
+│   │   │   │   └── [taskId]/  # Single task operations (PATCH, DELETE)
+│   │   │   └── user/          # User endpoints (XP management)
 │   │   ├── components/         # React components
 │   │   │   ├── auth/          # Authentication components
-│   │   │   ├── dashboard/     # Dashboard components (v1)
-│   │   │   ├── ui/            # Reusable UI components
-│   │   │   │   ├── modalV2/  # ModalV2 system
-│   │   │   │   ├── menuV2/   # MenuV2 system
-│   │   │   │   └── ...       # V2 components (InputV2, Selector, etc.)
-│   │   │   └── showcase/      # Component showcase pages
-│   │   ├── dashboard/         # Dashboard pages (v1)
-│   │   └── dashboardV2/       # Dashboard v2 (new architecture)
-│   │       ├── modals/        # Project modals (Create, Update, Delete)
-│   │       ├── navbarV2/      # Navigation bar components
-│   │       ├── projectCard/   # Project card components
-│   │       └── projectsOverview/ # Projects overview page
+│   │   │   ├── general/       # General components (BrandHeader, etc.)
+│   │   │   ├── providers/     # Context providers (Session, Notifications)
+│   │   │   └── ui/            # Reusable UI components
+│   │   │       ├── menu/      # Menu system
+│   │   │       ├── modal/     # Modal system
+│   │   │       └── ...        # Buttons, Cards, Inputs, etc.
+│   │   ├── dashboard/         # Dashboard pages and components
+│   │   │   ├── [id]/          # Individual project page
+│   │   │   ├── modals/        # Project and task modals
+│   │   │   ├── navbar/        # Navigation bar components
+│   │   │   ├── projectCard/   # Project card components (refactored)
+│   │   │   ├── projectsOverview/ # Projects overview page
+│   │   │   ├── search/        # Project search page
+│   │   │   ├── taskCard/      # Task card components
+│   │   │   └── tasksOverview/ # Tasks overview and filtering
+│   │   ├── layout.tsx         # Root layout
+│   │   ├── page.tsx           # Home/landing page
+│   │   └── globals.css        # Global styles
 │   ├── lib/                    # Utility libraries
 │   │   ├── api/               # API client and helpers
+│   │   │   ├── route-handler.ts # Route handler utilities
+│   │   │   ├── projects.ts    # Project API functions
+│   │   │   ├── tasks.ts       # Task API functions
+│   │   │   └── ...           # Other API helpers
 │   │   ├── redux/             # Redux store and services
+│   │   │   ├── services/      # RTK Query API services
+│   │   │   └── store.ts       # Redux store configuration
 │   │   ├── validation/        # Zod validation schemas
 │   │   ├── auth.ts            # Authentication config
-│   │   ├── datetime.ts        # Date/time utilities
-│   │   └── tasks.ts           # Task utilities
+│   │   ├── prisma.ts          # Prisma client instance
+│   │   └── categories.ts      # Task categories
 │   └── hooks/                  # Custom React hooks
+│       ├── useUserId.ts       # User ID hook with auth redirect
+│       ├── useSignin.ts       # Sign in hook
+│       └── useSignup.ts       # Sign up hook
 ├── prisma/
-│   └── schema.prisma          # Database schema
-└── docs/                      # Documentation
+│   └── schema.prisma          # Database schema (MongoDB)
+├── scripts/
+│   └── create-text-index.mjs  # MongoDB text index creation
+├── docs/                      # Documentation
+│   └── private/               # Private documentation
+└── public/                    # Static assets
 ```
 
 ## 🚦 Getting Started
@@ -171,49 +199,45 @@ pointwise/
 - `pnpm format` - Format code with Biome
 - `pnpm check` - Run Biome check (lint + format)
 - `pnpm check:fix` - Run Biome check and fix issues
+- `pnpm db:push` - Push Prisma schema changes to database
+- `pnpm db:create-text-index` - Create MongoDB text indexes for search
 
 ## 🎨 UI Component Library
 
-Pointwise includes a comprehensive UI component library with showcase pages:
-
-### V2 Component System
-
-- **ModalV2** - Advanced modal system with self-managed state, built-in modals (Confirm, Alert, Prompt)
-- **InputV2** - Uncontrolled input component with variants and sizes
-- **InputAreaV2** - Uncontrolled textarea component
-- **InputSelectV2** - Select dropdown component
-- **Selector** - Button-based selection grid with responsive columns
-- **MenuV2** - Menu system with sub-menus
+Pointwise includes a comprehensive UI component library:
 
 ### Core Components
 
-- **Buttons** - Multiple variants, sizes, and states
-- **Cards** - Flexible container components
-- **Grid & Container** - Layout components
+- **Buttons** - Multiple variants (primary, secondary, ghost, danger), sizes, and states (loading, disabled)
+- **Cards** - Flexible container components with title, label, and action support
+- **Container & Grid** - Layout components with responsive spacing
+- **Input Components** - Input, InputArea, InputSelect with validation support
+- **Modals** - Modal system for dialogs and forms
+- **Menus** - Dropdown menu system with sections, options, and icons
 - **Tabs** - Accessible tab navigation
-- **Notifications** - Toast notification system
-- **Spinners & Skeletons** - Loading states
+- **Notifications** - Toast notification system with variants (success, error, info)
+- **Spinners & Skeletons** - Loading states for better UX
 - **Progress Bars** - Visual progress indicators
-- **Tags** - Badge/tag components
+- **Tags** - Badge/tag components with variants
+- **Date & Time Pickers** - Date and time selection components
 - **And more...**
-
-Visit `/showcase/[component]` routes to see all components in action.
 
 ## 🏗️ Architecture Highlights
 
 - **Server Components** - Leveraging Next.js App Router for optimal performance
 - **Type Safety** - End-to-end TypeScript with Prisma-generated types and Zod validation
-- **Component Composition** - Reusable, composable UI components
-- **V2 Component Pattern** - Uncontrolled components with internal state management
-- **Redux Toolkit Query** - Efficient data fetching and caching
-- **Custom Hooks** - Encapsulated business logic
-- **API Routes** - RESTful endpoints with proper error handling
-- **Authentication** - Secure auth with NextAuth.js and session management
+- **Component Composition** - Reusable, composable UI components with clear separation of concerns
+- **Redux Toolkit Query** - Efficient data fetching, caching, and automatic cache invalidation
+- **Custom Hooks** - Encapsulated business logic (useUserId, useSignin, useSignup)
+- **API Routes** - RESTful endpoints with type-safe route handlers and error handling
+- **Authentication** - Secure auth with NextAuth.js supporting credentials, Google, and GitHub OAuth
 - **Project-Based Architecture** - Tasks organized within projects for better collaboration
+- **Role-Based Access Control** - Admin, User, and Viewer roles with granular permissions
+- **Invite System** - Project invites with role assignment and join request workflow
 
 ## 📚 Documentation
 
-- [Task Validation Rules](./docs/validation.md) - API validation constraints and rules
+- [WebSocket Implementation Plan](./docs/private/websocket-implementation-plan.md) - Planned real-time features architecture
 
 ## 🚢 Deployment
 
@@ -221,8 +245,13 @@ The project is configured for easy deployment on Vercel:
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables
+3. Add environment variables (DATABASE_URL, NEXTAUTH_SECRET, OAuth credentials)
 4. Deploy!
+
+### Vercel Configuration
+
+The project includes a `vercel.json` with cron job configuration for recurring task generation:
+- Daily cron job at midnight UTC for generating recurring tasks
 
 The live demo is hosted at: [https://pointwise-sepia.vercel.app/](https://pointwise-sepia.vercel.app/)
 
