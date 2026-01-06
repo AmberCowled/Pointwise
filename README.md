@@ -248,8 +248,6 @@ The project is configured for easy deployment on Vercel:
 3. Add environment variables (DATABASE_URL, NEXTAUTH_SECRET, OAuth credentials)
 4. Deploy!
 
-### Vercel Configuration
-
 The live demo is hosted at: [https://pointwise-sepia.vercel.app/](https://pointwise-sepia.vercel.app/)
 
 ## 📄 License
