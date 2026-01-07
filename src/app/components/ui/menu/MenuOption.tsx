@@ -49,7 +49,7 @@ export interface MenuOptionProps {
 }
 
 const baseItemStyle =
-	"flex items-center justify-start gap-3 rounded-xl px-3 py-2 text-sm font-medium text-left transition cursor-pointer";
+	"flex items-center justify-start gap-3 rounded-xl px-3 py-2 text-sm font-medium text-left transition cursor-pointer w-full";
 
 const variantStyles: Record<MenuOptionVariants, string> = {
 	primary: "text-zinc-100 hover:bg-white/10 focus:bg-white/10",

@@ -28,7 +28,6 @@
 - **Task Status Tracking** - Track tasks as pending or completed
 - **Date & Time Management** - Set start dates, due dates, and optional times
 - **Task Filtering** - Filter tasks by project, status, and date ranges
-- **Recurring Tasks** - Automated daily recurring task generation via cron jobs
 - **Task XP Rewards** - Assign experience points to tasks upon completion
 
 ### Gamification
