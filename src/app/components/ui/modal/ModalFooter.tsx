@@ -40,19 +40,21 @@ const gapStyles: Record<NonNullable<ModalFooterProps["size"]>, string> = {
 /**
  * ModalFooter component for modal actions
  *
- * Automatically detects cancel buttons by checking if the button text contains "cancel"
- * (case-insensitive). If a cancel button doesn't have an onClick handler, it will
- * automatically close the modal when clicked. This provides smart close handling.
+ * Automatically detects cancel/close buttons by checking if the button text contains
+ * "cancel" or "close" (case-insensitive). If a cancel/close button doesn't have an
+ * onClick handler, it will automatically close the modal when clicked. This provides
+ * smart close handling.
  *
- * Note: Only buttons with "cancel" in their text will auto-close. Secondary variant
- * buttons without "cancel" text will not auto-close, allowing you to use secondary
+ * Note: Only buttons with "cancel" or "close" in their text will auto-close. Secondary
+ * variant buttons without these texts will not auto-close, allowing you to use secondary
  * buttons for other actions.
  *
  * @example
  * ```tsx
- * // Cancel button without onClick will auto-close
+ * // Cancel/Close buttons without onClick will auto-close
  * <Modal.Footer align="end">
  *   <Button variant="secondary">Cancel</Button>
+ *   <Button variant="secondary">Close</Button>
  *   <Button variant="secondary" onClick={handleOtherAction}>Other Action</Button>
  *   <Button variant="primary" onClick={onSave}>Save</Button>
  * </Modal.Footer>
@@ -107,12 +109,14 @@ export function ModalFooter({
 		};
 
 		const textContent = getTextContent(childProps.children);
-		// Only detect cancel buttons by text content, not by variant
+		// Only detect cancel/close buttons by text content, not by variant
 		// This allows secondary buttons to be used for other actions
-		const isCancelButton = textContent.toLowerCase().includes("cancel");
+		const isCancelOrCloseButton =
+			textContent.toLowerCase().includes("cancel") ||
+			textContent.toLowerCase().includes("close");
 
-		// If it's a cancel button (by text) and doesn't have an onClick, add auto-close
-		if (isCancelButton && !childProps.onClick) {
+		// If it's a cancel/close button (by text) and doesn't have an onClick, add auto-close
+		if (isCancelOrCloseButton && !childProps.onClick) {
 			return React.cloneElement(
 				child as React.ReactElement<{
 					onClick?: (e: React.MouseEvent) => void;

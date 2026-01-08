@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { invitesApi } from "./services/invitesApi";
+import { joinRequestsApi } from "./services/joinRequestsApi";
 import { projectApi } from "./services/projectsApi";
 import { tasksApi } from "./services/tasksApi";
 import { xpApi } from "./services/xpApi";
@@ -10,6 +11,7 @@ export const store = configureStore({
 		[projectApi.reducerPath]: projectApi.reducer,
 		[tasksApi.reducerPath]: tasksApi.reducer,
 		[invitesApi.reducerPath]: invitesApi.reducer,
+		[joinRequestsApi.reducerPath]: joinRequestsApi.reducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(
@@ -17,6 +19,7 @@ export const store = configureStore({
 			projectApi.middleware,
 			tasksApi.middleware,
 			invitesApi.middleware,
+			joinRequestsApi.middleware,
 		),
 });
 

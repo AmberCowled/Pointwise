@@ -7,8 +7,8 @@ import type { Invite, Project as PrismaProject } from "@prisma/client";
 export async function getProjectInvites(projectId: string): Promise<
 	Array<
 		Invite & {
-			inviter: { id: string; name: string | null; email: string | null };
-			invitedUser: { id: string; name: string | null; email: string | null };
+			inviter: { id: string; name: string | null };
+			invitedUser: { id: string; name: string | null };
 		}
 	>
 > {
@@ -19,14 +19,12 @@ export async function getProjectInvites(projectId: string): Promise<
 				select: {
 					id: true,
 					name: true,
-					email: true,
 				},
 			},
 			invitedUser: {
 				select: {
 					id: true,
 					name: true,
-					email: true,
 				},
 			},
 		},
@@ -133,7 +131,7 @@ export async function inviteUsersToProject(
 export async function getReceivedInvites(userId: string): Promise<
 	Array<
 		Invite & {
-			inviter: { id: string; name: string | null; email: string | null };
+			inviter: { id: string; name: string | null };
 			project: {
 				id: string;
 				name: string;
@@ -150,7 +148,6 @@ export async function getReceivedInvites(userId: string): Promise<
 				select: {
 					id: true,
 					name: true,
-					email: true,
 				},
 			},
 			project: {

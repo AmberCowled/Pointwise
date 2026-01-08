@@ -35,11 +35,10 @@ export const invitesApi = createApi({
 					inviteRole: "ADMIN" | "USER" | "VIEWER";
 					createdAt: string;
 					updatedAt: string;
-					inviter: { id: string; name: string | null; email: string | null };
+					inviter: { id: string; name: string | null };
 					invitedUser: {
 						id: string;
 						name: string | null;
-						email: string | null;
 					};
 				}>;
 			},
@@ -59,7 +58,7 @@ export const invitesApi = createApi({
 					inviteRole: "ADMIN" | "USER" | "VIEWER";
 					createdAt: string;
 					updatedAt: string;
-					inviter: { id: string; name: string | null; email: string | null };
+					inviter: { id: string; name: string | null };
 					project: {
 						id: string;
 						name: string;
