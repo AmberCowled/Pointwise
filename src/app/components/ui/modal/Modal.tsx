@@ -52,7 +52,7 @@ export interface ModalProps
  * **Sub-components:**
  * - `Modal.Header` - Modal header with title, subtitle, icon, actions
  * - `Modal.Body` - Modal content area
- * - `Modal.Footer` - Modal footer with smart cancel button detection
+ * - `Modal.Footer` - Modal footer with smart cancel/close button detection
  * - `Modal.CloseButton` - Close button that auto-uses context
  *
  * **Static Properties:**
@@ -145,11 +145,11 @@ interface ModalComponent {
 	Body: typeof ModalBody;
 
 	/**
-	 * Modal footer component with smart cancel button detection
+	 * Modal footer component with smart cancel/close button detection
 	 *
-	 * Automatically detects cancel buttons by checking if the button text contains "cancel"
-	 * (case-insensitive). If a cancel button doesn't have an onClick handler, it will
-	 * automatically close the modal when clicked.
+	 * Automatically detects cancel/close buttons by checking if the button text contains
+	 * "cancel" or "close" (case-insensitive). If a cancel/close button doesn't have an
+	 * onClick handler, it will automatically close the modal when clicked.
 	 *
 	 * **Props:**
 	 * - `align?: "start" | "center" | "end" | "between"` - Alignment of footer content (default: "between")
@@ -160,6 +160,7 @@ interface ModalComponent {
 	 * ```tsx
 	 * <ModalV2.Footer align="end">
 	 *   <Button variant="secondary">Cancel</Button>
+	 *   <Button variant="secondary">Close</Button>
 	 *   <Button>Create</Button>
 	 * </ModalV2.Footer>
 	 * ```
@@ -361,7 +362,7 @@ interface ModalComponent {
  * **Sub-components:**
  * - `Modal.Header` - Modal header with title, subtitle, icon, actions
  * - `Modal.Body` - Modal content area
- * - `Modal.Footer` - Modal footer with smart cancel button detection
+ * - `Modal.Footer` - Modal footer with smart cancel/close button detection
  * - `Modal.CloseButton` - Close button that auto-uses context
  *
  * **Static Properties:**

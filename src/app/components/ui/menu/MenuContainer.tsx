@@ -146,7 +146,7 @@ export function MenuContainer({
 							modal={false}
 							className={clsx(
 								"absolute z-50 mt-2 rounded-2xl border p-2 text-sm shadow-xl focus:outline-none",
-								"max-h-60 w-auto min-w-[160px] overflow-auto",
+								"max-h-60 w-max min-w-[160px] overflow-auto",
 								variantStyles[variant],
 							)}
 							style={{ overflowY: "auto", overflowX: "visible" }}

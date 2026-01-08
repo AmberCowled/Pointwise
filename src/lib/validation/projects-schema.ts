@@ -127,6 +127,22 @@ export const LeaveProjectResponseSchema = z.object({
 	project: ProjectSchema,
 });
 
+export const InviteUserSchema = z.object({
+	userId: z.string().min(1),
+	role: z.enum(["ADMIN", "USER", "VIEWER"]),
+});
+
+export const InviteProjectRequestSchema = z.object({
+	invites: z
+		.array(InviteUserSchema)
+		.min(1, "At least one invite is required")
+		.max(10, "Maximum 10 invites per request"),
+});
+
+export const InviteProjectResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
 export type Project = z.infer<typeof ProjectSchema>;
 export type Projects = z.infer<typeof ProjectsSchema>;
 export type ProjectRole = z.infer<typeof PROJECT_ROLE_SCHEMA>;
@@ -158,3 +174,6 @@ export type CancelRequestToJoinProjectResponse = z.infer<
 >;
 export type LeaveProjectRequest = z.infer<typeof LeaveProjectRequestSchema>;
 export type LeaveProjectResponse = z.infer<typeof LeaveProjectResponseSchema>;
+export type InviteUser = z.infer<typeof InviteUserSchema>;
+export type InviteProjectRequest = z.infer<typeof InviteProjectRequestSchema>;
+export type InviteProjectResponse = z.infer<typeof InviteProjectResponseSchema>;

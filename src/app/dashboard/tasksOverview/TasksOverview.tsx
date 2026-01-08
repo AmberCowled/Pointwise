@@ -152,7 +152,7 @@ export default function TasksOverview() {
 	return (
 		<>
 			<CreateTaskModal projectId={projectId} />
-			<Container direction="vertical" gap="sm" className="py-2">
+			<Container direction="vertical" gap="sm" className="py-3">
 				<Card
 					title="Tasks"
 					label="Overview"
