@@ -1,0 +1,30 @@
+import type {
+	SearchUsersRequest,
+	SearchUsersResponse,
+} from "@pointwise/lib/validation/users-schema";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+export const usersApi = createApi({
+	reducerPath: "usersApi",
+	baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+	tagTypes: ["Users"],
+	refetchOnFocus: false,
+	refetchOnReconnect: true,
+	endpoints: (builder) => ({
+		// Search users
+		searchUsers: builder.query<SearchUsersResponse, SearchUsersRequest>({
+			query: (params) => ({
+				url: "/users/search",
+				params: {
+					query: params.query,
+					sortBy: params.sortBy,
+					limit: params.limit,
+					offset: params.offset,
+				},
+			}),
+			providesTags: ["Users"],
+		}),
+	}),
+});
+
+export const { useSearchUsersQuery } = usersApi;
