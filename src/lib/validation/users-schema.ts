@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const UserSchema = z.object({
+	id: z.string(),
+	name: z.string().nullable(),
+	image: z.string().nullable(),
+	xp: z.number(),
+});
+
 export const SearchUsersRequestSchema = z.object({
 	query: z.string().optional(),
 	sortBy: z
@@ -27,6 +34,7 @@ export const SearchUsersResponseSchema = z.object({
 	}),
 });
 
+export type User = z.infer<typeof UserSchema>;
 export type SearchUsersRequest = z.infer<typeof SearchUsersRequestSchema>;
 export type SearchUsersResponse = z.infer<typeof SearchUsersResponseSchema>;
 export type SearchableUser = z.infer<typeof SearchableUserSchema>;
