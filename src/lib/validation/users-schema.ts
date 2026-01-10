@@ -9,10 +9,6 @@ export const UserSchema = z.object({
 
 export const SearchUsersRequestSchema = z.object({
 	query: z.string().optional(),
-	sortBy: z
-		.enum(["relevance", "recent", "popular"])
-		.optional()
-		.default("relevance"),
 	limit: z.coerce.number().int().min(1).max(100).optional().default(50),
 	offset: z.coerce.number().int().min(0).optional().default(0),
 });

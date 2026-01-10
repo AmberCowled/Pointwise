@@ -1,8 +1,9 @@
+import { Card } from "@pointwise/app/components/ui/Card";
+import Container from "@pointwise/app/components/ui/Container";
+import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
+import Grid from "@pointwise/app/components/ui/Grid";
 import { useSearchUsersQuery } from "@pointwise/lib/redux/services/usersApi";
 import { IoSearchOutline } from "react-icons/io5";
-import { Card } from "../../components/ui/Card";
-import Container from "../../components/ui/Container";
-import { ErrorCard } from "../../components/ui/ErrorCard";
 import UserCard from "../userCard/UserCard";
 
 interface UsersSearchResultsProps {
@@ -16,7 +17,6 @@ export default function UsersSearchResults({ query }: UsersSearchResultsProps) {
 		isError: isUsersError,
 		refetch: refetchUsers,
 	} = useSearchUsersQuery({
-		sortBy: "relevance",
 		query,
 		limit: 10,
 		offset: 0,
@@ -38,7 +38,11 @@ export default function UsersSearchResults({ query }: UsersSearchResultsProps) {
 					display={isUsersError}
 				/>
 				{!isUsersError && usersCount > 0 ? (
-					users.map((user) => <UserCard key={user.id} user={user} />)
+					<Grid columns={{ default: 1, sm: 2, md: 3 }} gap="sm">
+						{users.map((user) => (
+							<UserCard key={user.id} user={user} />
+						))}
+					</Grid>
 				) : (
 					<Container
 						width="full"

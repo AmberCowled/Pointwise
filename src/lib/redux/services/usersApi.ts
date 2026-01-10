@@ -17,7 +17,6 @@ export const usersApi = createApi({
 				url: "/users/search",
 				params: {
 					query: params.query,
-					sortBy: params.sortBy,
 					limit: params.limit,
 					offset: params.offset,
 				},

@@ -18,14 +18,8 @@ export async function GET(req: Request) {
 			const searchQuery = queryData.query;
 			const limit = queryData.limit ?? 50;
 			const offset = queryData.offset ?? 0;
-			const sortBy = queryData.sortBy ?? "relevance";
 
-			const { users, total } = await searchUsers(
-				searchQuery,
-				limit,
-				offset,
-				sortBy,
-			);
+			const { users, total } = await searchUsers(searchQuery, limit, offset);
 
 			return jsonResponse({
 				users,
