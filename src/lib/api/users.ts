@@ -10,7 +10,10 @@ export async function searchUsers(
 
 	if (searchTerm) {
 		const users = await prisma.user.findMany({
-			where: { name: { contains: searchTerm, mode: "insensitive" } },
+			where: {
+				profileVisibility: "PUBLIC",
+				name: { contains: searchTerm, mode: "insensitive" },
+			},
 			take: limit,
 			skip: offset,
 		});

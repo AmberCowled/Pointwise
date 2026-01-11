@@ -1,5 +1,4 @@
 import Container from "@pointwise/app/components/ui/Container";
-import { serializeXP } from "@pointwise/lib/api/xp";
 import type { User } from "@pointwise/lib/validation/users-schema";
 import { IoChatbubble, IoFolder, IoPersonAdd } from "react-icons/io5";
 import DisplayName from "./DisplayName";
