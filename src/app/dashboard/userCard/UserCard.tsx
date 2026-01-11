@@ -1,22 +1,15 @@
 import Container from "@pointwise/app/components/ui/Container";
 import { serializeXP } from "@pointwise/lib/api/xp";
 import type { User } from "@pointwise/lib/validation/users-schema";
-import Image from "next/image";
-import {
-	IoChatbubble,
-	IoEye,
-	IoFolder,
-	IoPersonAdd,
-	IoPersonCircle,
-	IoStar,
-} from "react-icons/io5";
+import { IoChatbubble, IoFolder, IoPersonAdd } from "react-icons/io5";
+import DisplayName from "./DisplayName";
 import ProfilePicture from "./ProfilePicture";
 import UserCardButton from "./UserCardButton";
+import UserLevelStats from "./UserLevelStats";
 
 export default function UserCard({ user }: { user: User }) {
 	const profilePicture = user.image ?? "";
 	const displayName = user.name ?? "";
-	const xp = serializeXP(user.xp ?? 0);
 
 	return (
 		<Container
@@ -29,6 +22,7 @@ export default function UserCard({ user }: { user: User }) {
 				<ProfilePicture
 					profilePicture={profilePicture}
 					displayName={displayName}
+					href={`/profile/${user.id}`}
 				/>
 				<Container
 					direction="vertical"
@@ -37,58 +31,35 @@ export default function UserCard({ user }: { user: User }) {
 					className="items-start"
 				>
 					<Container width="auto">
-						<span className="text-zinc-300 text-sm font-semibold">
-							{displayName}
-						</span>
+						<DisplayName
+							displayName={displayName}
+							href={`/profile/${user.id}`}
+						/>
 					</Container>
 					<Container
 						width="full"
 						gap="xs"
 						className="text-yellow-500 bg-black/25 rounded-xl p-1"
 					>
-						<IoStar className="size-3" />
-						<span className="text-xs font-light pr-1">{xp.lv}</span>
-						<span className="text-xs text-zinc-300/80 font-light">
-							{xp.value - xp.lvStartXP} / {xp.nextLvAt - xp.lvStartXP} XP
-						</span>
-						<div className="flex-1 h-1 bg-zinc-700/50 rounded-full mx-1">
-							<div
-								className="h-full rounded-full bg-linear-to-r from-indigo-500 via-fuchsia-500 to-rose-500"
-								style={{ width: `${xp.progress}%` }}
-							/>
-						</div>
+						<UserLevelStats xp={user.xp ?? 0} />
 					</Container>
 				</Container>
 			</Container>
 
-			<Container width="full" className="rounded-xs my-2">
+			<Container width="full" gap="sm" className="rounded-xs my-2">
 				<UserCardButton
-					icon={<IoEye className="size-4" />}
-					label="View Profile"
-					color="#9d00ff"
+					icon={<IoPersonAdd className="size-4" />}
+					label="Add"
+					color="#189d4d"
 				/>
-			</Container>
-
-			<Container width="full" gap="sm">
 				<UserCardButton
 					icon={<IoChatbubble className="size-4" />}
 					label="Message"
 					color="#1271ff"
 				/>
 				<UserCardButton
-					icon={<IoPersonAdd className="size-4" />}
-					label="Add Friend"
-					color="#189d4d"
-					onClick={() => {
-						console.log("Add Friend");
-					}}
-				/>
-			</Container>
-
-			<Container width="full" className="bg-black/25 rounded-xs my-2">
-				<UserCardButton
 					icon={<IoFolder className="size-4" />}
-					label="Invite to Project"
+					label="Invite"
 					color="#fda438"
 				/>
 			</Container>

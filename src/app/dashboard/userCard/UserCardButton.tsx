@@ -1,4 +1,5 @@
 import { Button } from "@pointwise/app/components/ui/Button";
+import Container from "@pointwise/app/components/ui/Container";
 
 interface UserCardButtonProps {
 	icon: React.ReactNode;
@@ -20,17 +21,19 @@ export default function UserCardButton({
 			variant="secondary"
 			size="xs"
 			disabled={disabled}
-			className="rounded-xs w-full min-h-12 bg-linear-100 shadow-md hover:brightness-125 hover:cursor-pointer disabled:cursor-not-allowed"
+			className="rounded-xs w-full bg-linear-100 shadow-md hover:brightness-125 hover:cursor-pointer disabled:cursor-not-allowed"
 			style={{
 				backgroundImage: `linear-gradient(100deg, ${color}50, ${color}, ${color}50)`,
 				borderColor: color,
 			}}
 			onClick={onClick}
 		>
-			{icon}
-			<span className="text-sm text-zinc-100 font-semibold text-shadow-md">
-				{label}
-			</span>
+			<Container direction="vertical" width="full" gap="xs">
+				{icon}
+				<span className="text-xs text-zinc-100 font-bold text-shadow-md">
+					{label}
+				</span>
+			</Container>
 		</Button>
 	);
 }

@@ -4,14 +4,19 @@ import { IoPersonCircle } from "react-icons/io5";
 interface ProfilePictureProps {
 	profilePicture: string;
 	displayName: string;
+	href: string;
 }
 
 export default function ProfilePicture({
 	profilePicture,
 	displayName,
+	href,
 }: ProfilePictureProps) {
 	return (
-		<div className="w-[54px] h-[54px] flex items-center justify-center">
+		<a
+			href={href}
+			className="w-[54px] h-[54px] flex items-center justify-center"
+		>
 			{profilePicture ? (
 				<Image
 					src={profilePicture}
@@ -23,6 +28,6 @@ export default function ProfilePicture({
 			) : (
 				<IoPersonCircle className="w-full h-full text-zinc-400 scale-120" />
 			)}
-		</div>
+		</a>
 	);
 }
