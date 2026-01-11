@@ -3,6 +3,7 @@ import { invitesApi } from "./services/invitesApi";
 import { joinRequestsApi } from "./services/joinRequestsApi";
 import { projectApi } from "./services/projectsApi";
 import { tasksApi } from "./services/tasksApi";
+import { usersApi } from "./services/usersApi";
 import { xpApi } from "./services/xpApi";
 
 export const store = configureStore({
@@ -12,6 +13,7 @@ export const store = configureStore({
 		[tasksApi.reducerPath]: tasksApi.reducer,
 		[invitesApi.reducerPath]: invitesApi.reducer,
 		[joinRequestsApi.reducerPath]: joinRequestsApi.reducer,
+		[usersApi.reducerPath]: usersApi.reducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(
@@ -20,6 +22,7 @@ export const store = configureStore({
 			tasksApi.middleware,
 			invitesApi.middleware,
 			joinRequestsApi.middleware,
+			usersApi.middleware,
 		),
 });
 

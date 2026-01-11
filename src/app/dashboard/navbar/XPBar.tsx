@@ -16,7 +16,7 @@ export default function XPBar() {
 	const progressBarStyles = clsx("h-1.5 w-full rounded-full transition-all", {
 		"animate-pulse bg-zinc-700": isCurrentlyLoading,
 		"bg-rose-500/10 border border-rose-400/20": isError && !isCurrentlyLoading,
-		"bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500":
+		"bg-linear-to-r from-indigo-500 via-fuchsia-500 to-rose-500":
 			!isError && !isCurrentlyLoading,
 	});
 

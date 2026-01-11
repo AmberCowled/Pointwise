@@ -1,0 +1,58 @@
+import { Card } from "@pointwise/app/components/ui/Card";
+import Container from "@pointwise/app/components/ui/Container";
+import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
+import ProjectCard from "@pointwise/app/dashboard/projectCard/ProjectCard";
+import { useSearchPublicProjectsQuery } from "@pointwise/lib/redux/services/projectsApi";
+import { IoSearchOutline } from "react-icons/io5";
+
+interface ProjectsSearchResultsProps {
+	query: string;
+}
+
+export default function ProjectsSearchResults({
+	query,
+}: ProjectsSearchResultsProps) {
+	const {
+		data: projectsSearchResults,
+		isLoading: isProjectsLoading,
+		isError: isProjectsError,
+		refetch: refetchProjects,
+	} = useSearchPublicProjectsQuery({
+		limit: 10,
+		offset: 0,
+		query,
+	});
+
+	const projects = projectsSearchResults?.projects ?? [];
+	const projectsCount = projectsSearchResults?.pagination.total ?? 0;
+	return (
+		<Card
+			label={`${projectsCount} results`}
+			loading={isProjectsLoading}
+			className="rounded-sm"
+		>
+			<Container direction="vertical" gap="sm" width="full" className="mt-3">
+				<ErrorCard
+					message="Something went wrong"
+					onRetry={refetchProjects}
+					display={isProjectsError}
+				/>
+				{!isProjectsError && projectsCount > 0 ? (
+					projects.map((project) => (
+						<ProjectCard key={project.id} project={project} />
+					))
+				) : (
+					<Container
+						width="full"
+						direction="vertical"
+						gap="sm"
+						className="py-8 text-zinc-400 bg-zinc-900 rounded-sm border border-zinc-800"
+					>
+						<IoSearchOutline className="size-10 mb-2" />
+						<span className="font-medium text-lg">No projects found</span>
+					</Container>
+				)}
+			</Container>
+		</Card>
+	);
+}

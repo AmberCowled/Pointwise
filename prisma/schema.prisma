@@ -26,6 +26,8 @@ model User {
 
   passwordHash String?
 
+  profileVisibility ProfileVisibility @default(PRIVATE)
+
   accounts Account[]
   sessions Session[]
   
@@ -110,6 +112,11 @@ enum TaskStatus {
 }
 
 enum ProjectVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum ProfileVisibility {
   PRIVATE
   PUBLIC
 }
