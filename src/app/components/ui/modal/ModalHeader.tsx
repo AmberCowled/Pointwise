@@ -138,12 +138,14 @@ export function ModalHeader({
 				) : null}
 				{children}
 			</div>
-			<div className="flex items-center gap-2">
-				{actions}
-				{showCloseButton && handleClose && (
-					<ModalCloseButton onClose={handleClose} />
-				)}
-			</div>
+			{actions || showCloseButton ? (
+				<div className="flex items-center gap-2">
+					{actions}
+					{showCloseButton && handleClose && (
+						<ModalCloseButton onClose={handleClose} />
+					)}
+				</div>
+			) : null}
 		</header>
 	);
 }

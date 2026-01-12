@@ -5,7 +5,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import { formatRelativeTime } from "@pointwise/lib/api/date-time";
 import { useState } from "react";
 import { IoCheckmark, IoClose, IoPersonCircle } from "react-icons/io5";
-import JoinRequestRoleSelector from "./JoinRequestRoleSelector";
+import RoleSelector from "../userCard/RoleSelector";
 
 export interface JoinRequestCardProps {
 	request: {
@@ -75,7 +75,7 @@ export default function JoinRequestCard({
 						</span>
 					</Container>
 					<Container width="full">
-						<JoinRequestRoleSelector
+						<RoleSelector
 							onRoleChange={setSelectedRole}
 							defaultValue={selectedRole}
 							disabled={isApproving || isRejecting}

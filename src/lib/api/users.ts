@@ -5,6 +5,7 @@ export async function searchUsers(
 	query?: string,
 	limit: number = 50,
 	offset: number = 0,
+	excludeUserId?: string,
 ): Promise<{ users: User[]; total: number }> {
 	const searchTerm = query?.trim();
 
@@ -13,6 +14,7 @@ export async function searchUsers(
 			where: {
 				profileVisibility: "PUBLIC",
 				name: { contains: searchTerm, mode: "insensitive" },
+				...(excludeUserId ? { id: { not: excludeUserId } } : {}),
 			},
 			take: limit,
 			skip: offset,

@@ -14,9 +14,15 @@ import ProjectCardVisibility from "./ProjectCardVisibility";
 
 export interface ProjectCardProps {
 	project: Project;
+	disableMenu?: boolean;
+	overrideOnClick?: () => void;
 }
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({
+	project,
+	disableMenu = false,
+	overrideOnClick,
+}: ProjectCardProps) {
 	const router = useRouter();
 
 	return (
@@ -28,7 +34,12 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 				gap="none"
 				className="bg-black/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer px-4 py-2"
 				onClick={() => {
-					if (project.visibility === "PUBLIC" || project.role !== "NONE") {
+					if (overrideOnClick) {
+						overrideOnClick();
+					} else if (
+						project.visibility === "PUBLIC" ||
+						project.role !== "NONE"
+					) {
 						router.push(`/dashboard/${project.id}`);
 					}
 				}}
@@ -39,9 +50,11 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 						<ProjectCardVisibility visibility={project.visibility} />
 						<ProjectCardRole role={project.role} />
 					</Container>
-					<Container width="auto" className="justify-end">
-						<ProjectCardMenu project={project} />
-					</Container>
+					{!disableMenu && (
+						<Container width="auto" className="justify-end">
+							<ProjectCardMenu project={project} />
+						</Container>
+					)}
 				</Container>
 
 				<Container width="full" gap="none">
