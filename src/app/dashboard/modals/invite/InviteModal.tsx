@@ -23,33 +23,58 @@ function ProjectInviteChecker({
 	inviteeId,
 	children,
 	onRender,
+	onLoading,
 }: {
 	projectId: string;
 	inviteeId: string;
 	children: (canInvite: boolean) => React.ReactNode;
 	onRender?: (rendered: boolean) => void;
+	onLoading?: (loading: boolean) => void;
 }) {
-	const { data } = useCanInviteQuery({
+	const { data, isLoading, isError } = useCanInviteQuery({
 		projectId,
 		inviteeId,
 		role: "USER",
 	});
 
-	const canInvite = data?.success ?? false;
+	// If there's an error (e.g., user already invited), cannot invite
+	// If loading, undefined (will be handled)
+	// Otherwise, use the success value from data
+	const canInvite = isLoading
+		? undefined
+		: isError
+			? false
+			: (data?.success ?? false);
 
 	React.useEffect(() => {
-		onRender?.(canInvite);
-	}, [canInvite, onRender]);
+		onLoading?.(isLoading);
+	}, [isLoading, onLoading]);
 
-	return <>{children(canInvite)}</>;
+	React.useEffect(() => {
+		if (!isLoading && canInvite !== undefined) {
+			onRender?.(canInvite);
+		}
+	}, [canInvite, isLoading, onRender]);
+
+	if (isLoading) return null;
+
+	return <>{children(canInvite ?? false)}</>;
 }
 
 export default function InviteModal({ inviteUser }: InviteModalProps) {
-	const { data: projects, isError, error } = useGetProjectsQuery();
+	const {
+		data: projects,
+		isError,
+		error,
+		isLoading: isLoadingProjects,
+	} = useGetProjectsQuery();
 	const [renderedProjectsCount, setRenderedProjectsCount] = React.useState(0);
 	const [projectRenderStates, setProjectRenderStates] = React.useState<
 		Map<string, boolean>
 	>(new Map());
+	const [loadingProjects, setLoadingProjects] = React.useState<Set<string>>(
+		new Set(),
+	);
 
 	const projectsList = projects?.projects || [];
 
@@ -64,9 +89,31 @@ export default function InviteModal({ inviteUser }: InviteModalProps) {
 	const handleProjectRender = React.useCallback(
 		(projectId: string, rendered: boolean) => {
 			setProjectRenderStates((prev) => new Map(prev.set(projectId, rendered)));
+			setLoadingProjects((prev) => {
+				const next = new Set(prev);
+				next.delete(projectId);
+				return next;
+			});
 		},
 		[],
 	);
+
+	const handleProjectLoading = React.useCallback(
+		(projectId: string, loading: boolean) => {
+			setLoadingProjects((prev) => {
+				const next = new Set(prev);
+				if (loading) {
+					next.add(projectId);
+				} else {
+					next.delete(projectId);
+				}
+				return next;
+			});
+		},
+		[],
+	);
+
+	const isLoadingAny = isLoadingProjects || loadingProjects.size > 0;
 
 	return (
 		<Modal id={`invite-modal-${inviteUser.id}`} size="fullscreen">
@@ -88,6 +135,9 @@ export default function InviteModal({ inviteUser }: InviteModalProps) {
 									inviteeId={inviteUser.id}
 									onRender={(rendered) =>
 										handleProjectRender(project.id, rendered)
+									}
+									onLoading={(loading) =>
+										handleProjectLoading(project.id, loading)
 									}
 								>
 									{(canInvite) =>
@@ -113,7 +163,7 @@ export default function InviteModal({ inviteUser }: InviteModalProps) {
 									}
 								</ProjectInviteChecker>
 							))}
-							{renderedProjectsCount === 0 && (
+							{!isLoadingAny && renderedProjectsCount === 0 && (
 								<Container
 									direction="vertical"
 									width="full"

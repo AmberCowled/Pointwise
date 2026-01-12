@@ -14,7 +14,12 @@ export async function GET(
 		async ({ user, query }) => {
 			const { id } = await params;
 			const inviteRequest = InviteRequestSchema.parse(query);
-			return jsonResponse(canInvite(user.id, inviteRequest.inviteeId, id));
+			const canInviteResult = await canInvite(
+				user.id,
+				inviteRequest.inviteeId,
+				id,
+			);
+			return jsonResponse({ success: canInviteResult });
 		},
 		InviteRequestSchema,
 	);
