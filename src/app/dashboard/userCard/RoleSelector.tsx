@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { useState } from "react";
 
-export interface JoinRequestRoleSelectorProps {
+export interface RoleSelectorProps {
 	onRoleChange: (role: "ADMIN" | "USER" | "VIEWER") => void;
 	defaultValue?: "ADMIN" | "USER" | "VIEWER";
 	disabled?: boolean;
@@ -17,15 +17,15 @@ const roleStyles: Record<"ADMIN" | "USER" | "VIEWER", string> = {
 
 const roleLabels: Record<"ADMIN" | "USER" | "VIEWER", string> = {
 	ADMIN: "Admin",
-	USER: "Member",
+	USER: "User",
 	VIEWER: "Viewer",
 };
 
-export default function JoinRequestRoleSelector({
+export default function RoleSelector({
 	onRoleChange,
 	defaultValue = "USER",
 	disabled = false,
-}: JoinRequestRoleSelectorProps) {
+}: RoleSelectorProps) {
 	const [selectedRole, setSelectedRole] = useState<"ADMIN" | "USER" | "VIEWER">(
 		defaultValue,
 	);
@@ -46,7 +46,7 @@ export default function JoinRequestRoleSelector({
 						onClick={() => handleRoleSelect(role)}
 						disabled={disabled}
 						className={clsx(
-							"text-xs font-medium px-0.5 py-0.5 rounded-sm transition-colors",
+							"text-xs font-medium px-0.5 py-0.5 min-w-10 rounded-sm transition-colors",
 							selectedRole === role
 								? roleStyles[role]
 								: "bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:border-zinc-600/50",

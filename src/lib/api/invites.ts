@@ -256,3 +256,43 @@ export async function rejectInvite(
 		where: { id: inviteId },
 	});
 }
+
+export async function canInvite(
+	inviterId: string,
+	inviteeId: string,
+	projectId: string,
+): Promise<boolean> {
+	const project = await getProject(projectId, inviterId);
+	if (!project) {
+		throw new ApiError("Project not found", 404);
+	}
+	if (!project.adminUserIds.includes(inviterId)) {
+		throw new ApiError("Forbidden: You must be admin to invite users", 403);
+	}
+	if (
+		[
+			...project.adminUserIds,
+			...project.projectUserIds,
+			...project.viewerUserIds,
+		].includes(inviteeId)
+	) {
+		throw new ApiError(
+			"Forbidden: The user you are inviting is already a member of this project",
+			403,
+		);
+	}
+	if (project.joinRequestUserIds?.includes(inviteeId)) {
+		throw new ApiError(
+			"Forbidden: The user you are inviting has a pending join request for this project",
+			403,
+		);
+	}
+	const invites = await getProjectInvites(projectId);
+	if (invites.some((invite) => invite.invitedUserId === inviteeId)) {
+		throw new ApiError(
+			"Forbidden: The user you are inviting has a pending invite for this project",
+			403,
+		);
+	}
+	return true;
+}

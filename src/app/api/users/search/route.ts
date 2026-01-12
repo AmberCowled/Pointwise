@@ -11,15 +11,18 @@ type SearchUsersQuery = z.infer<typeof SearchUsersRequestSchema>;
 export async function GET(req: Request) {
 	return handleProtectedRoute(
 		req,
-		async ({ query }) => {
-			// query is guaranteed to be present when schema is provided (SearchUsersRequestSchema)
-			// Type assertion needed due to TypeScript overload resolution limitations
+		async ({ query, user }) => {
 			const queryData = query as unknown as SearchUsersQuery;
 			const searchQuery = queryData.query;
 			const limit = queryData.limit ?? 50;
 			const offset = queryData.offset ?? 0;
 
-			const { users, total } = await searchUsers(searchQuery, limit, offset);
+			const { users, total } = await searchUsers(
+				searchQuery,
+				limit,
+				offset,
+				user.id,
+			);
 
 			return jsonResponse({
 				users,

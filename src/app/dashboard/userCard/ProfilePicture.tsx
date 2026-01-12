@@ -5,14 +5,30 @@ interface ProfilePictureProps {
 	profilePicture: string;
 	displayName: string;
 	href: string;
+	disabled?: boolean;
 }
 
 export default function ProfilePicture({
 	profilePicture,
 	displayName,
 	href,
+	disabled = false,
 }: ProfilePictureProps) {
-	return (
+	return disabled ? (
+		<div className="w-[54px] h-[54px] flex items-center justify-center">
+			{profilePicture ? (
+				<Image
+					src={profilePicture}
+					alt={displayName}
+					width={54}
+					height={54}
+					className="rounded-full"
+				/>
+			) : (
+				<IoPersonCircle className="w-full h-full text-zinc-400 scale-120" />
+			)}
+		</div>
+	) : (
 		<a
 			href={href}
 			className="w-[54px] h-[54px] flex items-center justify-center"

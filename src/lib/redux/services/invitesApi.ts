@@ -1,3 +1,4 @@
+import type { InviteResponse } from "@pointwise/lib/validation/invite-schema";
 import type {
 	InviteProjectRequest,
 	InviteProjectResponse,
@@ -23,6 +24,15 @@ export const invitesApi = createApi({
 				body: data,
 			}),
 			invalidatesTags: ["Invites", "Projects"],
+		}),
+		// Check if a user can invite another user to a project
+		canInvite: builder.query<
+			InviteResponse,
+			{ projectId: string; inviteeId: string; role: string }
+		>({
+			query: ({ projectId, inviteeId, role }) =>
+				`/projects/${projectId}/can-invite?inviteeId=${inviteeId}&role=${role}`,
+			providesTags: ["Invites", "Projects"],
 		}),
 		// Get pending invites for a project (admin only)
 		getProjectInvites: builder.query<
@@ -96,6 +106,7 @@ export const invitesApi = createApi({
 
 export const {
 	useInviteUsersToProjectMutation,
+	useCanInviteQuery,
 	useGetProjectInvitesQuery,
 	useGetReceivedInvitesQuery,
 	useAcceptInviteMutation,
