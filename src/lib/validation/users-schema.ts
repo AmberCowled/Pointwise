@@ -3,8 +3,17 @@ import { z } from "zod";
 export const UserSchema = z.object({
 	id: z.string(),
 	name: z.string().nullable(),
+	email: z.string().nullable(),
 	image: z.string().nullable(),
+	profileVisibility: z.string().nullable(),
 	xp: z.number(),
+	emailVerified: z.boolean().nullable(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
+});
+
+export const GetUserResponseSchema = z.object({
+	user: UserSchema,
 });
 
 export const SearchUsersRequestSchema = z.object({
@@ -31,6 +40,7 @@ export const SearchUsersResponseSchema = z.object({
 });
 
 export type User = z.infer<typeof UserSchema>;
+export type GetUserResponse = z.infer<typeof GetUserResponseSchema>;
 export type SearchUsersRequest = z.infer<typeof SearchUsersRequestSchema>;
 export type SearchUsersResponse = z.infer<typeof SearchUsersResponseSchema>;
 export type SearchableUser = z.infer<typeof SearchableUserSchema>;

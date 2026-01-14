@@ -1,5 +1,23 @@
 import prisma from "@pointwise/lib/prisma";
-import type { User } from "@pointwise/lib/validation/users-schema";
+import { type User, UserSchema } from "@pointwise/lib/validation/users-schema";
+
+export async function getUser(id: string): Promise<User> {
+	const userData = await prisma.user.findUniqueOrThrow({
+		where: { id },
+		select: {
+			id: true,
+			name: true,
+			email: true,
+			image: true,
+			profileVisibility: true,
+			xp: true,
+			emailVerified: true,
+			createdAt: true,
+			updatedAt: true,
+		},
+	});
+	return UserSchema.parse(userData);
+}
 
 export async function searchUsers(
 	query?: string,
@@ -18,9 +36,20 @@ export async function searchUsers(
 			},
 			take: limit,
 			skip: offset,
+			select: {
+				id: true,
+				name: true,
+				email: true,
+				image: true,
+				profileVisibility: true,
+				xp: true,
+				emailVerified: true,
+				createdAt: true,
+				updatedAt: true,
+			},
 		});
-		return { users, total: users.length };
+		return { users: UserSchema.array().parse(users), total: users.length };
 	}
 
-	return { users: [], total: 0 };
+	return { users: [], total: 0 } as { users: User[]; total: number };
 }
