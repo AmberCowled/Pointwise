@@ -22,16 +22,16 @@ export default function ManageProjectInvitesModal({
 	project,
 }: ManageProjectInvitesModalProps) {
 	const { showNotification } = useNotifications();
-	const [cancelingInviteId, setCancelingInviteId] = useState<string | null>(null);
+	const [cancelingInviteId, setCancelingInviteId] = useState<string | null>(
+		null,
+	);
 
-	const {
-		data,
-		isLoading,
-		isError,
-		error,
-	} = useGetProjectInvitesQuery(project.id, {
-		skip: !project.id,
-	});
+	const { data, isLoading, isError, error } = useGetProjectInvitesQuery(
+		project.id,
+		{
+			skip: !project.id,
+		},
+	);
 
 	const [rejectInvite] = useRejectInviteMutation();
 

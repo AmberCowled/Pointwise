@@ -3,14 +3,14 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import { toTitleCase } from "@pointwise/lib/text";
-import type { User } from "@pointwise/lib/validation/users-schema";
+import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import { useState } from "react";
 import { IoMail } from "react-icons/io5";
 import ProfilePicture from "../../userCard/ProfilePicture";
 import RoleSelector from "../../userCard/RoleSelector";
 
 export interface InviteRequestCardProps {
-	invitee: User;
+	invitee: SearchableUser;
 	projectName: string;
 	onInvite: (userId: string, role: "ADMIN" | "USER" | "VIEWER") => void;
 	isInviting?: boolean;

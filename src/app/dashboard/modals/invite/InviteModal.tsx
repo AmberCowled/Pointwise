@@ -6,7 +6,7 @@ import Modal from "@pointwise/app/components/ui/modal";
 import Page from "@pointwise/app/components/ui/Page";
 import { useCanInviteQuery } from "@pointwise/lib/redux/services/invitesApi";
 import { useGetProjectsQuery } from "@pointwise/lib/redux/services/projectsApi";
-import type { User } from "@pointwise/lib/validation/users-schema";
+import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import React from "react";
 import { getErrorMessage } from "../../../../lib/api/errors";
 import { ErrorCard } from "../../../components/ui/ErrorCard";
@@ -14,7 +14,7 @@ import ProjectCard from "../../projectCard/ProjectCard";
 import InviteAsRoleModal from "./InviteAsRoleModal";
 
 export interface InviteModalProps {
-	inviteUser: User; // The user who is being invited
+	inviteUser: SearchableUser; // The user who is being invited
 }
 
 // Component to check if a user can be invited to a project

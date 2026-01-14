@@ -1,4 +1,5 @@
 import type {
+	GetUserResponse,
 	SearchUsersRequest,
 	SearchUsersResponse,
 } from "@pointwise/lib/validation/users-schema";
@@ -11,6 +12,13 @@ export const usersApi = createApi({
 	refetchOnFocus: false,
 	refetchOnReconnect: true,
 	endpoints: (builder) => ({
+		// Get user
+		getUser: builder.query<GetUserResponse, string>({
+			query: (id) => ({
+				url: `/users/${id}`,
+			}),
+			providesTags: ["Users"],
+		}),
 		// Search users
 		searchUsers: builder.query<SearchUsersResponse, SearchUsersRequest>({
 			query: (params) => ({
