@@ -1,5 +1,10 @@
 import prisma from "@pointwise/lib/prisma";
-import { type User, UserSchema } from "@pointwise/lib/validation/users-schema";
+import {
+	type SearchableUser,
+	SearchableUserSchema,
+	type User,
+	UserSchema,
+} from "@pointwise/lib/validation/users-schema";
 
 export async function getUser(id: string): Promise<User> {
 	const userData = await prisma.user.findUniqueOrThrow({
@@ -24,7 +29,7 @@ export async function searchUsers(
 	limit: number = 50,
 	offset: number = 0,
 	excludeUserId?: string,
-): Promise<{ users: User[]; total: number }> {
+): Promise<{ users: SearchableUser[]; total: number }> {
 	const searchTerm = query?.trim();
 
 	if (searchTerm) {
@@ -48,7 +53,10 @@ export async function searchUsers(
 				updatedAt: true,
 			},
 		});
-		return { users: UserSchema.array().parse(users), total: users.length };
+		return {
+			users: SearchableUserSchema.array().parse(users),
+			total: users.length,
+		};
 	}
 
 	return { users: [], total: 0 } as { users: User[]; total: number };

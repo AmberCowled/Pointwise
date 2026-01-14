@@ -26,7 +26,10 @@ export interface InviteCardProps {
 	isCanceling?: boolean;
 }
 
-const roleTagVariants: Record<"ADMIN" | "USER" | "VIEWER", "primary" | "info" | "secondary"> = {
+const roleTagVariants: Record<
+	"ADMIN" | "USER" | "VIEWER",
+	"primary" | "info" | "secondary"
+> = {
 	ADMIN: "primary",
 	USER: "info",
 	VIEWER: "secondary",
@@ -48,11 +51,31 @@ export default function InviteCard({
 
 	return (
 		<Card variant="secondary" size="md" flex="default">
-			<Container direction="horizontal" width="full" gap="md" className="items-center">
-				<Container direction="vertical" width="full" gap="xs" className="min-w-0">
-					<Container direction="horizontal" width="full" gap="sm" className="items-center flex-wrap">
+			<Container
+				direction="horizontal"
+				width="full"
+				gap="md"
+				className="items-center"
+			>
+				<Container
+					direction="vertical"
+					width="full"
+					gap="xs"
+					className="min-w-0"
+				>
+					<Container
+						direction="horizontal"
+						width="full"
+						gap="sm"
+						className="items-center flex-wrap"
+					>
 						<IoPerson className="size-5 text-zinc-400 shrink-0" />
-						<Container direction="vertical" width="auto" gap="xs" className="min-w-0 flex-1">
+						<Container
+							direction="vertical"
+							width="auto"
+							gap="xs"
+							className="min-w-0 flex-1"
+						>
 							<span className="text-sm font-medium text-zinc-100 truncate">
 								{invitedUserName}
 							</span>
@@ -61,7 +84,12 @@ export default function InviteCard({
 							{roleLabels[invite.inviteRole]}
 						</Tag>
 					</Container>
-					<Container direction="horizontal" width="full" gap="xs" className="items-center text-xs text-zinc-500">
+					<Container
+						direction="horizontal"
+						width="full"
+						gap="xs"
+						className="items-center text-xs text-zinc-500"
+					>
 						<span>Invited by {inviterName}</span>
 						<span>•</span>
 						<span title={new Date(invite.createdAt).toLocaleString()}>

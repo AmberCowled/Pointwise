@@ -5,13 +5,13 @@ import Page from "@pointwise/app/components/ui/Page";
 import { getErrorMessage } from "@pointwise/lib/api/errors";
 import { useInviteUsersToProjectMutation } from "@pointwise/lib/redux/services/invitesApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
-import type { User } from "@pointwise/lib/validation/users-schema";
+import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import { useState } from "react";
 import Container from "../../../components/ui/Container";
 import InviteRequestCard from "./InviteRequestCard";
 
 export interface InviteAsRoleModalProps {
-	inviteUser: User;
+	inviteUser: SearchableUser;
 	project: Project;
 }
 

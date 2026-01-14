@@ -1,14 +1,14 @@
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import InviteModal from "@pointwise/app/dashboard/modals/invite/InviteModal";
-import type { User } from "@pointwise/lib/validation/users-schema";
+import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import { IoChatbubble, IoFolder, IoPersonAdd } from "react-icons/io5";
 import DisplayName from "./DisplayName";
 import ProfilePicture from "./ProfilePicture";
 import UserCardButton from "./UserCardButton";
 import UserLevelStats from "./UserLevelStats";
 
-export default function UserCard({ user }: { user: User }) {
+export default function UserCard({ user }: { user: SearchableUser }) {
 	const profilePicture = user.image ?? "";
 	const displayName = user.name ?? "";
 
