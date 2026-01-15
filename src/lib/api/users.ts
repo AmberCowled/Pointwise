@@ -6,7 +6,116 @@ import {
 	UserSchema,
 } from "@pointwise/lib/validation/users-schema";
 
+// Word list for generating display names
+const DISPLAY_NAME_WORDS = [
+	"Creative",
+	"Bold",
+	"Swift",
+	"Brilliant",
+	"Dynamic",
+	"Elegant",
+	"Fierce",
+	"Graceful",
+	"Innovative",
+	"Jovial",
+	"Keen",
+	"Lively",
+	"Majestic",
+	"Noble",
+	"Optimistic",
+	"Pioneering",
+	"Quick",
+	"Radiant",
+	"Savvy",
+	"Tenacious",
+	"Unique",
+	"Vibrant",
+	"Wise",
+	"Xenon",
+	"Yielding",
+	"Zealous",
+	"Adventurous",
+	"Brave",
+	"Courageous",
+	"Daring",
+	"Energetic",
+	"Fearless",
+	"Gallant",
+	"Heroic",
+	"Intrepid",
+	"Jubilant",
+	"Kind",
+	"Loyal",
+	"Mighty",
+	"Nimble",
+	"Outstanding",
+	"Powerful",
+	"Resilient",
+	"Strong",
+	"Thriving",
+	"Unyielding",
+	"Victorious",
+	"Witty",
+	"Xenial",
+	"Youthful",
+	"Zestful",
+];
+
+/**
+ * Generate a unique display name by combining a random word with a random number suffix.
+ * Ensures uniqueness by checking against existing display names in the database.
+ */
+export async function generateUniqueDisplayName(): Promise<string> {
+	let attempts = 0;
+	const maxAttempts = 100; // Prevent infinite loops
+
+	while (attempts < maxAttempts) {
+		const word =
+			DISPLAY_NAME_WORDS[Math.floor(Math.random() * DISPLAY_NAME_WORDS.length)];
+		const suffix = Math.floor(Math.random() * 9999) + 1; // 1-9999
+		const displayName = `${word}${suffix}`;
+
+		// Check if this display name already exists
+		const existing = await prisma.user.findFirst({
+			where: { displayName },
+			select: { id: true },
+		});
+
+		if (!existing) {
+			return displayName;
+		}
+
+		attempts++;
+	}
+
+	// Fallback: use timestamp-based unique name if we can't find a unique combination
+	return `User${Date.now()}`;
+}
+
 export async function getUser(id: string): Promise<User> {
+	// First, check if user exists and has displayName
+	const userCheck = await prisma.user.findUnique({
+		where: { id },
+		select: {
+			id: true,
+			displayName: true,
+		},
+	});
+
+	if (!userCheck) {
+		throw new Error("User not found");
+	}
+
+	// Generate displayName if missing
+	if (!userCheck.displayName || userCheck.displayName.trim() === "") {
+		const displayName = await generateUniqueDisplayName();
+		await prisma.user.update({
+			where: { id },
+			data: { displayName },
+		});
+	}
+
+	// Now safely get all user data knowing displayName exists
 	const userData = await prisma.user.findUniqueOrThrow({
 		where: { id },
 		select: {
@@ -17,11 +126,68 @@ export async function getUser(id: string): Promise<User> {
 			profileVisibility: true,
 			xp: true,
 			emailVerified: true,
+			displayName: true,
+			bio: true,
+			location: true,
+			website: true,
 			createdAt: true,
 			updatedAt: true,
 		},
 	});
-	return UserSchema.parse(userData);
+
+	// Transform emailVerified from DateTime | null to boolean
+	const transformedUser = {
+		...userData,
+		emailVerified: userData.emailVerified !== null,
+	};
+
+	return UserSchema.parse(transformedUser);
+}
+
+/**
+ * Update user profile fields (excluding password and email)
+ */
+export async function updateUserProfile(
+	userId: string,
+	profileData: {
+		displayName: string;
+		bio?: string | null;
+		location?: string | null;
+		website?: string | null;
+	},
+): Promise<User> {
+	const updatedUser = await prisma.user.update({
+		where: { id: userId },
+		data: {
+			displayName: profileData.displayName,
+			bio: profileData.bio,
+			location: profileData.location,
+			website: profileData.website,
+		},
+		select: {
+			id: true,
+			name: true,
+			email: true,
+			image: true,
+			profileVisibility: true,
+			xp: true,
+			emailVerified: true,
+			displayName: true,
+			bio: true,
+			location: true,
+			website: true,
+			createdAt: true,
+			updatedAt: true,
+		},
+	});
+
+	// Transform emailVerified from DateTime | null to boolean
+	const transformedUser = {
+		...updatedUser,
+		emailVerified: updatedUser.emailVerified !== null,
+	};
+
+	return UserSchema.parse(transformedUser);
 }
 
 export async function searchUsers(
@@ -36,21 +202,19 @@ export async function searchUsers(
 		const users = await prisma.user.findMany({
 			where: {
 				profileVisibility: "PUBLIC",
-				name: { contains: searchTerm, mode: "insensitive" },
+				OR: [
+					{ name: { contains: searchTerm, mode: "insensitive" } },
+					{ displayName: { contains: searchTerm, mode: "insensitive" } },
+				],
 				...(excludeUserId ? { id: { not: excludeUserId } } : {}),
 			},
 			take: limit,
 			skip: offset,
 			select: {
 				id: true,
-				name: true,
-				email: true,
+				displayName: true,
 				image: true,
-				profileVisibility: true,
 				xp: true,
-				emailVerified: true,
-				createdAt: true,
-				updatedAt: true,
 			},
 		});
 		return {

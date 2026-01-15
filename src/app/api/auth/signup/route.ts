@@ -3,6 +3,7 @@ import {
 	handleRoute,
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
+import { generateUniqueDisplayName } from "@pointwise/lib/api/users";
 import prisma from "@pointwise/lib/prisma";
 import { parseSignupBody } from "@pointwise/lib/validation/auth";
 import bcrypt from "bcrypt";
@@ -25,10 +26,11 @@ export async function POST(req: Request) {
 		}
 
 		const passwordHash = await bcrypt.hash(password, 12);
+		const displayName = await generateUniqueDisplayName();
 
 		const user = await prisma.user.create({
-			data: { name: name ?? null, email, passwordHash },
-			select: { id: true, email: true, name: true },
+			data: { name: name ?? null, email, passwordHash, displayName },
+			select: { id: true, email: true, name: true, displayName: true },
 		});
 
 		return jsonResponse({ user }, 201);

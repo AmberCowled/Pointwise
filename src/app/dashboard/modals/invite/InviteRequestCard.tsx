@@ -25,7 +25,7 @@ export default function InviteRequestCard({
 	const [selectedRole, setSelectedRole] = useState<"ADMIN" | "USER" | "VIEWER">(
 		"USER",
 	);
-	const userName = invitee.name || "Unknown";
+	const userName = invitee.displayName || "Unknown";
 
 	return (
 		<Container
