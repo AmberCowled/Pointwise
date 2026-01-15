@@ -11,7 +11,7 @@ import {
 	useGetUserQuery,
 	useUpdateUserMutation,
 } from "@pointwise/lib/redux/services/usersApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoCloudUpload, IoSave, IoTrashBin } from "react-icons/io5";
 
 export default function ProfileSettings() {
@@ -21,29 +21,52 @@ export default function ProfileSettings() {
 
 	const user = userData?.user;
 
-	// Form state
-	const [displayName, setDisplayName] = useState(user?.displayName ?? "");
-	const [bio, setBio] = useState(user?.bio ?? "");
-	const [location, setLocation] = useState(user?.location ?? "");
-	const [website, setWebsite] = useState(user?.website ?? "");
+	// Form state - initialize with safe defaults
+	const [displayName, setDisplayName] = useState("");
+	const [bio, setBio] = useState("");
+	const [location, setLocation] = useState("");
+	const [website, setWebsite] = useState("");
+	const [profileVisibility, setProfileVisibility] = useState<
+		"PRIVATE" | "PUBLIC"
+	>("PRIVATE");
+	const [displayNameError, setDisplayNameError] = useState("");
 
 	// Update form state when user data loads
-	useState(() => {
+	useEffect(() => {
 		if (user) {
-			setDisplayName(user.displayName);
-			setBio(user.bio ?? "");
-			setLocation(user.location ?? "");
-			setWebsite(user.website ?? "");
+			setDisplayName(user.displayName || "");
+			setBio(user.bio || "");
+			setLocation(user.location || "");
+			setWebsite(user.website || "");
+			setProfileVisibility(
+				(user.profileVisibility as "PRIVATE" | "PUBLIC") || "PRIVATE",
+			);
 		}
-	});
+	}, [user]);
 
 	const handleSave = async () => {
+		const trimmedDisplayName = displayName.trim();
+
+		// Client-side validation
+		if (!trimmedDisplayName) {
+			setDisplayNameError("Display name is required");
+			showNotification({
+				message: "Display name is required",
+				variant: "error",
+			});
+			return;
+		}
+
+		// Clear any previous errors
+		setDisplayNameError("");
+
 		try {
 			await updateUser({
-				displayName: displayName.trim(),
+				displayName: trimmedDisplayName,
 				bio: bio.trim() || null,
 				location: location.trim() || null,
 				website: website.trim() || null,
+				profileVisibility,
 			}).unwrap();
 
 			showNotification({
@@ -80,7 +103,7 @@ export default function ProfileSettings() {
 					<Container>
 						<ProfilePicture
 							profilePicture={user?.image ?? ""}
-							displayName={user?.name ?? ""}
+							displayName={user?.displayName ?? ""}
 							size="xl"
 						/>
 						<Container direction="vertical" width="full" gap="sm">
@@ -113,8 +136,13 @@ export default function ProfileSettings() {
 							label="Display Name"
 							flex="grow"
 							defaultValue={user.displayName}
-							onChange={setDisplayName}
+							onChange={(value) => {
+								setDisplayName(value);
+								// Clear error when user starts typing
+								if (displayNameError) setDisplayNameError("");
+							}}
 							className="rounded-none"
+							error={displayNameError}
 							required
 						/>
 					</Container>
@@ -173,7 +201,10 @@ export default function ProfileSettings() {
 						<input
 							type="checkbox"
 							className="sr-only peer"
-							defaultChecked={user?.profileVisibility === "PUBLIC"}
+							checked={profileVisibility === "PUBLIC"}
+							onChange={(e) =>
+								setProfileVisibility(e.target.checked ? "PUBLIC" : "PRIVATE")
+							}
 						/>
 						<div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:bg-purple-500/75 transition-colors" />
 						<div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5" />

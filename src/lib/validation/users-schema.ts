@@ -8,7 +8,6 @@ export const UserSchema = z.object({
 	profileVisibility: z.string().nullable(),
 	xp: z.number(),
 	emailVerified: z.boolean().nullable(),
-	// New profile fields
 	displayName: z.string().min(1).max(50), // Required, 1-50 chars
 	bio: z.string().max(500).nullable(), // Optional, max 500 chars
 	location: z.string().max(100).nullable(), // Optional, max 100 chars
@@ -26,6 +25,7 @@ export const UpdateUserProfileSchema = z.object({
 	bio: z.string().max(500).nullable(),
 	location: z.string().max(100).nullable(),
 	website: z.string().url().nullable().or(z.literal("")),
+	profileVisibility: z.enum(["PRIVATE", "PUBLIC"]),
 });
 
 export const UpdateUserProfileResponseSchema = z.object({

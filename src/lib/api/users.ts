@@ -154,6 +154,7 @@ export async function updateUserProfile(
 		bio?: string | null;
 		location?: string | null;
 		website?: string | null;
+		profileVisibility: "PRIVATE" | "PUBLIC";
 	},
 ): Promise<User> {
 	const updatedUser = await prisma.user.update({
@@ -163,6 +164,7 @@ export async function updateUserProfile(
 			bio: profileData.bio,
 			location: profileData.location,
 			website: profileData.website,
+			profileVisibility: profileData.profileVisibility,
 		},
 		select: {
 			id: true,
