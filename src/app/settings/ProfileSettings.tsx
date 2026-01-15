@@ -1,18 +1,88 @@
+"use client";
+
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Grid from "@pointwise/app/components/ui/Grid";
 import Input from "@pointwise/app/components/ui/Input";
 import InputArea from "@pointwise/app/components/ui/InputArea";
+import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
+import {
+	useGetUserQuery,
+	useUpdateUserMutation,
+} from "@pointwise/lib/redux/services/usersApi";
+import { useState } from "react";
 import { IoCloudUpload, IoSave, IoTrashBin } from "react-icons/io5";
 
 export default function ProfileSettings() {
+	const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
+	const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+	const { showNotification } = useNotifications();
+
+	const user = userData?.user;
+
+	// Form state
+	const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+	const [bio, setBio] = useState(user?.bio ?? "");
+	const [location, setLocation] = useState(user?.location ?? "");
+	const [website, setWebsite] = useState(user?.website ?? "");
+
+	// Update form state when user data loads
+	useState(() => {
+		if (user) {
+			setDisplayName(user.displayName);
+			setBio(user.bio ?? "");
+			setLocation(user.location ?? "");
+			setWebsite(user.website ?? "");
+		}
+	});
+
+	const handleSave = async () => {
+		try {
+			await updateUser({
+				displayName: displayName.trim(),
+				bio: bio.trim() || null,
+				location: location.trim() || null,
+				website: website.trim() || null,
+			}).unwrap();
+
+			showNotification({
+				message: "Profile updated successfully",
+				variant: "success",
+			});
+		} catch (_error) {
+			showNotification({
+				message: "Failed to update profile",
+				variant: "error",
+			});
+		}
+	};
+
+	if (isUserLoading) {
+		return (
+			<Container direction="vertical" width="full" className="py-4">
+				<div>Loading...</div>
+			</Container>
+		);
+	}
+
+	if (!user) {
+		return (
+			<Container direction="vertical" width="full" className="py-4">
+				<div>Failed to load user data</div>
+			</Container>
+		);
+	}
 	return (
 		<Container direction="vertical" width="full" className="py-4">
 			<Grid columns={{ default: 1, sm: 2 }}>
 				<Container width="full">
 					<Container>
-						<ProfilePicture profilePicture="" displayName="Amber" size="xl" />
+						<ProfilePicture
+							profilePicture={user?.image ?? ""}
+							displayName={user?.name ?? ""}
+							size="xl"
+						/>
 						<Container direction="vertical" width="full" gap="sm">
 							<Button className="w-full rounded-none">
 								<IoCloudUpload />
@@ -30,13 +100,32 @@ export default function ProfileSettings() {
 			<Container direction="vertical">
 				<Grid columns={{ default: 1, sm: 3 }}>
 					<Container width="full">
-						<Input label="Username" flex="grow" className="rounded-none" />
+						<Input
+							label="Full Name"
+							flex="grow"
+							defaultValue={user.name ?? ""}
+							disabled
+							className="rounded-none"
+						/>
 					</Container>
 					<Container width="full">
-						<Input label="Email" flex="grow" className="rounded-none" />
+						<Input
+							label="Display Name"
+							flex="grow"
+							defaultValue={user.displayName}
+							onChange={setDisplayName}
+							className="rounded-none"
+							required
+						/>
 					</Container>
 					<Container width="full">
-						<Input label="Full Name" flex="grow" className="rounded-none" />
+						<Input
+							label="Email"
+							flex="grow"
+							defaultValue={user.email ?? ""}
+							disabled
+							className="rounded-none"
+						/>
 					</Container>
 				</Grid>
 
@@ -44,17 +133,35 @@ export default function ProfileSettings() {
 					<InputArea
 						flex="grow"
 						label="Bio"
+						defaultValue={user.bio ?? ""}
+						onChange={setBio}
 						className="rounded-none"
 						rows={5}
+						maxLength={500}
 					/>
 				</Container>
 
 				<Grid columns={{ default: 1, sm: 3 }}>
 					<Container width="full">
-						<Input label="Location" flex="grow" className="rounded-none" />
+						<Input
+							label="Location"
+							flex="grow"
+							defaultValue={user.location ?? ""}
+							onChange={setLocation}
+							className="rounded-none"
+							maxLength={100}
+						/>
 					</Container>
 					<Container width="full">
-						<Input label="Website" flex="grow" className="rounded-none" />
+						<Input
+							label="Website"
+							flex="grow"
+							defaultValue={user.website ?? ""}
+							onChange={setWebsite}
+							className="rounded-none"
+							type="url"
+							placeholder="https://example.com"
+						/>
 					</Container>
 				</Grid>
 
@@ -63,7 +170,11 @@ export default function ProfileSettings() {
 						Public Profile
 					</span>
 					<label className="relative inline-flex cursor-pointer">
-						<input type="checkbox" className="sr-only peer" defaultChecked />
+						<input
+							type="checkbox"
+							className="sr-only peer"
+							defaultChecked={user?.profileVisibility === "PUBLIC"}
+						/>
 						<div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:bg-purple-500/75 transition-colors" />
 						<div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5" />
 					</label>
@@ -71,7 +182,12 @@ export default function ProfileSettings() {
 
 				<Container width="full" className="justify-center">
 					<Grid columns={{ default: 1, sm: 3 }}>
-						<Button className="w-full rounded-none">
+						<Button
+							className="w-full rounded-none"
+							onClick={handleSave}
+							disabled={isUpdating}
+							loading={isUpdating}
+						>
 							<IoSave />
 							Save Changes
 						</Button>

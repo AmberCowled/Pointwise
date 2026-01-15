@@ -28,9 +28,14 @@ model User {
 
   profileVisibility ProfileVisibility @default(PRIVATE)
 
+  displayName   String
+  bio          String?
+  location     String?
+  website      String?
+
   accounts Account[]
   sessions Session[]
-  
+
   sentInvites     Invite[] @relation("Inviter")
   receivedInvites Invite[] @relation("Invitee")
 

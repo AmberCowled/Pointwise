@@ -8,11 +8,27 @@ export const UserSchema = z.object({
 	profileVisibility: z.string().nullable(),
 	xp: z.number(),
 	emailVerified: z.boolean().nullable(),
+	// New profile fields
+	displayName: z.string().min(1).max(50), // Required, 1-50 chars
+	bio: z.string().max(500).nullable(), // Optional, max 500 chars
+	location: z.string().max(100).nullable(), // Optional, max 100 chars
+	website: z.string().url().nullable().or(z.literal("")), // Optional URL or empty string
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
 
 export const GetUserResponseSchema = z.object({
+	user: UserSchema,
+});
+
+export const UpdateUserProfileSchema = z.object({
+	displayName: z.string().min(1).max(50),
+	bio: z.string().max(500).nullable(),
+	location: z.string().max(100).nullable(),
+	website: z.string().url().nullable().or(z.literal("")),
+});
+
+export const UpdateUserProfileResponseSchema = z.object({
 	user: UserSchema,
 });
 
@@ -24,7 +40,7 @@ export const SearchUsersRequestSchema = z.object({
 
 export const SearchableUserSchema = z.object({
 	id: z.string(),
-	name: z.string().nullable(),
+	displayName: z.string(),
 	image: z.string().nullable(),
 	xp: z.number(),
 });
@@ -41,6 +57,10 @@ export const SearchUsersResponseSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 export type GetUserResponse = z.infer<typeof GetUserResponseSchema>;
+export type UpdateUserProfile = z.infer<typeof UpdateUserProfileSchema>;
+export type UpdateUserProfileResponse = z.infer<
+	typeof UpdateUserProfileResponseSchema
+>;
 export type SearchUsersRequest = z.infer<typeof SearchUsersRequestSchema>;
 export type SearchUsersResponse = z.infer<typeof SearchUsersResponseSchema>;
 export type SearchableUser = z.infer<typeof SearchableUserSchema>;

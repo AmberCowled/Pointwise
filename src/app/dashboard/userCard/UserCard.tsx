@@ -10,7 +10,7 @@ import UserLevelStats from "./UserLevelStats";
 
 export default function UserCard({ user }: { user: SearchableUser }) {
 	const profilePicture = user.image ?? "";
-	const displayName = user.name ?? "";
+	const displayName = user.displayName;
 
 	return (
 		<>

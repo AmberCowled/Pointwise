@@ -2,22 +2,35 @@ import type {
 	GetUserResponse,
 	SearchUsersRequest,
 	SearchUsersResponse,
+	UpdateUserProfile,
+	UpdateUserProfileResponse,
 } from "@pointwise/lib/validation/users-schema";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const usersApi = createApi({
 	reducerPath: "usersApi",
-	baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
-	tagTypes: ["Users"],
+	baseQuery: fetchBaseQuery({
+		baseUrl: "/api",
+	}),
+	tagTypes: ["User", "Users"],
 	refetchOnFocus: false,
 	refetchOnReconnect: true,
 	endpoints: (builder) => ({
 		// Get user
-		getUser: builder.query<GetUserResponse, string>({
-			query: (id) => ({
-				url: `/users/${id}`,
+		getUser: builder.query<GetUserResponse, void>({
+			query: () => ({
+				url: `/user`,
 			}),
-			providesTags: ["Users"],
+			providesTags: ["User"],
+		}),
+		// Update user profile
+		updateUser: builder.mutation<UpdateUserProfileResponse, UpdateUserProfile>({
+			query: (profileData) => ({
+				url: `/user`,
+				method: "PATCH",
+				body: profileData,
+			}),
+			invalidatesTags: ["User"],
 		}),
 		// Search users
 		searchUsers: builder.query<SearchUsersResponse, SearchUsersRequest>({
@@ -34,4 +47,5 @@ export const usersApi = createApi({
 	}),
 });
 
+export const { useGetUserQuery, useUpdateUserMutation } = usersApi;
 export const { useSearchUsersQuery } = usersApi;
