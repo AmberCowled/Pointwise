@@ -41,12 +41,15 @@ export default function AuthPage() {
 
 	return (
 		<Page height="full" width="full">
-			<Container direction="vertical" gap="none">
+			<Container
+				direction="vertical"
+				className="items-center justify-center min-h-screen"
+			>
 				<Container
 					direction="vertical"
 					width="full"
 					gap="lg"
-					className="pt-10 text-center"
+					className="text-center"
 				>
 					<BrandHeader />
 					<WelcomeBlock tab={tab} />
@@ -54,48 +57,38 @@ export default function AuthPage() {
 
 				<Container
 					direction="vertical"
-					width="full"
-					maxWidth="md"
-					className="text-center pt-5"
+					cosmicBorder
+					width="auto"
+					className="bg-zinc-900/50 p-10"
 				>
-					<Container
-						direction="vertical"
-						width="full"
-						gap="none"
-						cosmicBorder
-						className="bg-zinc-900/50 rounded-sm"
-					>
-						<Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
-						<Container direction="vertical" width="full" gap="none">
-							Test
-						</Container>
-					</Container>
-
-					<Card variant="primary">
-						<Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
-						<div className="relative min-h-[400px]">
-							{isLoading ? (
-								<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-									<Spinner size="lg" variant="primary" type="circular" />
-									<p className="text-sm font-medium text-zinc-300">
-										{isSocialLoading
+					<Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
+					<div className="relative min-h-[400px]">
+						{isLoading ? (
+							<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
+								<Spinner size="lg" variant="primary" type="circular" />
+								<p className="text-sm font-medium text-zinc-300">
+									{isSocialLoading
+										? "Logging In..."
+										: tab === "signin"
 											? "Logging In..."
-											: tab === "signin"
-												? "Logging In..."
-												: "Signing Up..."}
-									</p>
-								</div>
-							) : null}
-							<div className={isLoading ? "invisible" : ""}>
-								<AuthForm tab={tab} onLoadingChange={handleFormLoadingChange} />
-								<Divider label="or" spacing="md" />
-								<SocialAuthButtons
-									onLoadingChange={handleSocialLoadingChange}
-								/>
+											: "Signing Up..."}
+								</p>
 							</div>
+						) : null}
+						<div className={isLoading ? "invisible" : ""}>
+							<AuthForm tab={tab} onLoadingChange={handleFormLoadingChange} />
+							<Divider label="or" spacing="md" />
+							<SocialAuthButtons onLoadingChange={handleSocialLoadingChange} />
 						</div>
-					</Card>
+					</div>
+				</Container>
 
+				<Container
+					direction="vertical"
+					width="full"
+					className="text-center"
+					gap="sm"
+				>
 					<p className="text-sm text-zinc-200 leading-relaxed">
 						Gamify your work. Track your tasks. Level up your productivity.
 					</p>

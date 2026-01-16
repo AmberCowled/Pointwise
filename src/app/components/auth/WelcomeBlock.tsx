@@ -21,7 +21,7 @@ export default function WelcomeBlock({ tab }: Props) {
 
 	return (
 		<Container direction="vertical" gap="none">
-			<h1 className="text-3xl text-zinc-100 font-bold mb-1">{title}</h1>
+			<h1 className="text-3xl text-zinc-100 font-bold">{title}</h1>
 			<p className="text-zinc-200 text-sm">{subtitle}</p>
 		</Container>
 	);
