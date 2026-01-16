@@ -192,28 +192,69 @@ export default function Container({
 	cosmicBorderAnimate = true,
 }: ContainerProps) {
 	// Extract rounded classes from className for cosmic border consistency
-	const extractRoundedClass = (value?: string) =>
-		value?.match(/\brounded(?:-(?:none|sm|md|lg|xl|2xl|3xl|full))?\b/)?.[0];
+	const extractRoundedClasses = (value?: string) =>
+		value?.split(/\s+/).filter((token) => token.startsWith("rounded")) ?? [];
 
-	// Strip border classes when cosmicBorder is enabled
-	const stripBorderClasses = (value?: string) =>
-		value?.replace(/\bborder(?:-\w+)*\b/g, "").trim();
+	const borderWidthPattern =
+		/^border(?:-(?:[trblxy]))?(?:-(?:0|[1-9]\d*|\[[^\]]+\]))?$/;
+	const borderAxisPattern = /^border-(?:x|y)$/;
 
-	const roundedClass = cosmicBorder
-		? extractRoundedClass(className) || "rounded-xl"
-		: "";
+	const extractBorderWidthClasses = (value?: string) => {
+		if (!value) return [];
+		return value
+			.split(/\s+/)
+			.filter(
+				(token) =>
+					borderWidthPattern.test(token) || borderAxisPattern.test(token),
+			);
+	};
+
+	const stripBorderClasses = (value?: string) => {
+		if (!value) return value;
+		return value
+			.split(/\s+/)
+			.filter((token) => !token.startsWith("border"))
+			.join(" ");
+	};
+
+	const roundedClasses = cosmicBorder
+		? extractRoundedClasses(className).length
+			? extractRoundedClasses(className)
+			: ["rounded-xl"]
+		: [];
+	const stripRoundedClasses = (value?: string) => {
+		if (!value) return value;
+		return value
+			.split(/\s+/)
+			.filter((token) => !token.startsWith("rounded"))
+			.join(" ");
+	};
 	const processedClassName = cosmicBorder
-		? stripBorderClasses(className)
+		? stripRoundedClasses(stripBorderClasses(className))
 		: className;
+	const borderWidthClasses = cosmicBorder
+		? extractBorderWidthClasses(className)
+		: [];
+
+	// Extract border width value from classes (e.g., "border-2" -> "2px")
+	const getBorderWidthValue = (classes: string[]) => {
+		for (const cls of classes) {
+			const match = cls.match(/^border-(?:(\d+)|\[([^\]]+)\])$/);
+			if (match) {
+				return match[1] ? `${match[1]}px` : match[2];
+			}
+		}
+		return `${cosmicBorderThickness}px`;
+	};
+
+	const borderWidth = cosmicBorder
+		? getBorderWidthValue(borderWidthClasses)
+		: "0px";
 
 	// Cosmic border styles
 	const cosmicBorderStyle = cosmicBorder
 		? {
-				"--cosmic-border-size": `${cosmicBorderThickness}px`,
-				"--cosmic-border-angle": "0deg",
-				border: `var(--cosmic-border-size) solid transparent`,
-				borderImage: `conic-gradient(from var(--cosmic-border-angle), rgba(124,58,237,1), rgba(236,72,153,1), rgba(59,130,246,1), rgba(124,58,237,1)) 1`,
-				filter: "saturate(140%) brightness(120%)",
+				"--cosmic-border-size": borderWidth,
 			}
 		: {};
 	const maxWidthClasses = {
@@ -277,18 +318,36 @@ export default function Container({
 		// biome-ignore lint/a11y/useKeyWithClickEvents: Container is a layout component that may contain nested interactive elements. Keyboard navigation is handled by nested elements.
 		<div
 			onClick={onClick ? handleClick : undefined}
-			style={{ ...style, ...cosmicBorderStyle }}
+			style={style}
 			className={clsx(
-				"flex items-center",
+				"flex items-center relative",
 				gapClasses[gap],
 				getWidthClasses(),
 				directionClasses[direction],
 				onClick && "cursor-pointer hover:opacity-90 transition-opacity",
-				cosmicBorder && roundedClass,
-				cosmicBorder && cosmicBorderAnimate && "animate-cosmic-border-shift",
 				processedClassName,
+				...(cosmicBorder ? roundedClasses : []),
 			)}
 		>
+			{cosmicBorder && (
+				<div
+					aria-hidden
+					className={clsx(
+						"absolute inset-0 pointer-events-none",
+						roundedClasses.join(" "),
+						cosmicBorderAnimate && "animate-cosmic-border-shift",
+					)}
+					style={{
+						padding: borderWidth,
+						background: `conic-gradient(from var(--cosmic-border-angle), rgba(124,58,237,1), rgba(236,72,153,1), rgba(59,130,246,1), rgba(124,58,237,1))`,
+						WebkitMask: `linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)`,
+						WebkitMaskComposite: "xor",
+						mask: `linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)`,
+						maskComposite: "exclude",
+						filter: "saturate(140%) brightness(120%)",
+					}}
+				/>
+			)}
 			{children}
 		</div>
 	);
