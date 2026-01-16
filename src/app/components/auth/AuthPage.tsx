@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { FaArrowLeft } from "react-icons/fa";
 import BrandHeader from "../general/BrandHeader";
+import { Button } from "../ui/Button";
 import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import Page from "../ui/Page";
 import { Spinner } from "../ui/Spinner";
 import { Tabs } from "../ui/Tabs";
+import { TabsV2 } from "../ui/TabsV2";
 import AuthForm from "./AuthForm";
 import SocialAuthButtons from "./SocialAuthButtons";
 import type { AuthTab } from "./types";
@@ -55,7 +58,9 @@ export default function AuthPage() {
 					width="auto"
 					className="bg-zinc-900/50 p-10"
 				>
-					<Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
+					<Container width="full" gap="none">
+						<TabsV2 items={AUTH_TABS} value={tab} onChange={handleTabChange} />
+					</Container>
 					<div className="relative min-h-[400px]">
 						{isLoading ? (
 							<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">

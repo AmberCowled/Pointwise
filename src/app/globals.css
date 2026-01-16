@@ -87,6 +87,22 @@ body {
 	}
 }
 
+@property --tab-border-position {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 0%;
+}
+
+@keyframes tab-border-oscillate {
+	0%,
+	100% {
+		--tab-border-position: 0%;
+	}
+	50% {
+		--tab-border-position: 100%;
+	}
+}
+
 /* Cosmic background drift animation - very slow and subtle */
 @keyframes cosmic-drift {
 	0% {
@@ -147,12 +163,21 @@ input:-webkit-autofill:active {
 		animation: cosmic-border-shift 20s linear infinite;
 	}
 
+	/* Tab border oscillation animation */
+	.animate-tab-border-oscillate {
+		animation: tab-border-oscillate 8s ease-in-out infinite;
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.animate-cosmic-drift {
 			animation: none;
 		}
 
 		.animate-cosmic-border-shift {
+			animation: none;
+		}
+
+		.animate-tab-border-oscillate {
 			animation: none;
 		}
 	}
