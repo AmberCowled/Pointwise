@@ -344,6 +344,7 @@ export default function Container({
 						maskComposite: "exclude",
 						filter:
 							"drop-shadow(0 0 8px rgba(124,58,237,0.6)) drop-shadow(0 0 16px rgba(236,72,153,0.4)) drop-shadow(0 0 24px rgba(59,130,246,0.3)) saturate(140%) brightness(120%)",
+						mixBlendMode: "screen",
 					}}
 				/>
 			)}

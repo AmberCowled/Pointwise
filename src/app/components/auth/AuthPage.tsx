@@ -44,12 +44,7 @@ export default function AuthPage() {
 				direction="vertical"
 				className="items-center justify-center min-h-screen"
 			>
-				<Container
-					direction="vertical"
-					width="full"
-					gap="lg"
-					className="text-center"
-				>
+				<Container direction="vertical" width="full" className="text-center">
 					<BrandHeader />
 					<WelcomeBlock tab={tab} />
 				</Container>
