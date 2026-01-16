@@ -39,7 +39,7 @@ export default function AuthPage() {
 	}, []);
 
 	return (
-		<Page width="full">
+		<Page width="full" height="auto">
 			<Container
 				direction="vertical"
 				className="items-center justify-center min-h-screen py-5"
