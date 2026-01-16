@@ -46,7 +46,7 @@ export default function Page({
 	return (
 		<div
 			className={clsx(
-				"text-zinc-100 flex flex-col items-center relative overflow-y-auto overflow-x-hidden",
+				"text-zinc-100 flex flex-col items-center relative overflow-hidden",
 				heightStyles[height],
 				widthStyles[width],
 				className,
