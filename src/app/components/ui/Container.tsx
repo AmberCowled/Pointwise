@@ -251,12 +251,6 @@ export default function Container({
 		? getBorderWidthValue(borderWidthClasses)
 		: "0px";
 
-	// Cosmic border styles
-	const cosmicBorderStyle = cosmicBorder
-		? {
-				"--cosmic-border-size": borderWidth,
-			}
-		: {};
 	const maxWidthClasses = {
 		sm: "sm:max-w-sm",
 		md: "sm:max-w-md",
@@ -321,6 +315,7 @@ export default function Container({
 			style={style}
 			className={clsx(
 				"flex items-center relative",
+				cosmicBorder && "overflow-visible",
 				gapClasses[gap],
 				getWidthClasses(),
 				directionClasses[direction],
@@ -339,12 +334,16 @@ export default function Container({
 					)}
 					style={{
 						padding: borderWidth,
-						background: `conic-gradient(from var(--cosmic-border-angle), rgba(124,58,237,1), rgba(236,72,153,1), rgba(59,130,246,1), rgba(124,58,237,1))`,
+						background: `
+							radial-gradient(circle at calc(50% + 50% * cos(var(--cosmic-border-angle))) calc(50% + 50% * sin(var(--cosmic-border-angle))), rgba(124,58,237,1) 0%, transparent 50%),
+							radial-gradient(circle at calc(50% + 50% * cos(calc(var(--cosmic-border-angle) + 180deg))) calc(50% + 50% * sin(calc(var(--cosmic-border-angle) + 180deg))), rgba(236,72,153,1) 0%, transparent 50%)
+						`,
 						WebkitMask: `linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)`,
 						WebkitMaskComposite: "xor",
 						mask: `linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)`,
 						maskComposite: "exclude",
-						filter: "saturate(140%) brightness(120%)",
+						filter:
+							"drop-shadow(0 0 8px rgba(124,58,237,0.6)) drop-shadow(0 0 16px rgba(236,72,153,0.4)) drop-shadow(0 0 24px rgba(59,130,246,0.3)) saturate(140%) brightness(120%)",
 					}}
 				/>
 			)}

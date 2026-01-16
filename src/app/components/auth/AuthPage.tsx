@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import BrandHeader from "../general/BrandHeader";
-import Card from "../ui/Card";
 import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import Page from "../ui/Page";
