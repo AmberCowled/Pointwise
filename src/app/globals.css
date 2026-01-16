@@ -75,6 +75,53 @@ body {
 	}
 }
 
+@property --cosmic-border-angle {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@keyframes cosmic-border-shift {
+	to {
+		--cosmic-border-angle: 360deg;
+	}
+}
+
+@property --tab-border-position {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 0%;
+}
+
+@keyframes tab-border-oscillate {
+	0%,
+	100% {
+		--tab-border-position: 0%;
+	}
+	50% {
+		--tab-border-position: 100%;
+	}
+}
+
+/* Cosmic background drift animation - very slow and subtle */
+@keyframes cosmic-drift {
+	0% {
+		transform: translate3d(0, 0, 0);
+	}
+	25% {
+		transform: translate3d(5px, -3px, 0);
+	}
+	50% {
+		transform: translate3d(-2px, 4px, 0);
+	}
+	75% {
+		transform: translate3d(3px, -2px, 0);
+	}
+	100% {
+		transform: translate3d(0, 0, 0);
+	}
+}
+
 /* Override browser autofill styles for dark theme */
 /* The -webkit-box-shadow with inset creates a background effect */
 /* Using a large shadow (30px) ensures it covers the entire input */
@@ -104,6 +151,35 @@ input:-webkit-autofill:active {
 
 	.animate-scale-bar {
 		animation: scale-bar 1.2s ease-in-out infinite;
+	}
+
+	/* Cosmic drift animation - respects reduced motion preference */
+	.animate-cosmic-drift {
+		animation: cosmic-drift 150s ease-in-out infinite;
+	}
+
+	/* Cosmic border animation (color shift without rotating the element) */
+	.animate-cosmic-border-shift {
+		animation: cosmic-border-shift 20s linear infinite;
+	}
+
+	/* Tab border oscillation animation */
+	.animate-tab-border-oscillate {
+		animation: tab-border-oscillate 8s ease-in-out infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.animate-cosmic-drift {
+			animation: none;
+		}
+
+		.animate-cosmic-border-shift {
+			animation: none;
+		}
+
+		.animate-tab-border-oscillate {
+			animation: none;
+		}
 	}
 
 	/* Screen reader only - visually hidden but accessible to assistive tech */

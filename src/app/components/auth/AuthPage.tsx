@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { FaArrowLeft } from "react-icons/fa";
 import BrandHeader from "../general/BrandHeader";
-import BackgroundGlow from "../ui/BackgroundGlow";
-import Card from "../ui/Card";
+import { Button } from "../ui/Button";
+import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
+import Page from "../ui/Page";
 import { Spinner } from "../ui/Spinner";
 import { Tabs } from "../ui/Tabs";
+import { TabsV2 } from "../ui/TabsV2";
 import AuthForm from "./AuthForm";
 import SocialAuthButtons from "./SocialAuthButtons";
 import type { AuthTab } from "./types";
@@ -39,48 +42,65 @@ export default function AuthPage() {
 	}, []);
 
 	return (
-		<div className="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
-			<BackgroundGlow />
-			<div className="relative z-10 w-full max-w-md flex flex-col items-center text-center">
-				<BrandHeader className="mb-8" />
-				<WelcomeBlock tab={tab} />
-				<main className="w-full">
-					<Card variant="primary">
-						<Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
-						<div className="relative min-h-[400px]">
-							{isLoading ? (
-								<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-									<Spinner size="lg" variant="primary" type="circular" />
-									<p className="text-sm font-medium text-zinc-300">
-										{isSocialLoading
-											? "Logging In..."
-											: tab === "signin"
-												? "Logging In..."
-												: "Signing Up..."}
-									</p>
-								</div>
-							) : null}
-							<div className={isLoading ? "invisible" : ""}>
-								<AuthForm tab={tab} onLoadingChange={handleFormLoadingChange} />
-								<Divider label="or" spacing="md" />
-								<SocialAuthButtons
-									onLoadingChange={handleSocialLoadingChange}
-								/>
-							</div>
-						</div>
-					</Card>
+		<Page height="full" width="full">
+			<Container
+				direction="vertical"
+				className="items-center justify-center min-h-screen"
+			>
+				<Container direction="vertical" width="full" className="text-center">
+					<BrandHeader />
+					<WelcomeBlock tab={tab} />
+				</Container>
 
-					<p className="mt-6 text-sm text-zinc-400 leading-relaxed">
-						Join the millions of productive users who benefit from our Pointwise
-						gamified productivity app. Log in to access your personalised
-						dashboard, track your tasks and have fun being productive.
+				<Container
+					direction="vertical"
+					cosmicBorder
+					width="auto"
+					className="bg-zinc-900/50 p-10"
+				>
+					<Container width="full" gap="none">
+						<TabsV2 items={AUTH_TABS} value={tab} onChange={handleTabChange} />
+					</Container>
+					<div className="relative min-h-[400px]">
+						{isLoading ? (
+							<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
+								<Spinner size="lg" variant="primary" type="circular" />
+								<p className="text-sm font-medium text-zinc-300">
+									{isSocialLoading
+										? "Logging In..."
+										: tab === "signin"
+											? "Logging In..."
+											: "Signing Up..."}
+								</p>
+							</div>
+						) : null}
+						<div className={isLoading ? "invisible" : ""}>
+							<AuthForm tab={tab} onLoadingChange={handleFormLoadingChange} />
+							<Divider label="or" spacing="md" />
+							<SocialAuthButtons onLoadingChange={handleSocialLoadingChange} />
+						</div>
+					</div>
+				</Container>
+
+				<Container
+					direction="vertical"
+					width="full"
+					className="text-center"
+					gap="sm"
+				>
+					<p className="text-sm text-zinc-200 leading-relaxed">
+						Gamify your work. Track your tasks. Level up your productivity.
 					</p>
 
-					<footer className="mt-10 text-xs text-zinc-500">
+					<Container
+						direction="vertical"
+						width="full"
+						className="text-xs text-zinc-300"
+					>
 						© {COPYRIGHT_YEAR} Amber Cowled. All rights reserved.
-					</footer>
-				</main>
-			</div>
-		</div>
+					</Container>
+				</Container>
+			</Container>
+		</Page>
 	);
 }
