@@ -152,6 +152,29 @@ export default function CosmicBackground({
 					`,
 				}}
 			/>
+
+			{/* Cloud layer - Gaussian blurred clouds acting as light texture overlay */}
+			<div
+				className={clsx(
+					"absolute inset-0 pointer-events-none",
+					animate && "animate-cosmic-drift",
+				)}
+				style={{
+					backgroundImage: `
+						radial-gradient(ellipse 400px 200px at 20% 30%, rgba(200,180,255,0.45), transparent 60%),
+						radial-gradient(ellipse 350px 180px at 70% 50%, rgba(180,200,255,0.4), transparent 55%),
+						radial-gradient(ellipse 300px 150px at 45% 75%, rgba(255,180,220,0.38), transparent 50%),
+						radial-gradient(ellipse 450px 220px at 85% 20%, rgba(190,170,255,0.5), transparent 65%),
+						radial-gradient(ellipse 280px 140px at 15% 80%, rgba(255,190,230,0.42), transparent 58%),
+						radial-gradient(ellipse 380px 190px at 60% 40%, rgba(200,185,255,0.46), transparent 62%),
+						radial-gradient(ellipse 320px 160px at 35% 65%, rgba(185,195,255,0.4), transparent 57%),
+						radial-gradient(ellipse 420px 210px at 90% 70%, rgba(195,180,255,0.48), transparent 63%)
+					`,
+					filter: "blur(60px)",
+					mixBlendMode: "overlay",
+					opacity: 0.7,
+				}}
+			/>
 		</div>
 	);
 }
