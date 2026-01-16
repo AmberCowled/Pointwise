@@ -75,6 +75,18 @@ body {
 	}
 }
 
+@property --cosmic-border-angle {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@keyframes cosmic-border-shift {
+	to {
+		--cosmic-border-angle: 360deg;
+	}
+}
+
 /* Cosmic background drift animation - very slow and subtle */
 @keyframes cosmic-drift {
 	0% {
@@ -130,8 +142,17 @@ input:-webkit-autofill:active {
 		animation: cosmic-drift 150s ease-in-out infinite;
 	}
 
+	/* Cosmic border animation (color shift without rotating the element) */
+	.animate-cosmic-border-shift {
+		animation: cosmic-border-shift 20s linear infinite;
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.animate-cosmic-drift {
+			animation: none;
+		}
+
+		.animate-cosmic-border-shift {
 			animation: none;
 		}
 	}

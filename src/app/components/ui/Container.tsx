@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 /**
  * Check if an element is interactive (Link, Button, input, etc.)
@@ -88,6 +88,29 @@ export interface ContainerProps {
 	 * Only fires when clicking non-interactive areas (respects nested Links/Buttons)
 	 */
 	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+
+	/**
+	 * Inline styles for the container
+	 */
+	style?: CSSProperties;
+
+	/**
+	 * Enable cosmic border effect
+	 * @default false
+	 */
+	cosmicBorder?: boolean;
+
+	/**
+	 * Cosmic border thickness in pixels
+	 * @default 2
+	 */
+	cosmicBorderThickness?: number;
+
+	/**
+	 * Enable cosmic border animation
+	 * @default true
+	 */
+	cosmicBorderAnimate?: boolean;
 }
 
 /**
@@ -105,6 +128,9 @@ export interface ContainerProps {
  *   - `"constrained"`: Full width with max-width and padding - use for page-level containers
  * - `fullWidth?: boolean` - Deprecated: Use `width` prop instead (kept for backward compatibility)
  * - `onClick?: (e: React.MouseEvent<HTMLDivElement>) => void` - Click handler (only fires on non-interactive areas)
+ * - `cosmicBorder?: boolean` - Enable cosmic border effect using CSS border-image (default: false)
+ * - `cosmicBorderThickness?: number` - Cosmic border thickness in pixels (default: 2)
+ * - `cosmicBorderAnimate?: boolean` - Enable cosmic border animation (default: true)
  *
  * **Width Behaviors:**
  * - `width="constrained"` (default): Full width (`w-full`), centered with auto margins (`mx-auto`), maximum width constraint, and responsive horizontal padding
@@ -140,6 +166,12 @@ export interface ContainerProps {
  *   <Link href="/details">Details</Link>
  *   <Button onClick={handleSettings}>Settings</Button>
  * </Container>
+ *
+ * // Container with cosmic border effect
+ * <Container cosmicBorder cosmicBorderThickness={3} className="bg-zinc-900/80 p-6 rounded-lg">
+ *   <h2>Cosmic Content</h2>
+ *   <p>Content with animated cosmic border using CSS border-image</p>
+ * </Container>
  * ```
  *
  * @param {ContainerProps} props - The props for the Container component.
@@ -154,7 +186,36 @@ export default function Container({
 	fullWidth = true,
 	gap = "md",
 	onClick,
+	style,
+	cosmicBorder = false,
+	cosmicBorderThickness = 2,
+	cosmicBorderAnimate = true,
 }: ContainerProps) {
+	// Extract rounded classes from className for cosmic border consistency
+	const extractRoundedClass = (value?: string) =>
+		value?.match(/\brounded(?:-(?:none|sm|md|lg|xl|2xl|3xl|full))?\b/)?.[0];
+
+	// Strip border classes when cosmicBorder is enabled
+	const stripBorderClasses = (value?: string) =>
+		value?.replace(/\bborder(?:-\w+)*\b/g, "").trim();
+
+	const roundedClass = cosmicBorder
+		? extractRoundedClass(className) || "rounded-xl"
+		: "";
+	const processedClassName = cosmicBorder
+		? stripBorderClasses(className)
+		: className;
+
+	// Cosmic border styles
+	const cosmicBorderStyle = cosmicBorder
+		? {
+				"--cosmic-border-size": `${cosmicBorderThickness}px`,
+				"--cosmic-border-angle": "0deg",
+				border: `var(--cosmic-border-size) solid transparent`,
+				borderImage: `conic-gradient(from var(--cosmic-border-angle), rgba(124,58,237,1), rgba(236,72,153,1), rgba(59,130,246,1), rgba(124,58,237,1)) 1`,
+				filter: "saturate(140%) brightness(120%)",
+			}
+		: {};
 	const maxWidthClasses = {
 		sm: "sm:max-w-sm",
 		md: "sm:max-w-md",
@@ -216,13 +277,16 @@ export default function Container({
 		// biome-ignore lint/a11y/useKeyWithClickEvents: Container is a layout component that may contain nested interactive elements. Keyboard navigation is handled by nested elements.
 		<div
 			onClick={onClick ? handleClick : undefined}
+			style={{ ...style, ...cosmicBorderStyle }}
 			className={clsx(
 				"flex items-center",
 				gapClasses[gap],
 				getWidthClasses(),
 				directionClasses[direction],
 				onClick && "cursor-pointer hover:opacity-90 transition-opacity",
-				className,
+				cosmicBorder && roundedClass,
+				cosmicBorder && cosmicBorderAnimate && "animate-cosmic-border-shift",
+				processedClassName,
 			)}
 		>
 			{children}

@@ -3,8 +3,9 @@
 import { useCallback, useState } from "react";
 import BrandHeader from "../general/BrandHeader";
 import Card from "../ui/Card";
-import CosmicBackground from "../ui/CosmicBackground";
+import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
+import Page from "../ui/Page";
 import { Spinner } from "../ui/Spinner";
 import { Tabs } from "../ui/Tabs";
 import AuthForm from "./AuthForm";
@@ -39,12 +40,37 @@ export default function AuthPage() {
 	}, []);
 
 	return (
-		<div className="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
-			<CosmicBackground />
-			<div className="relative z-10 w-full max-w-md flex flex-col items-center text-center">
-				<BrandHeader className="mb-8" />
-				<WelcomeBlock tab={tab} />
-				<main className="w-full">
+		<Page height="full" width="full">
+			<Container direction="vertical" gap="none">
+				<Container
+					direction="vertical"
+					width="full"
+					gap="lg"
+					className="pt-10 text-center"
+				>
+					<BrandHeader />
+					<WelcomeBlock tab={tab} />
+				</Container>
+
+				<Container
+					direction="vertical"
+					width="full"
+					maxWidth="md"
+					className="text-center pt-5"
+				>
+					<Container
+						direction="vertical"
+						width="full"
+						gap="none"
+						cosmicBorder
+						className="bg-zinc-900/50 p-3 rounded-lg"
+					>
+						<Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
+						<Container direction="vertical" width="full" gap="none">
+							Test
+						</Container>
+					</Container>
+
 					<Card variant="primary">
 						<Tabs items={AUTH_TABS} value={tab} onChange={handleTabChange} />
 						<div className="relative min-h-[400px]">
@@ -70,17 +96,19 @@ export default function AuthPage() {
 						</div>
 					</Card>
 
-					<p className="mt-6 text-sm text-zinc-400 leading-relaxed">
-						Join the millions of productive users who benefit from our Pointwise
-						gamified productivity app. Log in to access your personalised
-						dashboard, track your tasks and have fun being productive.
+					<p className="text-sm text-zinc-200 leading-relaxed">
+						Gamify your work. Track your tasks. Level up your productivity.
 					</p>
 
-					<footer className="mt-10 text-xs text-zinc-500">
+					<Container
+						direction="vertical"
+						width="full"
+						className="text-xs text-zinc-300"
+					>
 						© {COPYRIGHT_YEAR} Amber Cowled. All rights reserved.
-					</footer>
-				</main>
-			</div>
-		</div>
+					</Container>
+				</Container>
+			</Container>
+		</Page>
 	);
 }

@@ -52,7 +52,7 @@ export default function Page({
 				className,
 			)}
 		>
-			{backgroundGlow && <CosmicBackground animate={true} intensity="high" />}
+			{backgroundGlow && <CosmicBackground animate={true} />}
 			{children}
 		</div>
 	);
