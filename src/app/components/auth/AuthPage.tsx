@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from "react";
 import BrandHeader from "../general/BrandHeader";
-import BackgroundGlow from "../ui/BackgroundGlow";
 import Card from "../ui/Card";
+import CosmicBackground from "../ui/CosmicBackground";
 import { Divider } from "../ui/Divider";
 import { Spinner } from "../ui/Spinner";
 import { Tabs } from "../ui/Tabs";
@@ -40,7 +40,7 @@ export default function AuthPage() {
 
 	return (
 		<div className="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
-			<BackgroundGlow />
+			<CosmicBackground />
 			<div className="relative z-10 w-full max-w-md flex flex-col items-center text-center">
 				<BrandHeader className="mb-8" />
 				<WelcomeBlock tab={tab} />

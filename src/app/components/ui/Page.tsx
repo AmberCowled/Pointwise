@@ -1,4 +1,4 @@
-import BackgroundGlow from "@pointwise/app/components/ui/BackgroundGlow";
+import CosmicBackground from "@pointwise/app/components/ui/CosmicBackground";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
@@ -46,13 +46,13 @@ export default function Page({
 	return (
 		<div
 			className={clsx(
-				"bg-zinc-950 text-zinc-100 flex flex-col items-center relative overflow-hidden",
+				"text-zinc-100 flex flex-col items-center relative overflow-hidden",
 				heightStyles[height],
 				widthStyles[width],
 				className,
 			)}
 		>
-			{backgroundGlow && <BackgroundGlow />}
+			{backgroundGlow && <CosmicBackground animate={true} intensity="high" />}
 			{children}
 		</div>
 	);
