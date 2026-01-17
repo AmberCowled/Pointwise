@@ -20,8 +20,8 @@ const variantBorderStyles: Record<DividerVariant, string> = {
 };
 
 const variantLabelStyles: Record<DividerVariant, string> = {
-	subtle: "bg-zinc-900/60 text-zinc-400",
-	prominent: "bg-zinc-900/80 text-zinc-300",
+	subtle: "bg-zinc-900/50 text-zinc-400",
+	prominent: "bg-zinc-900/50 text-zinc-300",
 };
 
 const spacingStyles: Record<

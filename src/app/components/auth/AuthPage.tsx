@@ -42,10 +42,10 @@ export default function AuthPage() {
 	}, []);
 
 	return (
-		<Page height="full" width="full">
+		<Page width="full">
 			<Container
 				direction="vertical"
-				className="items-center justify-center min-h-screen"
+				className="items-center justify-center min-h-screen p-10"
 			>
 				<Container direction="vertical" width="full" className="text-center">
 					<BrandHeader />

@@ -113,6 +113,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 						flex="grow"
 						onChange={setFirstName}
 						disabled={isLoading}
+						className="bg-zinc-900/50"
 					/>
 					<Input
 						id={"lastName"}
@@ -125,6 +126,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 						flex="grow"
 						onChange={setLastName}
 						disabled={isLoading}
+						className="bg-zinc-900/50"
 					/>
 				</Grid>
 			)}
@@ -143,6 +145,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 				error={emailError}
 				required
 				disabled={isLoading}
+				className="bg-zinc-900/50"
 			/>
 
 			<div className="space-y-2">
@@ -159,6 +162,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 					autoComplete={tab === "signin" ? "current-password" : "new-password"}
 					showPasswordToggle
 					error={passwordError}
+					className="bg-zinc-900/50"
 					description={
 						tab === "signup"
 							? passwordStrengthText
@@ -181,6 +185,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 						size="sm"
 						onChange={setRemember}
 						disabled={isLoading}
+						className="bg-zinc-900/50"
 					/>
 					<button
 						type="button"
