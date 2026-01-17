@@ -56,7 +56,7 @@ export default function AuthPage() {
 					direction="vertical"
 					cosmicBorder
 					width="auto"
-					className="bg-zinc-900/50 p-10"
+					className="bg-zinc-900/50 p-10 rounded-xl"
 				>
 					<Container width="full" gap="none">
 						<TabsV2 items={AUTH_TABS} value={tab} onChange={handleTabChange} />

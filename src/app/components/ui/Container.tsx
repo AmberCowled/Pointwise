@@ -220,7 +220,7 @@ export default function Container({
 	const roundedClasses = cosmicBorder
 		? extractRoundedClasses(className).length
 			? extractRoundedClasses(className)
-			: ["rounded-xl"]
+			: ["rounded-none"]
 		: [];
 	const stripRoundedClasses = (value?: string) => {
 		if (!value) return value;
