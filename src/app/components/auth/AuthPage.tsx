@@ -1,14 +1,11 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { FaArrowLeft } from "react-icons/fa";
 import BrandHeader from "../general/BrandHeader";
-import { Button } from "../ui/Button";
 import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import Page from "../ui/Page";
 import { Spinner } from "../ui/Spinner";
-import { Tabs } from "../ui/Tabs";
 import { TabsV2 } from "../ui/TabsV2";
 import AuthForm from "./AuthForm";
 import SocialAuthButtons from "./SocialAuthButtons";
@@ -42,10 +39,10 @@ export default function AuthPage() {
 	}, []);
 
 	return (
-		<Page height="full" width="full">
+		<Page width="full">
 			<Container
 				direction="vertical"
-				className="items-center justify-center min-h-screen"
+				className="items-center justify-center min-h-screen py-5"
 			>
 				<Container direction="vertical" width="full" className="text-center">
 					<BrandHeader />
