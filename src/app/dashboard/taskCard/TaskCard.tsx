@@ -85,7 +85,7 @@ export default function TaskCard({
 				direction="vertical"
 				gap="sm"
 				width="full"
-				className="bg-black/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer p-4"
+				className="bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer p-4"
 				onClick={() => {
 					if (hasWriteAccess(project.role) && task.status !== "COMPLETED") {
 						Modal.Manager.open(`update-task-modal-${task.id}`);

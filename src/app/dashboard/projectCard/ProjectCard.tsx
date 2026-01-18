@@ -32,7 +32,7 @@ export default function ProjectCard({
 				width="full"
 				direction="vertical"
 				gap="none"
-				className="bg-black/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer px-4 py-2"
+				className="bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer px-4 py-2"
 				onClick={() => {
 					if (overrideOnClick) {
 						overrideOnClick();

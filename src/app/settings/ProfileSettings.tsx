@@ -188,7 +188,7 @@ export default function ProfileSettings() {
 				</Grid>
 
 				<Container width="full" className="pb-3 border-b border-zinc-800">
-					<span className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+					<span className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
 						Public Profile
 					</span>
 					<label className="relative inline-flex cursor-pointer">
