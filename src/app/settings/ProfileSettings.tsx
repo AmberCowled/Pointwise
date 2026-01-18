@@ -107,11 +107,11 @@ export default function ProfileSettings() {
 							size="xl"
 						/>
 						<Container direction="vertical" width="full" gap="sm">
-							<Button className="w-full rounded-none">
+							<Button className="w-full">
 								<IoCloudUpload />
 								Upload New
 							</Button>
-							<Button variant="secondary" className="w-full rounded-none">
+							<Button variant="secondary" className="w-full">
 								<IoTrashBin />
 								Remove
 							</Button>
@@ -120,7 +120,7 @@ export default function ProfileSettings() {
 				</Container>
 			</Grid>
 
-			<Container direction="vertical">
+			<Container direction="vertical" width="full">
 				<Grid columns={{ default: 1, sm: 3 }}>
 					<Container width="full">
 						<Input
@@ -128,7 +128,6 @@ export default function ProfileSettings() {
 							flex="grow"
 							defaultValue={user.name ?? ""}
 							disabled
-							className="rounded-none"
 						/>
 					</Container>
 					<Container width="full">
@@ -141,7 +140,6 @@ export default function ProfileSettings() {
 								// Clear error when user starts typing
 								if (displayNameError) setDisplayNameError("");
 							}}
-							className="rounded-none"
 							error={displayNameError}
 							required
 						/>
@@ -152,7 +150,6 @@ export default function ProfileSettings() {
 							flex="grow"
 							defaultValue={user.email ?? ""}
 							disabled
-							className="rounded-none"
 						/>
 					</Container>
 				</Grid>
@@ -163,7 +160,6 @@ export default function ProfileSettings() {
 						label="Bio"
 						defaultValue={user.bio ?? ""}
 						onChange={setBio}
-						className="rounded-none"
 						rows={5}
 						maxLength={500}
 					/>
@@ -176,7 +172,6 @@ export default function ProfileSettings() {
 							flex="grow"
 							defaultValue={user.location ?? ""}
 							onChange={setLocation}
-							className="rounded-none"
 							maxLength={100}
 						/>
 					</Container>
@@ -186,7 +181,6 @@ export default function ProfileSettings() {
 							flex="grow"
 							defaultValue={user.website ?? ""}
 							onChange={setWebsite}
-							className="rounded-none"
 							type="url"
 							placeholder="https://example.com"
 						/>
@@ -214,7 +208,7 @@ export default function ProfileSettings() {
 				<Container width="full" className="justify-center">
 					<Grid columns={{ default: 1, sm: 3 }}>
 						<Button
-							className="w-full rounded-none"
+							className="w-full"
 							onClick={handleSave}
 							disabled={isUpdating}
 							loading={isUpdating}
