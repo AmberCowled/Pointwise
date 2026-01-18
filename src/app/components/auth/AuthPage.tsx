@@ -42,7 +42,7 @@ export default function AuthPage() {
 		<Page width="full">
 			<Container
 				direction="vertical"
-				className="items-center justify-center min-h-screen py-5"
+				className="items-center justify-center min-h-screen p-10"
 			>
 				<Container direction="vertical" width="full" className="text-center">
 					<BrandHeader />
@@ -53,7 +53,7 @@ export default function AuthPage() {
 					direction="vertical"
 					cosmicBorder
 					width="auto"
-					className="bg-zinc-900/50 p-10"
+					className="bg-zinc-900/50 p-10 rounded-xl"
 				>
 					<Container width="full" gap="none">
 						<TabsV2 items={AUTH_TABS} value={tab} onChange={handleTabChange} />

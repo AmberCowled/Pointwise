@@ -19,7 +19,7 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 				direction="vertical"
 				width="full"
 				gap="none"
-				className="bg-zinc-800/50 border border-zinc-700/50 rounded-sm p-2 pb-0"
+				className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-2 pb-0"
 			>
 				<Container width="full" className="border-b border-zinc-700/50 pb-2">
 					<ProfilePicture

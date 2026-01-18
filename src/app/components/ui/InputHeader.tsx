@@ -27,7 +27,7 @@ export function InputHeader({
 	if (!hasContent) return null;
 
 	const baseClasses =
-		"flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500";
+		"flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400";
 
 	const left = (
 		<>

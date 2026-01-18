@@ -19,7 +19,7 @@ export default function Navbar() {
 			direction="vertical"
 			gap="sm"
 			width="full"
-			className="border-b border-white/10 bg-zinc-950 z-1"
+			className="border-b border-white/10 bg-black/75 z-1"
 		>
 			<Container className="pt-2" gap="sm">
 				<BrandHeader size="small" showText={false} showEyebrow={true} />
