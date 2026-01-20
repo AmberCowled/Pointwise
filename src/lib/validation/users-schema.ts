@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const DisplayNameSchema = z.string().min(1).max(50);
+
 export const UserSchema = z.object({
 	id: z.string(),
 	name: z.string().nullable(),
@@ -8,7 +10,7 @@ export const UserSchema = z.object({
 	profileVisibility: z.string().nullable(),
 	xp: z.number(),
 	emailVerified: z.boolean().nullable(),
-	displayName: z.string().min(1).max(50), // Required, 1-50 chars
+	displayName: DisplayNameSchema, // Required, 1-50 chars
 	bio: z.string().max(500).nullable(), // Optional, max 500 chars
 	location: z.string().max(100).nullable(), // Optional, max 100 chars
 	website: z.string().url().nullable().or(z.literal("")), // Optional URL or empty string
@@ -21,7 +23,7 @@ export const GetUserResponseSchema = z.object({
 });
 
 export const UpdateUserProfileSchema = z.object({
-	displayName: z.string().min(1).max(50),
+	displayName: DisplayNameSchema,
 	bio: z.string().max(500).nullable(),
 	location: z.string().max(100).nullable(),
 	website: z.string().url().nullable().or(z.literal("")),
@@ -64,3 +66,18 @@ export type UpdateUserProfileResponse = z.infer<
 export type SearchUsersRequest = z.infer<typeof SearchUsersRequestSchema>;
 export type SearchUsersResponse = z.infer<typeof SearchUsersResponseSchema>;
 export type SearchableUser = z.infer<typeof SearchableUserSchema>;
+
+export const CheckDisplayNameResponseSchema = z.object({
+	available: z.boolean(),
+});
+
+export const CheckDisplayNameAvailabilitySchema = z.object({
+	name: DisplayNameSchema,
+});
+
+export type CheckDisplayNameResponse = z.infer<
+	typeof CheckDisplayNameResponseSchema
+>;
+export type CheckDisplayNameAvailability = z.infer<
+	typeof CheckDisplayNameAvailabilitySchema
+>;

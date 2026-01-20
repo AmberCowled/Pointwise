@@ -8,6 +8,7 @@ import InputArea from "@pointwise/app/components/ui/InputArea";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
 import {
+	useCheckDisplayNameAvailabilityQuery,
 	useGetUserQuery,
 	useUpdateUserMutation,
 } from "@pointwise/lib/redux/services/usersApi";
@@ -23,6 +24,7 @@ export default function ProfileSettings() {
 
 	// Form state - initialize with safe defaults
 	const [displayName, setDisplayName] = useState("");
+	const [debouncedDisplayName, setDebouncedDisplayName] = useState("");
 	const [bio, setBio] = useState("");
 	const [location, setLocation] = useState("");
 	const [website, setWebsite] = useState("");
@@ -35,6 +37,7 @@ export default function ProfileSettings() {
 	useEffect(() => {
 		if (user) {
 			setDisplayName(user.displayName || "");
+			setDebouncedDisplayName(user.displayName || "");
 			setBio(user.bio || "");
 			setLocation(user.location || "");
 			setWebsite(user.website || "");
@@ -43,6 +46,35 @@ export default function ProfileSettings() {
 			);
 		}
 	}, [user]);
+
+	// Debounce display name changes
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedDisplayName(displayName);
+		}, 500);
+		return () => clearTimeout(timer);
+	}, [displayName]);
+
+	const isDisplayNameChanged =
+		user && displayName.trim() !== (user.displayName || "").trim();
+
+	const { data: availabilityData, isFetching: isCheckingAvailability } =
+		useCheckDisplayNameAvailabilityQuery(
+			{ name: debouncedDisplayName.trim() },
+			{
+				skip: !isDisplayNameChanged || !debouncedDisplayName.trim(),
+			},
+		);
+
+	const isNameTaken =
+		isDisplayNameChanged && availabilityData?.available === false;
+	const isNameAvailable =
+		isDisplayNameChanged &&
+		availabilityData?.available === true &&
+		displayName === debouncedDisplayName;
+	const isChecking =
+		isDisplayNameChanged &&
+		(isCheckingAvailability || displayName !== debouncedDisplayName);
 
 	const handleSave = async () => {
 		const trimmedDisplayName = displayName.trim();
@@ -99,8 +131,8 @@ export default function ProfileSettings() {
 	return (
 		<Container direction="vertical" width="full" className="py-4">
 			<Grid columns={{ default: 1, sm: 2 }}>
-				<Container width="full">
-					<Container>
+				<Container width="full" className="items-start">
+					<Container className="items-start">
 						<ProfilePicture
 							profilePicture={user?.image ?? ""}
 							displayName={user?.displayName ?? ""}
@@ -122,7 +154,7 @@ export default function ProfileSettings() {
 
 			<Container direction="vertical" width="full">
 				<Grid columns={{ default: 1, sm: 3 }}>
-					<Container width="full">
+					<Container width="full" className="items-start">
 						<Input
 							label="Full Name"
 							flex="grow"
@@ -130,7 +162,7 @@ export default function ProfileSettings() {
 							disabled
 						/>
 					</Container>
-					<Container width="full">
+					<Container width="full" className="items-start">
 						<Input
 							label="Display Name"
 							flex="grow"
@@ -140,11 +172,26 @@ export default function ProfileSettings() {
 								// Clear error when user starts typing
 								if (displayNameError) setDisplayNameError("");
 							}}
-							error={displayNameError}
+							error={
+								isNameTaken
+									? "This display name is already taken"
+									: displayNameError
+							}
+							description={
+								isChecking ? (
+									<span className="text-indigo-400">
+										Checking availability...
+									</span>
+								) : isNameAvailable ? (
+									<span className="text-emerald-400">
+										Display name is available
+									</span>
+								) : null
+							}
 							required
 						/>
 					</Container>
-					<Container width="full">
+					<Container width="full" className="items-start">
 						<Input
 							label="Email"
 							flex="grow"
@@ -154,7 +201,7 @@ export default function ProfileSettings() {
 					</Container>
 				</Grid>
 
-				<Container width="full">
+				<Container width="full" className="items-start">
 					<InputArea
 						flex="grow"
 						label="Bio"
@@ -166,7 +213,7 @@ export default function ProfileSettings() {
 				</Container>
 
 				<Grid columns={{ default: 1, sm: 3 }}>
-					<Container width="full">
+					<Container width="full" className="items-start">
 						<Input
 							label="Location"
 							flex="grow"
@@ -175,7 +222,7 @@ export default function ProfileSettings() {
 							maxLength={100}
 						/>
 					</Container>
-					<Container width="full">
+					<Container width="full" className="items-start">
 						<Input
 							label="Website"
 							flex="grow"
@@ -210,7 +257,7 @@ export default function ProfileSettings() {
 						<Button
 							className="w-full"
 							onClick={handleSave}
-							disabled={isUpdating}
+							disabled={isUpdating || isChecking || isNameTaken}
 							loading={isUpdating}
 						>
 							<IoSave />

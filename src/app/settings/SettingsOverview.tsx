@@ -1,18 +1,9 @@
 "use client";
 
-import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
-import Grid from "@pointwise/app/components/ui/Grid";
 import { TabsV2 } from "@pointwise/app/components/ui/TabsV2";
-import clsx from "clsx";
 import { useState } from "react";
-import {
-	IoColorPaletteOutline,
-	IoLockClosedOutline,
-	IoNotificationsOutline,
-	IoPersonOutline,
-	IoSettings,
-} from "react-icons/io5";
+import { IoSettings } from "react-icons/io5";
 import ProfileSettings from "./ProfileSettings";
 
 const TABS = [

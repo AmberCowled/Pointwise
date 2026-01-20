@@ -373,11 +373,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 				)}
 			</div>
 
-			{description && <p className="text-xs text-zinc-500">{description}</p>}
-
-			{errorMessage && (
-				<p className="text-xs font-medium text-rose-400">{errorMessage}</p>
-			)}
+			{description || errorMessage ? (
+				<div className="min-h-5 space-y-1">
+					{description && (
+						<p className="text-xs text-zinc-500">{description}</p>
+					)}
+					{errorMessage && (
+						<p className="text-xs font-medium text-rose-400">{errorMessage}</p>
+					)}
+				</div>
+			) : null}
 		</div>
 	);
 });

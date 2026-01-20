@@ -92,6 +92,31 @@ export async function generateUniqueDisplayName(): Promise<string> {
 	return `User${Date.now()}`;
 }
 
+/**
+ * Check if a display name is available (not taken by another user).
+ * Case-insensitive check.
+ */
+export async function isDisplayNameAvailable(
+	displayName: string,
+	currentUserId?: string,
+): Promise<boolean> {
+	const trimmedName = displayName.trim();
+	if (!trimmedName) return false;
+
+	const existing = await prisma.user.findFirst({
+		where: {
+			displayName: {
+				equals: trimmedName,
+				mode: "insensitive",
+			},
+			...(currentUserId ? { id: { not: currentUserId } } : {}),
+		},
+		select: { id: true },
+	});
+
+	return !existing;
+}
+
 export async function getUser(id: string): Promise<User> {
 	// First, check if user exists and has displayName
 	const userCheck = await prisma.user.findUnique({
@@ -157,6 +182,26 @@ export async function updateUserProfile(
 		profileVisibility: "PRIVATE" | "PUBLIC";
 	},
 ): Promise<User> {
+	// Check if displayName is unique if it's being changed
+	const currentuser = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { displayName: true },
+	});
+
+	if (
+		currentuser &&
+		currentuser.displayName.toLowerCase() !==
+			profileData.displayName.toLowerCase()
+	) {
+		const available = await isDisplayNameAvailable(
+			profileData.displayName,
+			userId,
+		);
+		if (!available) {
+			throw new Error("DISPLAY_NAME_TAKEN");
+		}
+	}
+
 	const updatedUser = await prisma.user.update({
 		where: { id: userId },
 		data: {
