@@ -1,4 +1,6 @@
 import type {
+	CheckDisplayNameAvailability,
+	CheckDisplayNameResponse,
 	GetUserResponse,
 	SearchUsersRequest,
 	SearchUsersResponse,
@@ -44,8 +46,22 @@ export const usersApi = createApi({
 			}),
 			providesTags: ["Users"],
 		}),
+		// Check display name availability
+		checkDisplayNameAvailability: builder.query<
+			CheckDisplayNameResponse,
+			CheckDisplayNameAvailability
+		>({
+			query: ({ name }) => ({
+				url: "/user/check-availability",
+				params: { name },
+			}),
+		}),
 	}),
 });
 
-export const { useGetUserQuery, useUpdateUserMutation } = usersApi;
+export const {
+	useGetUserQuery,
+	useUpdateUserMutation,
+	useCheckDisplayNameAvailabilityQuery,
+} = usersApi;
 export const { useSearchUsersQuery } = usersApi;
