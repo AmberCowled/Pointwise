@@ -45,8 +45,7 @@ export default function SettingsOverview() {
 				direction="vertical"
 				width="full"
 				gap="none"
-				cosmicBorder
-				className="rounded-xl bg-zinc-900/50 border-zinc-800 my-2 p-5"
+				className="rounded-xl bg-zinc-900/75 border-zinc-800 my-2 p-5"
 			>
 				<Container
 					width="full"
