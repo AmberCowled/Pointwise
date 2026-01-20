@@ -47,6 +47,7 @@ export function ModalOverlay({
 					} as React.CSSProperties
 				}
 				aria-hidden="true"
+				onClick={(e) => e.stopPropagation()}
 			/>
 		</TransitionChild>
 	);

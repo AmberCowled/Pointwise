@@ -329,6 +329,7 @@ export function ModalContainer({
 			onClose={isStatic ? () => {} : handleClose}
 			static={isStatic || shouldDisableFocusTrap}
 			initialFocus={initialFocusRef}
+			onClick={(e) => e.stopPropagation()}
 		>
 			<ModalOverlay
 				className={overlayClassName}
