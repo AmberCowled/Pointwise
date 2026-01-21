@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Image from "next/image";
 import { IoPersonCircle } from "react-icons/io5";
 
@@ -8,14 +9,16 @@ const sizeMappings = {
 	md: { dimension: 54, className: "w-[54px] h-[54px]" },
 	lg: { dimension: 64, className: "w-16 h-16" },
 	xl: { dimension: 80, className: "w-20 h-20" },
+	full: { dimension: 0, className: "w-full h-full" },
 };
 
 interface ProfilePictureProps {
 	profilePicture: string;
 	displayName: string;
 	href?: string;
-	size?: "xs" | "sm" | "md" | "lg" | "xl";
+	size?: "xs" | "sm" | "md" | "lg" | "xl" | "full";
 	disabled?: boolean;
+	className?: string;
 }
 
 export default function ProfilePicture({
@@ -24,8 +27,11 @@ export default function ProfilePicture({
 	href,
 	size = "md",
 	disabled = false,
+	className: customClassName,
 }: ProfilePictureProps) {
 	const { dimension, className } = sizeMappings[size];
+
+	const isBlob = profilePicture?.startsWith("blob:");
 
 	const content = (
 		<>
@@ -33,9 +39,10 @@ export default function ProfilePicture({
 				<Image
 					src={profilePicture}
 					alt={displayName}
-					width={dimension}
-					height={dimension}
-					className="rounded-full"
+					width={dimension || 500}
+					height={dimension || 500}
+					className="rounded-full w-full h-full object-cover"
+					unoptimized={isBlob}
 				/>
 			) : (
 				<IoPersonCircle className="w-full h-full text-zinc-400 scale-120" />
@@ -43,16 +50,18 @@ export default function ProfilePicture({
 		</>
 	);
 
+	const containerClasses = clsx(
+		className,
+		"flex items-center justify-center overflow-hidden rounded-full",
+		customClassName,
+	);
+
 	if (disabled || !href) {
-		return (
-			<div className={`${className} flex items-center justify-center`}>
-				{content}
-			</div>
-		);
+		return <div className={containerClasses}>{content}</div>;
 	}
 
 	return (
-		<a href={href} className={`${className} flex items-center justify-center`}>
+		<a href={href} className={containerClasses}>
 			{content}
 		</a>
 	);

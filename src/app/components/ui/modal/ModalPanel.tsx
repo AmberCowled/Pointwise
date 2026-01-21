@@ -112,7 +112,7 @@ export function ModalPanel({
 			>
 				<DialogPanel
 					className={clsx(
-						"relative flex h-screen w-full max-w-full flex-col bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40",
+						"relative flex h-dvh w-full max-w-full flex-col bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40",
 						className,
 					)}
 					style={

@@ -14,6 +14,7 @@ export const UserSchema = z.object({
 	bio: z.string().max(500).nullable(), // Optional, max 500 chars
 	location: z.string().max(100).nullable(), // Optional, max 100 chars
 	website: z.string().url().nullable().or(z.literal("")), // Optional URL or empty string
+	gender: z.string().nullable(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
@@ -28,6 +29,8 @@ export const UpdateUserProfileSchema = z.object({
 	location: z.string().max(100).nullable(),
 	website: z.string().url().nullable().or(z.literal("")),
 	profileVisibility: z.enum(["PRIVATE", "PUBLIC"]),
+	image: z.string().url().nullable().optional(),
+	gender: z.string().nullable().optional(),
 });
 
 export const UpdateUserProfileResponseSchema = z.object({

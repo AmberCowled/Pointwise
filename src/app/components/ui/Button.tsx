@@ -34,7 +34,7 @@ export interface ButtonProps
 }
 
 const baseStyle =
-	"relative overflow-hidden rounded-lg py-2.5 text-sm font-medium text-zinc-100 transition focus:outline-none";
+	"relative inline-flex items-center justify-center overflow-hidden rounded-lg py-2.5 text-sm font-medium text-zinc-100 transition focus:outline-none";
 
 const notificationStyle =
 	"relative rounded-full p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200";

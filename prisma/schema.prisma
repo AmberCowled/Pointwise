@@ -32,6 +32,7 @@ model User {
   bio          String?
   location     String?
   website      String?
+  gender       String?
 
   accounts Account[]
   sessions Session[]
