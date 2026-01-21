@@ -1,3 +1,4 @@
+import { utapi } from "@pointwise/lib/api/utapi";
 import prisma from "@pointwise/lib/prisma";
 import {
 	type SearchableUser,
@@ -155,6 +156,7 @@ export async function getUser(id: string): Promise<User> {
 			bio: true,
 			location: true,
 			website: true,
+			gender: true,
 			createdAt: true,
 			updatedAt: true,
 		},
@@ -180,12 +182,14 @@ export async function updateUserProfile(
 		location?: string | null;
 		website?: string | null;
 		profileVisibility: "PRIVATE" | "PUBLIC";
+		image?: string | null;
+		gender?: string | null;
 	},
 ): Promise<User> {
 	// Check if displayName is unique if it's being changed
 	const currentuser = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { displayName: true },
+		select: { displayName: true, image: true },
 	});
 
 	if (
@@ -202,6 +206,31 @@ export async function updateUserProfile(
 		}
 	}
 
+	// Handle old image deletion if it changed
+	// We only delete if profileData.image is explicitly provided (string or null)
+	// and it's different from the current active image.
+	if (
+		currentuser &&
+		profileData.image !== undefined &&
+		currentuser.image !== profileData.image
+	) {
+		const oldImage = currentuser.image;
+		if (
+			oldImage &&
+			(oldImage.includes("utfs.io") || oldImage.includes("ufs.sh"))
+		) {
+			const fileKey = oldImage.split("/f/")[1]?.split("?")[0];
+			if (fileKey) {
+				try {
+					await utapi.deleteFiles(fileKey);
+					console.log("Deleted old profile picture:", fileKey);
+				} catch (error) {
+					console.error("Failed to delete old profile picture:", error);
+				}
+			}
+		}
+	}
+
 	const updatedUser = await prisma.user.update({
 		where: { id: userId },
 		data: {
@@ -210,6 +239,8 @@ export async function updateUserProfile(
 			location: profileData.location,
 			website: profileData.website,
 			profileVisibility: profileData.profileVisibility,
+			image: profileData.image,
+			gender: profileData.gender,
 		},
 		select: {
 			id: true,
@@ -223,6 +254,7 @@ export async function updateUserProfile(
 			bio: true,
 			location: true,
 			website: true,
+			gender: true,
 			createdAt: true,
 			updatedAt: true,
 		},

@@ -317,7 +317,7 @@ export function ModalContainer({
 		xl: "w-full sm:max-w-xl",
 		"2xl": "w-full sm:max-w-2xl",
 		"6xl": "w-full sm:max-w-6xl",
-		fullscreen: "max-w-full h-screen",
+		fullscreen: "max-w-full h-dvh",
 	};
 
 	// Shared Dialog wrapper
