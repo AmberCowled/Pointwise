@@ -22,11 +22,13 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 				className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-2 pb-0"
 			>
 				<Container width="full" className="border-b border-zinc-700/50 pb-2">
-					<ProfilePicture
-						profilePicture={profilePicture}
-						displayName={displayName}
-						href={`/profile/${user.id}`}
-					/>
+					<Container width="auto">
+						<ProfilePicture
+							profilePicture={profilePicture}
+							displayName={displayName}
+							href={`/profile/${user.id}`}
+						/>
+					</Container>
 					<Container
 						direction="vertical"
 						width="full"
@@ -52,13 +54,14 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 				<Container width="full" gap="sm" className="rounded-xs my-2">
 					<UserCardButton
 						icon={<IoPersonAdd className="size-4" />}
-						label="Add"
-						color="#189d4d"
+						label="Add" //TODO: Change to "Cancel" when pending and "Remove" when accepted
+						color="#189d4d" // TODO: Change colours based on status
 					/>
 					<UserCardButton
 						icon={<IoChatbubble className="size-4" />}
 						label="Message"
 						color="#1271ff"
+						disabled={true} // TODO: Display when user is a friend
 					/>
 					<UserCardButton
 						icon={<IoFolder className="size-4" />}
