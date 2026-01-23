@@ -12,6 +12,8 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 	const profilePicture = user.image ?? "";
 	const displayName = user.displayName;
 
+	const isFriend = false; // TODO: Replace with actual friend check
+
 	return (
 		<>
 			<InviteModal inviteUser={user} />
@@ -61,7 +63,12 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 						icon={<IoChatbubble className="size-4" />}
 						label="Message"
 						color="#1271ff"
-						disabled={true} // TODO: Display when user is a friend
+						tooltip={
+							!isFriend
+								? "Add this user as a friend to send messages"
+								: undefined
+						}
+						disabled={!isFriend}
 					/>
 					<UserCardButton
 						icon={<IoFolder className="size-4" />}
