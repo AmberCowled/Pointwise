@@ -1,5 +1,10 @@
 import { ApiError } from "@pointwise/lib/api/errors";
 import prisma from "@pointwise/lib/prisma";
+import type {
+	FriendListResponse,
+	FriendshipStatusResponse,
+	PendingRequestsResponse,
+} from "../validation/friends-schema";
 
 /**
  * Send a friend request from one user to another.
@@ -164,4 +169,135 @@ export async function removeFriend(
 	await prisma.friendship.delete({
 		where: { id: friendship.id },
 	});
+}
+
+/**
+ * Get all friends for a user.
+ */
+export async function getFriends(userId: string): Promise<FriendListResponse> {
+	const friendships = await prisma.friendship.findMany({
+		where: {
+			OR: [{ userAId: userId }, { userBId: userId }],
+		},
+		include: {
+			userA: {
+				select: {
+					id: true,
+					displayName: true,
+					image: true,
+					xp: true,
+				},
+			},
+			userB: {
+				select: {
+					id: true,
+					displayName: true,
+					image: true,
+					xp: true,
+				},
+			},
+		},
+	});
+
+	const friends = friendships.map((f) =>
+		f.userAId === userId ? f.userB : f.userA,
+	);
+
+	return { friends };
+}
+
+/**
+ * Get pending friend requests (both incoming and outgoing).
+ */
+export async function getPendingRequests(
+	userId: string,
+): Promise<PendingRequestsResponse> {
+	const [incoming, outgoing] = await Promise.all([
+		prisma.friendRequest.findMany({
+			where: { receiverId: userId },
+			include: {
+				sender: {
+					select: {
+						id: true,
+						displayName: true,
+						image: true,
+						xp: true,
+					},
+				},
+			},
+			orderBy: { createdAt: "desc" },
+		}),
+		prisma.friendRequest.findMany({
+			where: { senderId: userId },
+			include: {
+				receiver: {
+					select: {
+						id: true,
+						displayName: true,
+						image: true,
+						xp: true,
+					},
+				},
+			},
+			orderBy: { createdAt: "desc" },
+		}),
+	]);
+
+	return { incoming, outgoing };
+}
+
+/**
+ * Get the friendship status between two users.
+ */
+export async function getFriendshipStatus(
+	userId: string,
+	targetUserId: string,
+): Promise<FriendshipStatusResponse> {
+	if (userId === targetUserId) {
+		return { status: "NONE" };
+	}
+
+	// Check friendship
+	const [userAId, userBId] =
+		userId < targetUserId ? [userId, targetUserId] : [targetUserId, userId];
+
+	const friendship = await prisma.friendship.findUnique({
+		where: {
+			userAId_userBId: { userAId, userBId },
+		},
+	});
+
+	if (friendship) {
+		return { status: "FRIENDS" };
+	}
+
+	// Check for outgoing request
+	const outgoing = await prisma.friendRequest.findUnique({
+		where: {
+			senderId_receiverId: {
+				senderId: userId,
+				receiverId: targetUserId,
+			},
+		},
+	});
+
+	if (outgoing) {
+		return { status: "PENDING_SENT", requestId: outgoing.id };
+	}
+
+	// Check for incoming request
+	const incoming = await prisma.friendRequest.findUnique({
+		where: {
+			senderId_receiverId: {
+				senderId: targetUserId,
+				receiverId: userId,
+			},
+		},
+	});
+
+	if (incoming) {
+		return { status: "PENDING_RECEIVED", requestId: incoming.id };
+	}
+
+	return { status: "NONE" };
 }

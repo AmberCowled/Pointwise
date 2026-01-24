@@ -15,12 +15,12 @@ const ApproveJoinRequestSchema = z.object({
 
 export async function PATCH(
 	req: Request,
-	{ params }: { params: Promise<{ id: string; userId: string }> },
+	{ params }: { params: Promise<{ id: string; targetId: string }> },
 ) {
 	return handleProtectedRoute(
 		req,
 		async ({ user, body }) => {
-			const { id, userId: requestingUserId } = await params;
+			const { id, targetId: requestingUserId } = await params;
 			const parsed = ApproveJoinRequestSchema.parse(body);
 			const prismaProject = await approveJoinRequest(
 				id,
@@ -37,10 +37,10 @@ export async function PATCH(
 
 export async function DELETE(
 	req: Request,
-	{ params }: { params: Promise<{ id: string; userId: string }> },
+	{ params }: { params: Promise<{ id: string; targetId: string }> },
 ) {
 	return handleProtectedRoute(req, async ({ user }) => {
-		const { id, userId: requestingUserId } = await params;
+		const { id, targetId: requestingUserId } = await params;
 		await rejectJoinRequest(id, user.id, requestingUserId);
 		return jsonResponse({ success: true });
 	});
