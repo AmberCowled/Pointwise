@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { friendsApi } from "./services/friendsApi";
 import { invitesApi } from "./services/invitesApi";
 import { joinRequestsApi } from "./services/joinRequestsApi";
 import { projectApi } from "./services/projectsApi";
@@ -14,6 +15,7 @@ export const store = configureStore({
 		[invitesApi.reducerPath]: invitesApi.reducer,
 		[joinRequestsApi.reducerPath]: joinRequestsApi.reducer,
 		[usersApi.reducerPath]: usersApi.reducer,
+		[friendsApi.reducerPath]: friendsApi.reducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(
@@ -23,6 +25,7 @@ export const store = configureStore({
 			invitesApi.middleware,
 			joinRequestsApi.middleware,
 			usersApi.middleware,
+			friendsApi.middleware,
 		),
 });
 

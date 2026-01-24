@@ -37,13 +37,47 @@ model User {
   accounts Account[]
   sessions Session[]
 
+  // Project invites
   sentInvites     Invite[] @relation("Inviter")
   receivedInvites Invite[] @relation("Invitee")
+
+  // Friends & Friend requests
+  sentFriendRequests     FriendRequest[] @relation("Sender")
+  receivedFriendRequests FriendRequest[] @relation("Receiver")
+  friendshipsA           Friendship[]    @relation("UserA")
+  friendshipsB           Friendship[]    @relation("UserB")
 
   xp Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model FriendRequest {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  senderId      String @db.ObjectId
+  sender        User   @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId    String @db.ObjectId
+  receiver      User   @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Friendship {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userAId   String   @db.ObjectId // Always smaller user ID
+  userA     User     @relation("UserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId   String   @db.ObjectId // Always larger user ID
+  userB     User     @relation("UserB", fields: [userBId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
 }
 
 model Account {

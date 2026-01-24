@@ -12,12 +12,12 @@ import { UpdateTaskRequestSchema } from "@pointwise/lib/validation/tasks-schema"
 
 export async function PATCH(
 	req: Request,
-	{ params }: { params: Promise<{ taskId: string }> },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	return handleProtectedRoute(
 		req,
 		async ({ user, body }) => {
-			const { taskId } = await params;
+			const { id: taskId } = await params;
 			if (!taskId) {
 				return errorResponse("Task ID required", 400);
 			}
@@ -32,10 +32,10 @@ export async function PATCH(
 
 export async function DELETE(
 	req: Request,
-	{ params }: { params: Promise<{ taskId: string }> },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	return handleProtectedRoute(req, async ({ user }) => {
-		const { taskId } = await params;
+		const { id: taskId } = await params;
 		if (!taskId) {
 			return errorResponse("Task ID required", 400);
 		}
