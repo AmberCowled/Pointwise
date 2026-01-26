@@ -1,22 +1,19 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
-import { useState } from "react";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 import TaskCardCategory from "./TaskCardCategory";
 import TaskCardXP from "./TaskCardXP";
 
 export interface TaskHeaderProps {
 	task: Task;
+	open: boolean;
 	onChange?: (open: boolean) => void;
 }
 
-export default function TaskHeader({ task, onChange }: TaskHeaderProps) {
-	const [open, setOpen] = useState(false);
-
+export default function TaskHeader({ task, open, onChange }: TaskHeaderProps) {
 	const handleExpandToggle = () => {
-		setOpen(!open);
-		onChange?.(open);
+		onChange?.(!open);
 	};
 
 	return (
@@ -25,12 +22,22 @@ export default function TaskHeader({ task, onChange }: TaskHeaderProps) {
 			width="full"
 			gap="none"
 			className="pb-2 border-b border-zinc-700/50"
-			onClick={handleExpandToggle}
 		>
 			{/* Title and expand button */}
-			<Container width="full" gap="none" className="justify-between">
+			<Container
+				width="full"
+				gap="none"
+				className="justify-between items-center cursor-pointer"
+				onClick={handleExpandToggle}
+			>
 				<h3 className="font-bold text-lg">{task.title}</h3>
-				<Button variant="ghost" onClick={handleExpandToggle}>
+				<Button
+					variant="ghost"
+					onClick={(e) => {
+						e.stopPropagation();
+						handleExpandToggle();
+					}}
+				>
 					{open ? (
 						<IoChevronUp className="size-5" />
 					) : (

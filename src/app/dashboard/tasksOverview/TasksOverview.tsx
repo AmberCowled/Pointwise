@@ -20,7 +20,6 @@ import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
-import TaskCard from "../taskCard/TaskCard";
 import TaskCardV2 from "../taskCard/TaskCardV2";
 import NoFilteredTasksView from "./NoFilteredTasksView";
 import NoTasksView from "./NoTasksView";
