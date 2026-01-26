@@ -29,7 +29,7 @@ export default function TaskHeader({ task, onChange }: TaskHeaderProps) {
 		>
 			{/* Title and expand button */}
 			<Container width="full" gap="none" className="justify-between">
-				<h3 className="font-bold">{task.title}</h3>
+				<h3 className="font-bold text-lg">{task.title}</h3>
 				<Button variant="ghost" onClick={handleExpandToggle}>
 					{open ? (
 						<IoChevronUp className="size-5" />
