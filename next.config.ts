@@ -29,6 +29,15 @@ const nextConfig: NextConfig = {
 				protocol: "https",
 				hostname: "*.ufs.sh",
 			},
+			// Development localhost support
+			{
+				protocol: "http",
+				hostname: "localhost",
+			},
+			{
+				protocol: "https",
+				hostname: "localhost",
+			},
 		],
 	},
 };

@@ -3,7 +3,7 @@ import { z } from "zod";
 const TASK_ID_SCHEMA = z.string();
 const TASK_PROJECT_ID_SCHEMA = z.string();
 const TASK_TITLE_SCHEMA = z.string().min(1).max(200);
-const TASK_DESCRIPTION_SCHEMA = z.string().optional().nullable();
+const TASK_DESCRIPTION_SCHEMA = z.string().max(20000).optional().nullable();
 const TASK_XPAWARD_SCHEMA = z.number().int().min(0).max(1000000);
 const TASK_CATEGORY_SCHEMA = z.string().min(1).max(60);
 const TASK_OPTIONAL_SCHEMA = z.boolean();

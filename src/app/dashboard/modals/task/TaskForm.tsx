@@ -72,8 +72,7 @@ export default function TaskForm({
 				label="Description"
 				rows={3}
 				flex="grow"
-				showCharCount
-				maxLength={200}
+				maxLength={20000}
 				defaultValue={description}
 				onChange={onDescriptionChange}
 			/>

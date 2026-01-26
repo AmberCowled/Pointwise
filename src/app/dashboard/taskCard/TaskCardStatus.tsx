@@ -4,11 +4,11 @@ import clsx from "clsx";
 
 export default function TaskCardStatus({ status }: { status: string }) {
 	const baseClasses =
-		"text-xs border rounded-xl px-2 py-0.5 min-w-25 text-center";
+		"text-xs border rounded-xl px-2 py-0.5 min-w-25 text-center font-medium uppercase";
 	const completedClasses =
-		"bg-emerald-900/40 border-emerald-500 text-emerald-500";
-	const overdueClasses = "bg-red-950/60 border-red-500/80 text-red-400";
-	const pendingClasses = "bg-zinc-900/40 border-zinc-700 text-zinc-300";
+		"bg-emerald-500/10 border-emerald-500/50 text-emerald-400";
+	const overdueClasses = "bg-rose-500/10 border-rose-500/50 text-rose-400";
+	const pendingClasses = "bg-zinc-500/10 border-zinc-500/50 text-zinc-400";
 
 	return (
 		<span

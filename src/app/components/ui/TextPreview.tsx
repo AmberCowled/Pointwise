@@ -35,6 +35,11 @@ export interface TextPreviewProps {
 	 * Additional CSS classes
 	 */
 	className?: string;
+
+	/**
+	 * Click handler for the text preview
+	 */
+	onClick?: () => void;
 }
 
 const sizeStyles = {
@@ -86,6 +91,7 @@ export function TextPreview({
 	fixedHeight = false,
 	size = "sm",
 	className,
+	onClick,
 }: TextPreviewProps) {
 	const hasText = text && text.trim().length > 0;
 	const lineClampClass = lineClampStyles[lines] ?? lineClampStyles[2];
@@ -110,9 +116,18 @@ export function TextPreview({
 					lineHeightStyles[size],
 					"text-zinc-500 italic",
 					fixedHeight && lineClampClass,
+					onClick && "cursor-pointer",
 					className,
 				)}
 				style={fixedHeightStyle}
+				onClick={onClick}
+				onKeyDown={onClick ? (e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						onClick();
+					}
+				} : undefined}
+				tabIndex={onClick ? 0 : undefined}
 			>
 				{placeholder}
 			</p>
@@ -129,9 +144,18 @@ export function TextPreview({
 				sizeStyles[size],
 				lineHeightStyles[size],
 				lineClampClass,
+				onClick && "cursor-pointer",
 				className,
 			)}
 			style={fixedHeightStyle}
+			onClick={onClick}
+			onKeyDown={onClick ? (e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					onClick();
+				}
+			} : undefined}
+			tabIndex={onClick ? 0 : undefined}
 		>
 			{text}
 		</p>
