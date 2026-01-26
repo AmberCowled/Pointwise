@@ -197,15 +197,10 @@ export default function TasksOverview() {
 								className="mb-6 w-full"
 							/>
 						)}
-						{project &&
-							tasks &&
-							tasks.tasks.map((task) => (
-								<TaskCardV2 key={task.id} task={task} project={project} />
-							))}
 						{hasTasks && project ? (
 							filteredTasks.length > 0 ? (
 								filteredTasks.map((task) => (
-									<TaskCard key={task.id} task={task} project={project} />
+									<TaskCardV2 key={task.id} task={task} project={project} />
 								))
 							) : (
 								<NoFilteredTasksView />

@@ -2,6 +2,8 @@ import Container from "@pointwise/app/components/ui/Container";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useState } from "react";
+import TaskCardOptional from "./TaskCardOptional";
+import TaskStatus from "./TaskCardStatus";
 import TaskDescription from "./TaskDescription";
 import TaskHeader from "./TaskHeader";
 
@@ -22,12 +24,16 @@ export default function TaskCardV2({ task }: TaskCardV2Props) {
 			direction="vertical"
 			width="full"
 			gap="none"
-			className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-700/50 hover:border-white/20"
+			className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-700/50 hover:border-white/20 items-start"
 		>
 			<TaskHeader task={task} onChange={handleCompactToggle} />
 			{task.description && (
 				<TaskDescription description={task.description} compact={compact} />
 			)}
+			<Container width="full" gap="sm" className="pt-4">
+				<TaskStatus status={task.status ?? "PENDING"} />
+				<TaskCardOptional optional={task.optional} />
+			</Container>
 		</Container>
 	);
 }
