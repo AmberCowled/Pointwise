@@ -21,6 +21,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
 import TaskCard from "../taskCard/TaskCard";
+import TaskCardV2 from "../taskCard/TaskCardV2";
 import NoFilteredTasksView from "./NoFilteredTasksView";
 import NoTasksView from "./NoTasksView";
 import TaskFilters, { type TaskFiltersRequest } from "./TaskFilters";
@@ -196,6 +197,11 @@ export default function TasksOverview() {
 								className="mb-6 w-full"
 							/>
 						)}
+						{project &&
+							tasks &&
+							tasks.tasks.map((task) => (
+								<TaskCardV2 key={task.id} task={task} project={project} />
+							))}
 						{hasTasks && project ? (
 							filteredTasks.length > 0 ? (
 								filteredTasks.map((task) => (
