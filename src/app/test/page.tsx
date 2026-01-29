@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Container from "@pointwise/app/components/ui/Container";
 import Page from "@pointwise/app/components/ui/Page";
 import { getAblyClient } from "@pointwise/lib/ably/client";
+import { useEffect, useRef, useState } from "react";
 
 type RealtimeMessage = {
 	id: string;
@@ -15,20 +15,24 @@ type AblyChannel = ReturnType<
 	Awaited<ReturnType<typeof getAblyClient>>["channels"]["get"]
 >;
 
+const CHANNEL_NAME = "test:realtime";
+
 export default function TestRealtimePage() {
 	const [messages, setMessages] = useState<RealtimeMessage[]>([]);
 	const [input, setInput] = useState("");
 	const [status, setStatus] = useState("connecting");
 	const [error, setError] = useState<string | null>(null);
 
-	const channelName = "test:realtime";
 	const channelRef = useRef<AblyChannel | null>(null);
 
 	useEffect(() => {
 		let isActive = true;
 		let client: Awaited<ReturnType<typeof getAblyClient>> | null = null;
 
-		const handleConnectionState = (stateChange: { current: string; reason?: { message?: string } }) => {
+		const handleConnectionState = (stateChange: {
+			current: string;
+			reason?: { message?: string };
+		}) => {
 			setStatus(stateChange.current);
 			if (stateChange.reason?.message) {
 				setError(stateChange.reason.message);
@@ -37,12 +41,19 @@ export default function TestRealtimePage() {
 			}
 		};
 
-		const handleMessage = (message: { id?: string; data?: unknown; timestamp?: number; clientId?: string }) => {
+		const handleMessage = (message: {
+			id?: string;
+			data?: unknown;
+			timestamp?: number;
+			clientId?: string;
+		}) => {
 			setMessages((prev) => [
 				{
 					id: message.id ?? `${Date.now()}`,
 					text: String(message.data ?? ""),
-					sentAt: new Date(message.timestamp ?? Date.now()).toLocaleTimeString(),
+					sentAt: new Date(
+						message.timestamp ?? Date.now(),
+					).toLocaleTimeString(),
 					sender: message.clientId,
 				},
 				...prev,
@@ -55,12 +66,14 @@ export default function TestRealtimePage() {
 				if (!isActive) {
 					return;
 				}
-				const nextChannel = client.channels.get(channelName);
+				const nextChannel = client.channels.get(CHANNEL_NAME);
 				channelRef.current = nextChannel;
 				client.connection.on(handleConnectionState);
 				nextChannel.subscribe(handleMessage);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to connect to Ably");
+				setError(
+					err instanceof Error ? err.message : "Failed to connect to Ably",
+				);
 			}
 		};
 
@@ -75,7 +88,7 @@ export default function TestRealtimePage() {
 				client.connection.off(handleConnectionState);
 			}
 		};
-	}, [channelName]);
+	}, []);
 
 	const handlePublish = async () => {
 		if (!input.trim()) {
@@ -88,17 +101,15 @@ export default function TestRealtimePage() {
 			await channelRef.current.publish("message", input.trim());
 			setInput("");
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to publish message");
+			setError(
+				err instanceof Error ? err.message : "Failed to publish message",
+			);
 		}
 	};
 
 	return (
 		<Page width="full">
-			<Container
-				direction="vertical"
-				gap="md"
-				className="py-8 min-h-screen"
-			>
+			<Container direction="vertical" gap="md" className="py-8 min-h-screen">
 				<Container direction="vertical" gap="xs">
 					<h1 className="text-xl font-semibold text-zinc-100">
 						Realtime Friend Requests Demo
@@ -108,7 +119,7 @@ export default function TestRealtimePage() {
 						will update the UI.
 					</p>
 					<p className="text-sm text-zinc-400">
-						Channel: <span className="text-zinc-200">{channelName}</span>
+						Channel: <span className="text-zinc-200">{CHANNEL_NAME}</span>
 					</p>
 					<p className="text-sm text-zinc-400">
 						Status: <span className="text-zinc-200">{status}</span>
