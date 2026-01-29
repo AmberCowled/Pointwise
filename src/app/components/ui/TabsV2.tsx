@@ -2,8 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
-
-export type TabsV2Variant = "cosmic" | "simple";
+import BorderGlow from "@pointwise/app/components/ui/BorderGlow";
 export type TabsV2Size = "sm" | "md" | "lg";
 
 export interface TabItemV2 {
@@ -39,11 +38,6 @@ export interface TabsV2Props {
 	 */
 	onChange: (value: string) => void;
 	/**
-	 * Visual variant of the tabs
-	 * @default 'cosmic'
-	 */
-	variant?: TabsV2Variant;
-	/**
 	 * Size of the tabs
 	 * @default 'md'
 	 */
@@ -71,10 +65,7 @@ const tabSizeStyles: Record<TabsV2Size, string> = {
 };
 
 /**
- * TabsV2 - Next generation tab component with animated cosmic border effect
- *
- * Features an animated bottom border on the selected tab with oscillating
- * purple/magenta light effects that move horizontally along the bottom edge.
+ * TabsV2 - Next generation tab component with glow underline
  *
  * @example
  * ```tsx
@@ -82,7 +73,6 @@ const tabSizeStyles: Record<TabsV2Size, string> = {
  *   items={AUTH_TABS}
  *   value={tab}
  *   onChange={handleTabChange}
- *   variant="cosmic"
  * />
  * ```
  */
@@ -90,14 +80,11 @@ export function TabsV2({
 	items,
 	value,
 	onChange,
-	variant = "cosmic",
 	size = "md",
 	fullWidth = true,
 	className,
 	borderThickness = 2,
 }: TabsV2Props) {
-	const isCosmic = variant === "cosmic";
-
 	return (
 		<div
 			className={clsx(
@@ -123,58 +110,34 @@ export function TabsV2({
 						disabled={isDisabled}
 						onClick={() => !isDisabled && onChange(item.id)}
 						className={clsx(
-							"flex-1 flex items-center justify-center gap-2 rounded-none relative transition focus:outline-none",
-							tabSizeStyles[size],
+							"flex-1 relative transition focus:outline-none",
 							isDisabled && "opacity-50 cursor-not-allowed",
 							!isDisabled &&
 								!isActive &&
 								"text-zinc-400 hover:text-zinc-200 bg-zinc-900/20 backdrop-blur-sm border-b border-zinc-700/30 hover:bg-zinc-900/30 focus:ring-2 focus:ring-fuchsia-500/40",
 							!isDisabled &&
 								isActive &&
-								(isCosmic
-									? "text-zinc-100 bg-zinc-900/50 focus-visible:after:absolute focus-visible:after:bottom-0 focus-visible:after:left-0 focus-visible:after:right-0 focus-visible:after:h-[3px] focus-visible:after:bg-fuchsia-500/60 focus-visible:after:z-10"
-									: "text-white focus:ring-2 focus:ring-fuchsia-500/40"),
+								"text-white bg-zinc-900/50 focus:ring-2 focus:ring-fuchsia-500/40",
 						)}
 					>
-						{item.icon && <span className="shrink-0">{item.icon}</span>}
-						<span>{item.label}</span>
-
-						{/* Animated cosmic border for active tab */}
-						{isActive && isCosmic && (
+						<BorderGlow
+							bottom={isActive}
+							top={false}
+							left={false}
+							right={false}
+							thickness={borderThickness}
+							className="w-full"
+						>
 							<div
-								className="absolute bottom-0 left-0 right-0 overflow-visible pointer-events-none"
-								style={{
-									height: `${borderThickness}px`,
-								}}
+								className={clsx(
+									"flex items-center justify-center gap-2 rounded-none",
+									tabSizeStyles[size],
+								)}
 							>
-								<div
-									className="absolute inset-0 animate-tab-border-oscillate"
-									style={{
-										background: `
-											radial-gradient(
-												ellipse 480px 80px at var(--tab-border-position) 50%,
-												rgba(124,58,237,0.9) 0%,
-												rgba(236,72,153,0.7) 30%,
-												transparent 70%
-											)
-										`,
-										filter:
-											"drop-shadow(0 2px 8px rgba(124,58,237,0.6)) drop-shadow(0 3px 12px rgba(236,72,153,0.4)) saturate(140%) brightness(120%)",
-										mixBlendMode: "screen",
-									}}
-								/>
+								{item.icon && <span className="shrink-0">{item.icon}</span>}
+								<span>{item.label}</span>
 							</div>
-						)}
-
-						{/* Simple solid border for non-cosmic variant */}
-						{isActive && !isCosmic && (
-							<div
-								className="absolute bottom-0 left-0 right-0 bg-indigo-500"
-								style={{
-									height: `${borderThickness}px`,
-								}}
-							/>
-						)}
+						</BorderGlow>
 					</button>
 				);
 			})}

@@ -1,0 +1,100 @@
+import Menu from "@pointwise/app/components/ui/menu";
+import { IoEllipsisHorizontal, IoCheckmarkCircleOutline, IoPencilOutline, IoPersonAddOutline, IoTrashOutline } from "react-icons/io5";
+import { Button } from "@pointwise/app/components/ui/Button";
+import { useUpdateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
+import { useUpdateXPMutation } from "@pointwise/lib/redux/services/xpApi";
+import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { utcNow } from "@pointwise/lib/api/date-time";
+import { hasWriteAccess, hasDeleteAccess } from "@pointwise/lib/api/projects";
+import Modal from "@pointwise/app/components/ui/modal";
+import type { Task } from "@pointwise/lib/validation/tasks-schema";
+import type { Project } from "@pointwise/lib/validation/projects-schema";
+
+export interface TaskCardMenuProps {
+    task: Task;
+    project: Project;
+}
+
+export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
+    const [updateTask] = useUpdateTaskMutation();
+    const [updateXP] = useUpdateXPMutation();
+    const { showNotification } = useNotifications();
+
+    const handleCompleteTask = async () => {
+		try {
+			const response = await updateTask({
+				taskId: task.id,
+				data: {
+					projectId: project.id,
+					completedAt: utcNow(),
+					status: "COMPLETED",
+				},
+			}).unwrap();
+			if (response.task) {
+				await updateXP({ delta: response.task.xpAward }).unwrap();
+			}
+
+			showNotification({
+				message: "Task completed successfully",
+				variant: "success",
+			});
+		} catch (_error) {
+			showNotification({
+				message: "Failed to complete task",
+				variant: "error",
+			});
+		}
+	};
+
+    return (
+        <Menu
+        trigger={
+            <Button
+                variant="ghost"
+                size="sm"
+                icon={IoEllipsisHorizontal}
+                className="text-zinc-400 hover:text-white"
+            />
+        }
+    >
+        <Menu.Section title="User">
+            <Menu.Option
+                label="Complete"
+                icon={<IoCheckmarkCircleOutline className="text-green-400" />}
+                onClick={handleCompleteTask}
+                disabled={
+                    task.status === "COMPLETED" || !hasWriteAccess(project.role)
+                }
+            />
+            <Menu.Option
+                label="Edit Task"
+                icon={<IoPencilOutline className="text-blue-400" />}
+                onClick={() =>
+                    Modal.Manager.open(`update-task-modal-${task.id}`)
+                }
+                disabled={
+                    task.status === "COMPLETED" || !hasWriteAccess(project.role)
+                }
+            />
+            <Menu.Option
+                label="Assign"
+                icon={<IoPersonAddOutline className="text-indigo-400" />}
+                disabled
+                description="Coming Soon"
+            />
+        </Menu.Section>
+        {hasDeleteAccess(project.role) && (
+            <Menu.Section title="Admin">
+                <Menu.Option
+                    label="Delete"
+                    icon={<IoTrashOutline className="text-rose-400" />}
+                    danger
+                    onClick={() =>
+                        Modal.Manager.open(`delete-task-modal-${task.id}`)
+                    }
+                />
+            </Menu.Section>
+        )}
+    </Menu>
+    );
+}

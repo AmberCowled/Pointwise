@@ -11,6 +11,7 @@ import AuthForm from "./AuthForm";
 import SocialAuthButtons from "./SocialAuthButtons";
 import type { AuthTab } from "./types";
 import WelcomeBlock from "./WelcomeBlock";
+import BorderGlow from "../ui/BorderGlow";
 
 const AUTH_TABS = [
 	{ id: "signin", label: "Sign In" },
@@ -39,20 +40,21 @@ export default function AuthPage() {
 	}, []);
 
 	return (
-		<Page width="full">
+		<Page>
 			<Container
 				direction="vertical"
-				className="items-center justify-center min-h-screen p-10"
+				width="auto"
+				className="items-center justify-center min-h-screen py-10 px-2"
 			>
 				<Container direction="vertical" width="full" className="text-center">
 					<BrandHeader />
 					<WelcomeBlock tab={tab} />
 				</Container>
 
+				<BorderGlow>
 				<Container
 					direction="vertical"
-					cosmicBorder
-					width="auto"
+					width="full"
 					className="bg-zinc-900/50 p-10 rounded-xl"
 				>
 					<Container width="full" gap="none">
@@ -78,6 +80,7 @@ export default function AuthPage() {
 						</div>
 					</div>
 				</Container>
+				</BorderGlow>
 
 				<Container
 					direction="vertical"
