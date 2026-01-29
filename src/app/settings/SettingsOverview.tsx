@@ -5,6 +5,7 @@ import { TabsV2 } from "@pointwise/app/components/ui/TabsV2";
 import { useState } from "react";
 import { IoSettings } from "react-icons/io5";
 import ProfileSettings from "./ProfileSettings";
+import BorderGlow from "@pointwise/app/components/ui/BorderGlow";
 
 const TABS = [
 	{ id: "profile", label: "Profile" },

@@ -93,24 +93,6 @@ export interface ContainerProps {
 	 * Inline styles for the container
 	 */
 	style?: CSSProperties;
-
-	/**
-	 * Enable cosmic border effect
-	 * @default false
-	 */
-	cosmicBorder?: boolean;
-
-	/**
-	 * Cosmic border thickness in pixels
-	 * @default 2
-	 */
-	cosmicBorderThickness?: number;
-
-	/**
-	 * Enable cosmic border animation
-	 * @default true
-	 */
-	cosmicBorderAnimate?: boolean;
 }
 
 /**
@@ -128,9 +110,6 @@ export interface ContainerProps {
  *   - `"constrained"`: Full width with max-width and padding - use for page-level containers
  * - `fullWidth?: boolean` - Deprecated: Use `width` prop instead (kept for backward compatibility)
  * - `onClick?: (e: React.MouseEvent<HTMLDivElement>) => void` - Click handler (only fires on non-interactive areas)
- * - `cosmicBorder?: boolean` - Enable cosmic border effect using CSS border-image (default: false)
- * - `cosmicBorderThickness?: number` - Cosmic border thickness in pixels (default: 2)
- * - `cosmicBorderAnimate?: boolean` - Enable cosmic border animation (default: true)
  *
  * **Width Behaviors:**
  * - `width="constrained"` (default): Full width (`w-full`), centered with auto margins (`mx-auto`), maximum width constraint, and responsive horizontal padding
@@ -167,11 +146,6 @@ export interface ContainerProps {
  *   <Button onClick={handleSettings}>Settings</Button>
  * </Container>
  *
- * // Container with cosmic border effect
- * <Container cosmicBorder cosmicBorderThickness={3} className="bg-zinc-900/80 p-6 rounded-lg">
- *   <h2>Cosmic Content</h2>
- *   <p>Content with animated cosmic border using CSS border-image</p>
- * </Container>
  * ```
  *
  * @param {ContainerProps} props - The props for the Container component.
@@ -187,70 +161,7 @@ export default function Container({
 	gap = "md",
 	onClick,
 	style,
-	cosmicBorder = false,
-	cosmicBorderThickness = 2,
-	cosmicBorderAnimate = true,
 }: ContainerProps) {
-	// Extract rounded classes from className for cosmic border consistency
-	const extractRoundedClasses = (value?: string) =>
-		value?.split(/\s+/).filter((token) => token.startsWith("rounded")) ?? [];
-
-	const borderWidthPattern =
-		/^border(?:-(?:[trblxy]))?(?:-(?:0|[1-9]\d*|\[[^\]]+\]))?$/;
-	const borderAxisPattern = /^border-(?:x|y)$/;
-
-	const extractBorderWidthClasses = (value?: string) => {
-		if (!value) return [];
-		return value
-			.split(/\s+/)
-			.filter(
-				(token) =>
-					borderWidthPattern.test(token) || borderAxisPattern.test(token),
-			);
-	};
-
-	const stripBorderClasses = (value?: string) => {
-		if (!value) return value;
-		return value
-			.split(/\s+/)
-			.filter((token) => !token.startsWith("border"))
-			.join(" ");
-	};
-
-	const roundedClasses = cosmicBorder
-		? extractRoundedClasses(className).length
-			? extractRoundedClasses(className)
-			: ["rounded-none"]
-		: [];
-	const stripRoundedClasses = (value?: string) => {
-		if (!value) return value;
-		return value
-			.split(/\s+/)
-			.filter((token) => !token.startsWith("rounded"))
-			.join(" ");
-	};
-	const processedClassName = cosmicBorder
-		? stripRoundedClasses(stripBorderClasses(className))
-		: className;
-	const borderWidthClasses = cosmicBorder
-		? extractBorderWidthClasses(className)
-		: [];
-
-	// Extract border width value from classes (e.g., "border-2" -> "2px")
-	const getBorderWidthValue = (classes: string[]) => {
-		for (const cls of classes) {
-			const match = cls.match(/^border-(?:(\d+)|\[([^\]]+)\])$/);
-			if (match) {
-				return match[1] ? `${match[1]}px` : match[2];
-			}
-		}
-		return `${cosmicBorderThickness}px`;
-	};
-
-	const borderWidth = cosmicBorder
-		? getBorderWidthValue(borderWidthClasses)
-		: "0px";
-
 	const maxWidthClasses = {
 		sm: "sm:max-w-sm",
 		md: "sm:max-w-md",
@@ -315,39 +226,13 @@ export default function Container({
 			style={style}
 			className={clsx(
 				"flex items-center relative",
-				cosmicBorder && "overflow-visible",
 				gapClasses[gap],
 				getWidthClasses(),
 				directionClasses[direction],
 				onClick && "cursor-pointer hover:opacity-90 transition-opacity",
-				processedClassName,
-				...(cosmicBorder ? roundedClasses : []),
+				className,
 			)}
 		>
-			{cosmicBorder && (
-				<div
-					aria-hidden
-					className={clsx(
-						"absolute inset-0 pointer-events-none",
-						roundedClasses.join(" "),
-						cosmicBorderAnimate && "animate-cosmic-border-shift",
-					)}
-					style={{
-						padding: borderWidth,
-						background: `
-							radial-gradient(circle at calc(50% + 50% * cos(var(--cosmic-border-angle))) calc(50% + 50% * sin(var(--cosmic-border-angle))), rgba(124,58,237,1) 0%, transparent 50%),
-							radial-gradient(circle at calc(50% + 50% * cos(calc(var(--cosmic-border-angle) + 180deg))) calc(50% + 50% * sin(calc(var(--cosmic-border-angle) + 180deg))), rgba(236,72,153,1) 0%, transparent 50%)
-						`,
-						WebkitMask: `linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)`,
-						WebkitMaskComposite: "xor",
-						mask: `linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)`,
-						maskComposite: "exclude",
-						filter:
-							"drop-shadow(0 0 8px rgba(124,58,237,0.6)) drop-shadow(0 0 16px rgba(236,72,153,0.4)) drop-shadow(0 0 24px rgba(59,130,246,0.3)) saturate(140%) brightness(120%)",
-						mixBlendMode: "screen",
-					}}
-				/>
-			)}
 			{children}
 		</div>
 	);

@@ -20,7 +20,7 @@ import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
-import TaskCardV2 from "../taskCard/TaskCardV2";
+import TaskCard from "../taskCard/TaskCard";
 import NoFilteredTasksView from "./NoFilteredTasksView";
 import NoTasksView from "./NoTasksView";
 import TaskFilters, { type TaskFiltersRequest } from "./TaskFilters";
@@ -199,7 +199,7 @@ export default function TasksOverview() {
 						{hasTasks && project ? (
 							filteredTasks.length > 0 ? (
 								filteredTasks.map((task) => (
-									<TaskCardV2 key={task.id} task={task} project={project} />
+									<TaskCard key={task.id} task={task} project={project} />
 								))
 							) : (
 								<NoFilteredTasksView />
