@@ -49,8 +49,12 @@ export default function FriendRequestsMenu() {
 			null;
 		let isActive = true;
 
-		const handleMessage = () => {
-			dispatch(friendsApi.util.invalidateTags(["FriendRequests"]));
+		const handleMessage = (message: any) => {
+			// Invalidate friend-related tags for any relevant Ably message
+			// This handles legacy events and the new unified notification event
+			dispatch(
+				friendsApi.util.invalidateTags(["FriendRequests", "FriendshipStatus"]),
+			);
 		};
 
 		const subscribe = async () => {

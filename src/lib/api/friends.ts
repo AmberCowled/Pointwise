@@ -92,9 +92,21 @@ export async function sendFriendRequest(
 export async function acceptFriendRequest(
 	requestId: string,
 	userId: string,
-): Promise<void> {
+): Promise<{
+	senderId: string;
+	receiverId: string;
+	accepter: { displayName: string | null; image: string | null };
+}> {
 	const request = await prisma.friendRequest.findUnique({
 		where: { id: requestId },
+		include: {
+			receiver: {
+				select: {
+					displayName: true,
+					image: true,
+				},
+			},
+		},
 	});
 
 	if (!request) {
@@ -120,6 +132,12 @@ export async function acceptFriendRequest(
 			where: { id: requestId },
 		}),
 	]);
+
+	return {
+		senderId: request.senderId,
+		receiverId: request.receiverId,
+		accepter: request.receiver,
+	};
 }
 
 /**
@@ -128,7 +146,7 @@ export async function acceptFriendRequest(
 export async function declineFriendRequest(
 	requestId: string,
 	userId: string,
-): Promise<void> {
+): Promise<{ senderId: string; receiverId: string }> {
 	const request = await prisma.friendRequest.findUnique({
 		where: { id: requestId },
 	});
@@ -144,6 +162,8 @@ export async function declineFriendRequest(
 	await prisma.friendRequest.delete({
 		where: { id: requestId },
 	});
+
+	return { senderId: request.senderId, receiverId: request.receiverId };
 }
 
 /**
@@ -152,7 +172,7 @@ export async function declineFriendRequest(
 export async function removeFriend(
 	userId: string,
 	friendId: string,
-): Promise<void> {
+): Promise<{ friendId: string }> {
 	const [userAId, userBId] =
 		userId < friendId ? [userId, friendId] : [friendId, userId];
 
@@ -169,6 +189,8 @@ export async function removeFriend(
 	await prisma.friendship.delete({
 		where: { id: friendship.id },
 	});
+
+	return { friendId };
 }
 
 /**

@@ -7,6 +7,8 @@ import {
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
+import { sendNotification } from "@pointwise/lib/notifications/service";
+import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { z } from "zod";
 
 const SendRequestSchema = z.object({
@@ -42,6 +44,23 @@ export async function POST(req: Request) {
 					);
 				} catch (error) {
 					console.warn("Failed to publish friend request event", error);
+				}
+			} else if (result.status === "FRIENDS") {
+				try {
+					await sendNotification(
+						body.receiverId,
+						NotificationType.FRIEND_REQUEST_ACCEPTED,
+						{
+							accepterId: user.id,
+							accepterName: user.name,
+							accepterImage: user.image,
+						},
+					);
+				} catch (error) {
+					console.warn(
+						"Failed to publish friend request acceptance event (mutual)",
+						error,
+					);
 				}
 			}
 			return jsonResponse(result);
