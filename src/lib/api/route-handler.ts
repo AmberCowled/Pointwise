@@ -331,6 +331,7 @@ export interface AuthContext<TBody = unknown, TQuery = unknown>
 		id: string;
 		email: string;
 		name: string | null;
+		image: string | null;
 	};
 }
 
@@ -444,6 +445,7 @@ export async function handleProtectedRoute<
 					id: true,
 					email: true,
 					name: true,
+					image: true,
 				},
 			});
 
@@ -458,6 +460,7 @@ export async function handleProtectedRoute<
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					image: user.image,
 				},
 				body: body as RequiredIfDefined<TBody>,
 				query: query as RequiredIfDefined<TQuery>,

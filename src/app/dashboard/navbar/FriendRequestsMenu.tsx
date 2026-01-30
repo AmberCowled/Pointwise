@@ -1,13 +1,23 @@
+"use client";
+
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import {
 	useGetPendingRequestsQuery,
 	useHandleFriendRequestMutation,
+	friendsApi,
 } from "@pointwise/lib/redux/services/friendsApi";
 import { IoCheckmark, IoClose, IoPersonAdd } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
+import { useEffect } from "react";
+import { getAblyClient } from "@pointwise/lib/ably/client";
+import { useAppDispatch } from "@pointwise/lib/redux/hooks";
+import { useSession } from "next-auth/react";
 
 export default function FriendRequestsMenu() {
+	const dispatch = useAppDispatch();
+	const { data: session } = useSession();
+	const userId = session?.user?.id;
 	const { data, isLoading } = useGetPendingRequestsQuery();
 	const [handleRequest, { isLoading: isHandling }] =
 		useHandleFriendRequestMutation();
@@ -30,6 +40,46 @@ export default function FriendRequestsMenu() {
 			console.error("Failed to decline friend request:", err);
 		}
 	};
+
+	useEffect(() => {
+		if (!userId) {
+			return;
+		}
+		let channel: ReturnType<Awaited<ReturnType<typeof getAblyClient>>["channels"]["get"]> | null =
+			null;
+		let isActive = true;
+
+		const handleMessage = (message: any) => {
+			// Invalidate friend-related tags for any relevant Ably message
+			// This handles legacy events and the new unified notification event
+			dispatch(
+				friendsApi.util.invalidateTags(["FriendRequests", "FriendshipStatus"]),
+			);
+		};
+
+		const subscribe = async () => {
+			try {
+				const client = await getAblyClient();
+				if (!isActive) {
+					return;
+				}
+				const channelName = `user:${userId}:friend-requests`;
+				channel = client.channels.get(channelName);
+				channel.subscribe(handleMessage);
+			} catch (error) {
+				console.warn("Failed to subscribe to friend request updates", error);
+			}
+		};
+
+		void subscribe();
+
+		return () => {
+			isActive = false;
+			if (channel) {
+				channel.unsubscribe(handleMessage);
+			}
+		};
+	}, [dispatch, userId]);
 
 	return (
 		<Menu

@@ -6,6 +6,9 @@ import {
 	handleProtectedRoute,
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
+import { sendNotification } from "@pointwise/lib/notifications/service";
+import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { z } from "zod";
 
 const SendRequestSchema = z.object({
@@ -32,6 +35,34 @@ export async function POST(req: Request) {
 		req,
 		async ({ user, body }) => {
 			const result = await sendFriendRequest(user.id, body.receiverId);
+			if (result.status === "PENDING") {
+				try {
+					await publishAblyEvent(
+						`user:${body.receiverId}:friend-requests`,
+						"friend-request:received",
+						{ senderId: user.id },
+					);
+				} catch (error) {
+					console.warn("Failed to publish friend request event", error);
+				}
+			} else if (result.status === "FRIENDS") {
+				try {
+					await sendNotification(
+						body.receiverId,
+						NotificationType.FRIEND_REQUEST_ACCEPTED,
+						{
+							accepterId: user.id,
+							accepterName: user.name,
+							accepterImage: user.image,
+						},
+					);
+				} catch (error) {
+					console.warn(
+						"Failed to publish friend request acceptance event (mutual)",
+						error,
+					);
+				}
+			}
 			return jsonResponse(result);
 		},
 		SendRequestSchema,

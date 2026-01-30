@@ -47,6 +47,8 @@ model User {
   friendshipsA           Friendship[]    @relation("UserA")
   friendshipsB           Friendship[]    @relation("UserB")
 
+  notifications          Notification[]
+
   xp Int @default(0)
 
   createdAt DateTime @default(now())
@@ -214,4 +216,22 @@ model Project {
   @@index([name])
   @@index([description])
   @@index([visibility])
+}
+
+enum NotificationType {
+  FRIEND_REQUEST_ACCEPTED
+  FRIEND_REQUEST_RECEIVED
+}
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @db.ObjectId
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  data      Json             // Flexible data for different notification types
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
