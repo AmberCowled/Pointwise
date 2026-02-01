@@ -22,11 +22,25 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: TypeScript check
+        run: pnpm typecheck
+
       - name: Biome check
         run: pnpm check
+
+      - name: Dependency audit
+        run: pnpm audit --audit-level=high
 
       - name: Build
         run: pnpm build
