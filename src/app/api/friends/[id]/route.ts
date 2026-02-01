@@ -1,9 +1,9 @@
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { removeFriend } from "@pointwise/lib/api/friends";
 import {
 	handleProtectedRoute,
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 
 /**
  * DELETE /api/friends/[id]

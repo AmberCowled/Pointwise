@@ -26,11 +26,7 @@ export default function UsersSearchResults({ query }: UsersSearchResultsProps) {
 	const usersCount = usersSearchResults?.pagination.total ?? 0;
 
 	return (
-		<Card
-			label={`${usersCount} results`}
-			loading={isUsersLoading}
-			className="rounded-sm"
-		>
+		<Card label={`${usersCount} results`} loading={isUsersLoading}>
 			<Container direction="vertical" gap="sm" width="full" className="mt-3">
 				<ErrorCard
 					message="Something went wrong"

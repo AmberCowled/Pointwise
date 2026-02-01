@@ -1,29 +1,29 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
-	"extends": ["@canonical/biome-config"],
 	"vcs": {
-		"enabled": false,
+		"enabled": true,
 		"clientKind": "git",
-		"useIgnoreFile": false
+		"useIgnoreFile": true
 	},
 	"files": {
 		"ignoreUnknown": true,
 		"includes": [
-		  "**/*",
-		  "!**/node_modules/**",
-		  "!**/*.css",
-		  "!**/.next/**",
-		  "!**/.pnp/**",
-		  "!**/.vercel/**",
-		  "!**/build/**",
-		  "!**/out/**",
-		  "!**/dist/**",
-		  "!**/generated/**",
-		  "!**/coverage/**",
-		  "!**/logs/**",
-		  "!**/temp/**",
-		  "!**/tmp/**",
-		  "!**/cache/**"
+			"**/*",
+			"!**/node_modules",
+			"!**/*.css",
+			"!**/*.prisma",
+			"!**/.next",
+			"!**/.pnp",
+			"!**/.vercel",
+			"!**/build",
+			"!**/out",
+			"!**/dist",
+			"!**/generated",
+			"!**/coverage",
+			"!**/logs",
+			"!**/temp",
+			"!**/tmp",
+			"!**/cache"
 		]
 	},
 	"formatter": {
@@ -33,7 +33,14 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"correctness": {
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error"
+			},
+			"suspicious": {
+				"noExplicitAny": "error"
+			}
 		}
 	},
 	"javascript": {

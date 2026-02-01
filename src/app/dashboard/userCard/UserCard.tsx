@@ -12,7 +12,6 @@ import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import {
 	IoChatbubble,
 	IoCheckmark,
-	IoClose,
 	IoFolder,
 	IoPersonAdd,
 	IoPersonRemove,

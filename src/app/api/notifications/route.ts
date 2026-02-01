@@ -1,8 +1,8 @@
-import prisma from "@pointwise/lib/prisma";
 import {
 	handleProtectedRoute,
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
+import prisma from "@pointwise/lib/prisma";
 
 /**
  * GET /api/notifications

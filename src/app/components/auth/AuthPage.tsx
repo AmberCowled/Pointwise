@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import BrandHeader from "../general/BrandHeader";
+import BorderGlow from "../ui/BorderGlow";
 import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import Page from "../ui/Page";
@@ -11,7 +12,6 @@ import AuthForm from "./AuthForm";
 import SocialAuthButtons from "./SocialAuthButtons";
 import type { AuthTab } from "./types";
 import WelcomeBlock from "./WelcomeBlock";
-import BorderGlow from "../ui/BorderGlow";
 
 const AUTH_TABS = [
 	{ id: "signin", label: "Sign In" },
@@ -52,34 +52,40 @@ export default function AuthPage() {
 				</Container>
 
 				<BorderGlow>
-				<Container
-					direction="vertical"
-					width="full"
-					className="bg-zinc-900/50 p-10 rounded-xl"
-				>
-					<Container width="full" gap="none">
-						<TabsV2 items={AUTH_TABS} value={tab} onChange={handleTabChange} />
-					</Container>
-					<div className="relative min-h-[400px]">
-						{isLoading ? (
-							<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-								<Spinner size="lg" variant="primary" type="circular" />
-								<p className="text-sm font-medium text-zinc-300">
-									{isSocialLoading
-										? "Logging In..."
-										: tab === "signin"
+					<Container
+						direction="vertical"
+						width="full"
+						className="bg-zinc-900/50 p-10 rounded-xl"
+					>
+						<Container width="full" gap="none">
+							<TabsV2
+								items={AUTH_TABS}
+								value={tab}
+								onChange={handleTabChange}
+							/>
+						</Container>
+						<div className="relative min-h-[400px]">
+							{isLoading ? (
+								<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
+									<Spinner size="lg" variant="primary" type="circular" />
+									<p className="text-sm font-medium text-zinc-300">
+										{isSocialLoading
 											? "Logging In..."
-											: "Signing Up..."}
-								</p>
+											: tab === "signin"
+												? "Logging In..."
+												: "Signing Up..."}
+									</p>
+								</div>
+							) : null}
+							<div className={isLoading ? "invisible" : ""}>
+								<AuthForm tab={tab} onLoadingChange={handleFormLoadingChange} />
+								<Divider label="or" spacing="md" />
+								<SocialAuthButtons
+									onLoadingChange={handleSocialLoadingChange}
+								/>
 							</div>
-						) : null}
-						<div className={isLoading ? "invisible" : ""}>
-							<AuthForm tab={tab} onLoadingChange={handleFormLoadingChange} />
-							<Divider label="or" spacing="md" />
-							<SocialAuthButtons onLoadingChange={handleSocialLoadingChange} />
 						</div>
-					</div>
-				</Container>
+					</Container>
 				</BorderGlow>
 
 				<Container

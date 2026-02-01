@@ -5,14 +5,14 @@ import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useState } from "react";
 import UpdateTaskModal from "../modals/task/UpdateTaskModal";
+import TaskCardCommentButton from "./TaskCardCommentButton";
 import TaskCardDate from "./TaskCardDate";
+import TaskCardLikeButton from "./TaskCardLikeButton";
+import TaskCardMenu from "./TaskCardMenu";
 import TaskCardOptional from "./TaskCardOptional";
 import TaskStatus from "./TaskCardStatus";
 import TaskDescription from "./TaskDescription";
 import TaskHeader from "./TaskHeader";
-import TaskCardMenu from "./TaskCardMenu";
-import TaskCardLikeButton from "./TaskCardLikeButton";
-import TaskCardCommentButton from "./TaskCardCommentButton";
 
 export interface TaskCardProps {
 	task: Task;
