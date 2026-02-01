@@ -1,13 +1,13 @@
 "use client";
 
 import {
+	type CSSProperties,
+	type PropsWithChildren,
 	useEffect,
 	useId,
 	useMemo,
 	useRef,
 	useState,
-	type CSSProperties,
-	type PropsWithChildren,
 } from "react";
 
 type BorderGlowProps = PropsWithChildren<{
@@ -30,7 +30,11 @@ type BorderGlowProps = PropsWithChildren<{
 const DEFAULT_COLORS = ["#6366f1", "#c026d3"];
 const FALLBACK_RADIUS = 0;
 
-const getChildRadius = (element: HTMLDivElement, width: number, height: number) => {
+const getChildRadius = (
+	element: HTMLDivElement,
+	width: number,
+	height: number,
+) => {
 	const target = element.firstElementChild as HTMLElement | null;
 	if (!target) {
 		return FALLBACK_RADIUS;
@@ -104,8 +108,10 @@ export default function BorderGlow({
 
 			const width = targetRect.width + marginX;
 			const height = targetRect.height + marginY;
-			const x = targetRect.left - wrapperRect.left - (includeMargins ? marginLeft : 0);
-			const y = targetRect.top - wrapperRect.top - (includeMargins ? marginTop : 0);
+			const x =
+				targetRect.left - wrapperRect.left - (includeMargins ? marginLeft : 0);
+			const y =
+				targetRect.top - wrapperRect.top - (includeMargins ? marginTop : 0);
 
 			setSize({ width, height });
 			setOffset({ x, y });
@@ -114,7 +120,7 @@ export default function BorderGlow({
 			}
 		};
 
-		const observer = new ResizeObserver(entries => {
+		const observer = new ResizeObserver((entries) => {
 			const entry = entries[0];
 			if (!entry) {
 				return;
@@ -126,7 +132,7 @@ export default function BorderGlow({
 		observer.observe(target);
 		measure();
 		return () => observer.disconnect();
-	}, [radius]);
+	}, [radius, includeMargins]);
 
 	useEffect(() => {
 		if (radius !== undefined) {
@@ -146,7 +152,9 @@ export default function BorderGlow({
 		const tick = (now: number) => {
 			const deltaSeconds = (now - lastTime) / 1000;
 			lastTime = now;
-			setGradientAngle(prev => (prev + 360 * rotationsPerSecond * deltaSeconds) % 360);
+			setGradientAngle(
+				(prev) => (prev + 360 * rotationsPerSecond * deltaSeconds) % 360,
+			);
 			frame = requestAnimationFrame(tick);
 		};
 
@@ -171,6 +179,7 @@ export default function BorderGlow({
 
 	return (
 		<div
+			aria-hidden="true"
 			ref={wrapperRef}
 			className={`relative w-full ${className ?? ""}`}
 			style={style}
@@ -178,188 +187,205 @@ export default function BorderGlow({
 			onMouseLeave={() => setIsHovered(false)}
 		>
 			{children}
-			{size.width > 0 && size.height > 0 && (trigger === "always" || (trigger === "hover" && isHovered)) && (
-				<svg
-					width={size.width}
-					height={size.height}
-					viewBox={`0 0 ${size.width} ${size.height}`}
-					className="absolute pointer-events-none"
-					style={{ overflow: "visible", left: offset.x, top: offset.y }}
-				>
-					<defs>
-						<mask id={`borderGlowMask-${id}`}>
-							<rect width={size.width} height={size.height} fill="black" />
-							{top && (
-								<rect width={size.width} height={maskThickness} y={0} fill="white" />
-							)}
-							{bottom && (
+			{size.width > 0 &&
+				size.height > 0 &&
+				(trigger === "always" || (trigger === "hover" && isHovered)) && (
+					<svg
+						aria-hidden="true"
+						width={size.width}
+						height={size.height}
+						viewBox={`0 0 ${size.width} ${size.height}`}
+						className="absolute pointer-events-none"
+						style={{ overflow: "visible", left: offset.x, top: offset.y }}
+					>
+						<defs>
+							<mask id={`borderGlowMask-${id}`}>
+								<rect width={size.width} height={size.height} fill="black" />
+								{top && (
+									<rect
+										width={size.width}
+										height={maskThickness}
+										y={0}
+										fill="white"
+									/>
+								)}
+								{bottom && (
+									<rect
+										width={size.width}
+										height={maskThickness}
+										y={Math.max(0, size.height - maskThickness)}
+										fill="white"
+									/>
+								)}
+								{left && (
+									<rect
+										width={maskThickness}
+										height={size.height}
+										x={0}
+										fill="white"
+									/>
+								)}
+								{right && (
+									<rect
+										width={maskThickness}
+										height={size.height}
+										x={Math.max(0, size.width - maskThickness)}
+										fill="white"
+									/>
+								)}
+							</mask>
+							<linearGradient
+								id={`borderGlowGradient-${id}`}
+								gradientUnits="userSpaceOnUse"
+								gradientTransform={`rotate(${gradientAngle} ${size.width / 2} ${
+									size.height / 2
+								})`}
+							>
+								{gradientStops.map((stop) => (
+									<stop
+										key={stop.offset}
+										offset={stop.offset}
+										stopColor={stop.color}
+									/>
+								))}
+							</linearGradient>
+							<filter
+								id={`borderGlowBlur-${id}`}
+								x={-filterPadding}
+								y={-filterPadding}
+								width={size.width + filterPadding * 2}
+								height={size.height + filterPadding * 2}
+								filterUnits="userSpaceOnUse"
+							>
+								<feGaussianBlur stdDeviation={blur} />
+								<feComponentTransfer>
+									<feFuncR type="linear" slope={brightness} />
+									<feFuncG type="linear" slope={brightness} />
+									<feFuncB type="linear" slope={brightness} />
+								</feComponentTransfer>
+							</filter>
+						</defs>
+						{activeSides === 1 ? (
+							<>
+								{top && (
+									<line
+										x1={strokeWidth / 2}
+										y1={strokeWidth / 2}
+										x2={size.width - strokeWidth / 2}
+										y2={strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+										filter={`url(#borderGlowBlur-${id})`}
+										opacity="0.7"
+									/>
+								)}
+								{bottom && (
+									<line
+										x1={strokeWidth / 2}
+										y1={size.height - strokeWidth / 2}
+										x2={size.width - strokeWidth / 2}
+										y2={size.height - strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+										filter={`url(#borderGlowBlur-${id})`}
+										opacity="0.7"
+									/>
+								)}
+								{left && (
+									<line
+										x1={strokeWidth / 2}
+										y1={strokeWidth / 2}
+										x2={strokeWidth / 2}
+										y2={size.height - strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+										filter={`url(#borderGlowBlur-${id})`}
+										opacity="0.7"
+									/>
+								)}
+								{right && (
+									<line
+										x1={size.width - strokeWidth / 2}
+										y1={strokeWidth / 2}
+										x2={size.width - strokeWidth / 2}
+										y2={size.height - strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+										filter={`url(#borderGlowBlur-${id})`}
+										opacity="0.7"
+									/>
+								)}
+								{top && (
+									<line
+										x1={strokeWidth / 2}
+										y1={strokeWidth / 2}
+										x2={size.width - strokeWidth / 2}
+										y2={strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+									/>
+								)}
+								{bottom && (
+									<line
+										x1={strokeWidth / 2}
+										y1={size.height - strokeWidth / 2}
+										x2={size.width - strokeWidth / 2}
+										y2={size.height - strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+									/>
+								)}
+								{left && (
+									<line
+										x1={strokeWidth / 2}
+										y1={strokeWidth / 2}
+										x2={strokeWidth / 2}
+										y2={size.height - strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+									/>
+								)}
+								{right && (
+									<line
+										x1={size.width - strokeWidth / 2}
+										y1={strokeWidth / 2}
+										x2={size.width - strokeWidth / 2}
+										y2={size.height - strokeWidth / 2}
+										stroke={`url(#borderGlowGradient-${id})`}
+										strokeWidth={strokeWidth}
+									/>
+								)}
+							</>
+						) : (
+							<g mask={`url(#borderGlowMask-${id})`}>
 								<rect
-									width={size.width}
-									height={maskThickness}
-									y={Math.max(0, size.height - maskThickness)}
-									fill="white"
+									x={strokeWidth / 2}
+									y={strokeWidth / 2}
+									width={size.width - strokeWidth}
+									height={size.height - strokeWidth}
+									rx={Math.min(rectRadius, size.width / 2)}
+									ry={Math.min(rectRadius, size.height / 2)}
+									fill="none"
+									stroke={`url(#borderGlowGradient-${id})`}
+									strokeWidth={strokeWidth}
+									filter={`url(#borderGlowBlur-${id})`}
+									opacity="0.7"
 								/>
-							)}
-							{left && (
-								<rect width={maskThickness} height={size.height} x={0} fill="white" />
-							)}
-							{right && (
 								<rect
-									width={maskThickness}
-									height={size.height}
-									x={Math.max(0, size.width - maskThickness)}
-									fill="white"
-								/>
-							)}
-						</mask>
-						<linearGradient
-							id={`borderGlowGradient-${id}`}
-							gradientUnits="userSpaceOnUse"
-							gradientTransform={`rotate(${gradientAngle} ${size.width / 2} ${
-								size.height / 2
-							})`}
-						>
-							{gradientStops.map(stop => (
-								<stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
-							))}
-						</linearGradient>
-						<filter
-							id={`borderGlowBlur-${id}`}
-							x={-filterPadding}
-							y={-filterPadding}
-							width={size.width + filterPadding * 2}
-							height={size.height + filterPadding * 2}
-							filterUnits="userSpaceOnUse"
-						>
-							<feGaussianBlur stdDeviation={blur} />
-							<feComponentTransfer>
-								<feFuncR type="linear" slope={brightness} />
-								<feFuncG type="linear" slope={brightness} />
-								<feFuncB type="linear" slope={brightness} />
-							</feComponentTransfer>
-						</filter>
-					</defs>
-					{activeSides === 1 ? (
-						<>
-							{top && (
-								<line
-									x1={strokeWidth / 2}
-									y1={strokeWidth / 2}
-									x2={size.width - strokeWidth / 2}
-									y2={strokeWidth / 2}
-									stroke={`url(#borderGlowGradient-${id})`}
-									strokeWidth={strokeWidth}
-									filter={`url(#borderGlowBlur-${id})`}
-									opacity="0.7"
-								/>
-							)}
-							{bottom && (
-								<line
-									x1={strokeWidth / 2}
-									y1={size.height - strokeWidth / 2}
-									x2={size.width - strokeWidth / 2}
-									y2={size.height - strokeWidth / 2}
-									stroke={`url(#borderGlowGradient-${id})`}
-									strokeWidth={strokeWidth}
-									filter={`url(#borderGlowBlur-${id})`}
-									opacity="0.7"
-								/>
-							)}
-							{left && (
-								<line
-									x1={strokeWidth / 2}
-									y1={strokeWidth / 2}
-									x2={strokeWidth / 2}
-									y2={size.height - strokeWidth / 2}
-									stroke={`url(#borderGlowGradient-${id})`}
-									strokeWidth={strokeWidth}
-									filter={`url(#borderGlowBlur-${id})`}
-									opacity="0.7"
-								/>
-							)}
-							{right && (
-								<line
-									x1={size.width - strokeWidth / 2}
-									y1={strokeWidth / 2}
-									x2={size.width - strokeWidth / 2}
-									y2={size.height - strokeWidth / 2}
-									stroke={`url(#borderGlowGradient-${id})`}
-									strokeWidth={strokeWidth}
-									filter={`url(#borderGlowBlur-${id})`}
-									opacity="0.7"
-								/>
-							)}
-							{top && (
-								<line
-									x1={strokeWidth / 2}
-									y1={strokeWidth / 2}
-									x2={size.width - strokeWidth / 2}
-									y2={strokeWidth / 2}
+									x={strokeWidth / 2}
+									y={strokeWidth / 2}
+									width={size.width - strokeWidth}
+									height={size.height - strokeWidth}
+									rx={Math.min(rectRadius, size.width / 2)}
+									ry={Math.min(rectRadius, size.height / 2)}
+									fill="none"
 									stroke={`url(#borderGlowGradient-${id})`}
 									strokeWidth={strokeWidth}
 								/>
-							)}
-							{bottom && (
-								<line
-									x1={strokeWidth / 2}
-									y1={size.height - strokeWidth / 2}
-									x2={size.width - strokeWidth / 2}
-									y2={size.height - strokeWidth / 2}
-									stroke={`url(#borderGlowGradient-${id})`}
-									strokeWidth={strokeWidth}
-								/>
-							)}
-							{left && (
-								<line
-									x1={strokeWidth / 2}
-									y1={strokeWidth / 2}
-									x2={strokeWidth / 2}
-									y2={size.height - strokeWidth / 2}
-									stroke={`url(#borderGlowGradient-${id})`}
-									strokeWidth={strokeWidth}
-								/>
-							)}
-							{right && (
-								<line
-									x1={size.width - strokeWidth / 2}
-									y1={strokeWidth / 2}
-									x2={size.width - strokeWidth / 2}
-									y2={size.height - strokeWidth / 2}
-									stroke={`url(#borderGlowGradient-${id})`}
-									strokeWidth={strokeWidth}
-								/>
-							)}
-						</>
-					) : (
-						<g mask={`url(#borderGlowMask-${id})`}>
-							<rect
-								x={strokeWidth / 2}
-								y={strokeWidth / 2}
-								width={size.width - strokeWidth}
-								height={size.height - strokeWidth}
-								rx={Math.min(rectRadius, size.width / 2)}
-								ry={Math.min(rectRadius, size.height / 2)}
-								fill="none"
-								stroke={`url(#borderGlowGradient-${id})`}
-								strokeWidth={strokeWidth}
-								filter={`url(#borderGlowBlur-${id})`}
-								opacity="0.7"
-							/>
-							<rect
-								x={strokeWidth / 2}
-								y={strokeWidth / 2}
-								width={size.width - strokeWidth}
-								height={size.height - strokeWidth}
-								rx={Math.min(rectRadius, size.width / 2)}
-								ry={Math.min(rectRadius, size.height / 2)}
-								fill="none"
-								stroke={`url(#borderGlowGradient-${id})`}
-								strokeWidth={strokeWidth}
-							/>
-						</g>
-					)}
-				</svg>
-			)}
+							</g>
+						)}
+					</svg>
+				)}
 		</div>
 	);
 }

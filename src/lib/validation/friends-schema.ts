@@ -34,5 +34,9 @@ export const FriendshipStatusResponseSchema = z.object({
 export type FriendshipStatus = z.infer<typeof FriendshipStatusSchema>;
 export type FriendRequest = z.infer<typeof FriendRequestSchema>;
 export type FriendListResponse = z.infer<typeof FriendListResponseSchema>;
-export type PendingRequestsResponse = z.infer<typeof PendingRequestsResponseSchema>;
-export type FriendshipStatusResponse = z.infer<typeof FriendshipStatusResponseSchema>;
+export type PendingRequestsResponse = z.infer<
+	typeof PendingRequestsResponseSchema
+>;
+export type FriendshipStatusResponse = z.infer<
+	typeof FriendshipStatusResponseSchema
+>;

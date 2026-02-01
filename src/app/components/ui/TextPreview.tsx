@@ -121,12 +121,16 @@ export function TextPreview({
 				)}
 				style={fixedHeightStyle}
 				onClick={onClick}
-				onKeyDown={onClick ? (e) => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault();
-						onClick();
-					}
-				} : undefined}
+				onKeyDown={
+					onClick
+						? (e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault();
+									onClick();
+								}
+							}
+						: undefined
+				}
 				tabIndex={onClick ? 0 : undefined}
 			>
 				{placeholder}
@@ -149,12 +153,16 @@ export function TextPreview({
 			)}
 			style={fixedHeightStyle}
 			onClick={onClick}
-			onKeyDown={onClick ? (e) => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					e.preventDefault();
-					onClick();
-				}
-			} : undefined}
+			onKeyDown={
+				onClick
+					? (e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								onClick();
+							}
+						}
+					: undefined
+			}
 			tabIndex={onClick ? 0 : undefined}
 		>
 			{text}

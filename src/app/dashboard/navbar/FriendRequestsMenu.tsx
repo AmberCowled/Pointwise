@@ -2,17 +2,17 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
-import {
-	useGetPendingRequestsQuery,
-	useHandleFriendRequestMutation,
-	friendsApi,
-} from "@pointwise/lib/redux/services/friendsApi";
-import { IoCheckmark, IoClose, IoPersonAdd } from "react-icons/io5";
-import ProfilePicture from "../userCard/ProfilePicture";
-import { useEffect } from "react";
 import { getAblyClient } from "@pointwise/lib/ably/client";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
+import {
+	friendsApi,
+	useGetPendingRequestsQuery,
+	useHandleFriendRequestMutation,
+} from "@pointwise/lib/redux/services/friendsApi";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { IoCheckmark, IoClose, IoPersonAdd } from "react-icons/io5";
+import ProfilePicture from "../userCard/ProfilePicture";
 
 export default function FriendRequestsMenu() {
 	const dispatch = useAppDispatch();
@@ -45,11 +45,12 @@ export default function FriendRequestsMenu() {
 		if (!userId) {
 			return;
 		}
-		let channel: ReturnType<Awaited<ReturnType<typeof getAblyClient>>["channels"]["get"]> | null =
-			null;
+		let channel: ReturnType<
+			Awaited<ReturnType<typeof getAblyClient>>["channels"]["get"]
+		> | null = null;
 		let isActive = true;
 
-		const handleMessage = (message: any) => {
+		const handleMessage = (_message: import("ably").InboundMessage) => {
 			// Invalidate friend-related tags for any relevant Ably message
 			// This handles legacy events and the new unified notification event
 			dispatch(

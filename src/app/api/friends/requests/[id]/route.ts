@@ -1,3 +1,4 @@
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import {
 	acceptFriendRequest,
 	declineFriendRequest,
@@ -6,7 +7,6 @@ import {
 	handleProtectedRoute,
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { sendNotification } from "@pointwise/lib/notifications/service";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { z } from "zod";
@@ -41,7 +41,10 @@ export async function PATCH(
 						},
 					);
 				} catch (error) {
-					console.warn("Failed to publish friend request acceptance event", error);
+					console.warn(
+						"Failed to publish friend request acceptance event",
+						error,
+					);
 				}
 				return jsonResponse({
 					success: true,
@@ -90,7 +93,10 @@ export async function DELETE(
 				{ cancellerId: user.id },
 			);
 		} catch (error) {
-			console.warn("Failed to publish friend request cancellation event", error);
+			console.warn(
+				"Failed to publish friend request cancellation event",
+				error,
+			);
 		}
 		return jsonResponse({ success: true, message: "Friend request cancelled" });
 	});

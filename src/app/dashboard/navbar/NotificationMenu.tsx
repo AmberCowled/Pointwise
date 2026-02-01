@@ -2,18 +2,18 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
-import { IoNotifications } from "react-icons/io5";
-import { useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { getAblyClient } from "@pointwise/lib/ably/client";
-import ProfilePicture from "../userCard/ProfilePicture";
+import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import {
 	notificationsApi,
 	useGetNotificationsQuery,
 	useMarkAllReadMutation,
 } from "@pointwise/lib/redux/services/notificationsApi";
-import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { IoNotifications } from "react-icons/io5";
+import ProfilePicture from "../userCard/ProfilePicture";
 
 export default function NotificationMenu() {
 	const dispatch = useAppDispatch();
@@ -31,10 +31,10 @@ export default function NotificationMenu() {
 	useEffect(() => {
 		if (!userId) return;
 
-		let channel: any = null;
+		let channel: import("ably").RealtimeChannel | null = null;
 		let isActive = true;
 
-		const handleMessage = (message: any) => {
+		const handleMessage = (message: import("ably").InboundMessage) => {
 			// When any new notification arrives, invalidate the Redux cache
 			if (message.name === "new-notification") {
 				dispatch(notificationsApi.util.invalidateTags(["Notifications"]));

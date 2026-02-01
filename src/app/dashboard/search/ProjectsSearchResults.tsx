@@ -26,11 +26,7 @@ export default function ProjectsSearchResults({
 	const projects = projectsSearchResults?.projects ?? [];
 	const projectsCount = projectsSearchResults?.pagination.total ?? 0;
 	return (
-		<Card
-			label={`${projectsCount} results`}
-			loading={isProjectsLoading}
-			className="rounded-sm"
-		>
+		<Card label={`${projectsCount} results`} loading={isProjectsLoading}>
 			<Container direction="vertical" gap="sm" width="full" className="mt-3">
 				<ErrorCard
 					message="Something went wrong"

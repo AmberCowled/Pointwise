@@ -21,7 +21,12 @@ export default function SearchOverview({ query }: { query: string }) {
 					onChange={(value) => setActiveTab(value as "projects" | "users")}
 				/>
 			</Container>
-			<Container width="full" direction="vertical" gap="sm" className="pt-1">
+			<Container
+				width="full"
+				direction="vertical"
+				gap="sm"
+				className="pt-1 rounded-lg"
+			>
 				{activeTab === "projects" && <ProjectsSearchResults query={query} />}
 				{activeTab === "users" && <UsersSearchResults query={query} />}
 			</Container>

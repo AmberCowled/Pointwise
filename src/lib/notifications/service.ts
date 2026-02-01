@@ -1,7 +1,8 @@
-import prisma from "@pointwise/lib/prisma";
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
-import { NotificationType } from "@pointwise/lib/validation/notification-schema";
-import { NotificationDataSchemas, type NotificationData } from "./types";
+import prisma from "@pointwise/lib/prisma";
+import type { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import type { Prisma } from "@prisma/client";
+import { type NotificationData, NotificationDataSchemas } from "./types";
 
 export async function sendNotification<T extends NotificationType>(
 	recipientId: string,
@@ -17,7 +18,7 @@ export async function sendNotification<T extends NotificationType>(
 		data: {
 			userId: recipientId,
 			type: type,
-			data: validatedData as any,
+			data: validatedData as Prisma.InputJsonValue,
 		},
 	});
 

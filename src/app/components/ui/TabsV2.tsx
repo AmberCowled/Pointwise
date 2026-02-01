@@ -1,8 +1,8 @@
 "use client";
 
+import BorderGlow from "@pointwise/app/components/ui/BorderGlow";
 import clsx from "clsx";
 import type React from "react";
-import BorderGlow from "@pointwise/app/components/ui/BorderGlow";
 export type TabsV2Size = "sm" | "md" | "lg";
 
 export interface TabItemV2 {

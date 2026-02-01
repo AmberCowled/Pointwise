@@ -41,5 +41,9 @@ export const NotificationSchema = z.object({
 
 export type Notification = z.infer<typeof NotificationSchema>;
 export type NotificationType = z.infer<typeof NotificationTypeSchema>;
-export type FriendRequestAcceptedData = z.infer<typeof FriendRequestAcceptedDataSchema>;
-export type FriendRequestReceivedData = z.infer<typeof FriendRequestReceivedDataSchema>;
+export type FriendRequestAcceptedData = z.infer<
+	typeof FriendRequestAcceptedDataSchema
+>;
+export type FriendRequestReceivedData = z.infer<
+	typeof FriendRequestReceivedDataSchema
+>;

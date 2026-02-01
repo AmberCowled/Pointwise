@@ -1,3 +1,4 @@
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import {
 	getPendingRequests,
 	sendFriendRequest,
@@ -6,7 +7,6 @@ import {
 	handleProtectedRoute,
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { sendNotification } from "@pointwise/lib/notifications/service";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { z } from "zod";
