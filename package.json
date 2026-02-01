@@ -9,8 +9,8 @@
 		"pd": "pnpm install && next dev",
 		"format": "biome format --write ./src",
 		"lint": "biome lint ./src",
-		"check": "biome check ./src --max-diagnostics none",
-		"check:fix": "biome check --write ./src --max-diagnostics none",
+		"check": "biome check ./src",
+		"check:fix": "biome check --write ./src",
 		"postinstall": "prisma generate",
 		"db:create-text-index": "node scripts/create-text-index.mjs",
 		"db:push": "pnpm prisma db push"

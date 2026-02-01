@@ -5,6 +5,8 @@ import Page from "@pointwise/app/components/ui/Page";
 import { getAblyClient } from "@pointwise/lib/ably/client";
 import { useEffect, useRef, useState } from "react";
 
+const x: any = 1;
+
 type RealtimeMessage = {
 	id: string;
 	text: string;
