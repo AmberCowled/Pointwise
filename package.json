@@ -11,6 +11,7 @@
 		"lint": "biome lint ./src",
 		"check": "biome check ./src",
 		"check:fix": "biome check --write ./src",
+		"typecheck": "tsc --noEmit",
 		"postinstall": "prisma generate",
 		"db:create-text-index": "node scripts/create-text-index.mjs",
 		"db:push": "pnpm prisma db push"
