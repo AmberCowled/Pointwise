@@ -11,9 +11,6 @@ importers:
       '@auth/prisma-adapter':
         specifier: ^2.11.1
         version: 2.11.1(@prisma/client@6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3))
-      '@canonical/biome-config':
-        specifier: 0.10.0-experimental.4
-        version: 0.10.0-experimental.4(@biomejs/biome@2.2.4)
       '@headlessui/react':
         specifier: ^2.2.9
         version: 2.2.9(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -284,11 +281,6 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
-
-  '@canonical/biome-config@0.10.0-experimental.4':
-    resolution: {integrity: sha512-UuIM7nSFxPQEoNObjuWQVUwocx1hBkusmFG+yHm/zi484qFz4LMcJln4DQRVK6v3Mc2ZnLIK41a83hzt46sgZQ==}
-    peerDependencies:
-      '@biomejs/biome': 2.2.4
 
   '@effect/platform@0.90.3':
     resolution: {integrity: sha512-XvQ37yzWQKih4Du2CYladd1i/MzqtgkTPNCaN6Ku6No4CK83hDtXIV/rP03nEoBg2R3Pqgz6gGWmE2id2G81HA==}
@@ -3282,10 +3274,6 @@ snapshots:
 
   '@biomejs/cli-win32-x64@2.2.4':
     optional: true
-
-  '@canonical/biome-config@0.10.0-experimental.4(@biomejs/biome@2.2.4)':
-    dependencies:
-      '@biomejs/biome': 2.2.4
 
   '@effect/platform@0.90.3(effect@3.17.7)':
     dependencies:
