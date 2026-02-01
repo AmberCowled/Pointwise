@@ -1,0 +1,22 @@
+# Dependencies and tooling
+node_modules
+.pnp
+.vercel
+
+# Build and output
+.next
+build
+out
+dist
+generated
+
+# Misc
+coverage
+logs
+temp
+tmp
+cache
+
+# File types (no Prisma/Biome adapter for v7+ yet)
+*.css
+*.prisma

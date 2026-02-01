@@ -17,7 +17,6 @@
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^2.11.1",
-		"@canonical/biome-config": "0.10.0-experimental.4",
 		"@headlessui/react": "^2.2.9",
 		"@prisma/client": "^6.19.0",
 		"@reduxjs/toolkit": "^2.5.0",
