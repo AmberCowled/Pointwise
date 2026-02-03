@@ -49,6 +49,10 @@ model User {
 
   notifications          Notification[]
 
+  // Messaging
+  conversationParticipants ConversationParticipant[]
+  sentMessages             Message[]
+
   xp Int @default(0)
 
   createdAt DateTime @default(now())
@@ -221,6 +225,7 @@ model Project {
 enum NotificationType {
   FRIEND_REQUEST_ACCEPTED
   FRIEND_REQUEST_RECEIVED
+  NEW_MESSAGE
 }
 
 model Notification {
@@ -233,5 +238,46 @@ model Notification {
   createdAt DateTime         @default(now())
 
   @@index([userId])
+  @@index([createdAt])
+}
+
+model Conversation {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String?  // Optional name for group chats
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([updatedAt])
+}
+
+model ConversationParticipant {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId  String       @db.ObjectId
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId          String       @db.ObjectId
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt        DateTime     @default(now())
+  lastReadAt      DateTime?
+  archivedAt      DateTime?    // When set, conversation is hidden from overview until another participant sends a message
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String       @db.ObjectId
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content        String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
   @@index([createdAt])
 }

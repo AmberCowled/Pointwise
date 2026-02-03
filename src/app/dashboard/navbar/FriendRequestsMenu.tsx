@@ -97,7 +97,7 @@ export default function FriendRequestsMenu() {
 				{isLoading ? (
 					<Menu.Option label="Loading requests..." disabled />
 				) : !hasRequests ? (
-					<Menu.Option label="No friend requests yet" disabled />
+					<Menu.Option label="No friend requests" disabled />
 				) : (
 					incomingRequests.map((request) => (
 						<div

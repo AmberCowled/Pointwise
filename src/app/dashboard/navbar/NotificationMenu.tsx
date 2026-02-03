@@ -63,7 +63,11 @@ export default function NotificationMenu() {
 		};
 	}, [userId, dispatch]);
 
-	const unreadNotifications = notifications.filter((n) => !n.read);
+	// Exclude NEW_MESSAGE; those are shown only in MessagesMenu
+	const notificationMenuItems = notifications.filter(
+		(n) => n.type !== NotificationType.NEW_MESSAGE,
+	);
+	const unreadNotifications = notificationMenuItems.filter((n) => !n.read);
 	const unreadCount = unreadNotifications.length;
 
 	const handleOpenMenu = () => {
@@ -87,10 +91,10 @@ export default function NotificationMenu() {
 			<Menu.Section title="Notifications">
 				{isLoading ? (
 					<Menu.Option label="Loading notifications..." disabled />
-				) : notifications.length === 0 ? (
+				) : notificationMenuItems.length === 0 ? (
 					<Menu.Option label="No notifications yet" disabled />
 				) : (
-					notifications.map((notification) => {
+					notificationMenuItems.map((notification) => {
 						const isAccepted =
 							notification.type === NotificationType.FRIEND_REQUEST_ACCEPTED;
 						const isReceived =

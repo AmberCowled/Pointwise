@@ -1,10 +1,29 @@
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
+
+const MESSAGE_SNIPPET_MAX_LENGTH = 80;
+
+/** Truncate message content for notification snippet (e.g. MessagesMenu preview). */
+export function truncateMessageSnippet(content: string): string {
+	if (content.length <= MESSAGE_SNIPPET_MAX_LENGTH) return content;
+	return `${content.slice(0, MESSAGE_SNIPPET_MAX_LENGTH).trimEnd()}…`;
+}
+
 import prisma from "@pointwise/lib/prisma";
-import type { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import {
+	NotificationType,
+	type NotificationType as NotificationTypeValue,
+} from "@pointwise/lib/validation/notification-schema";
 import type { Prisma } from "@prisma/client";
 import { type NotificationData, NotificationDataSchemas } from "./types";
 
-export async function sendNotification<T extends NotificationType>(
+/** Ably channel suffix per notification type (channel = user:${recipientId}:${suffix}) */
+const CHANNEL_SUFFIX: Record<NotificationTypeValue, string> = {
+	[NotificationType.FRIEND_REQUEST_ACCEPTED]: "friend-requests",
+	[NotificationType.FRIEND_REQUEST_RECEIVED]: "friend-requests",
+	[NotificationType.NEW_MESSAGE]: "messages",
+};
+
+export async function sendNotification<T extends NotificationTypeValue>(
 	recipientId: string,
 	type: T,
 	data: NotificationData<T>,
@@ -23,15 +42,12 @@ export async function sendNotification<T extends NotificationType>(
 	});
 
 	// 3. Publish Realtime Event via Ably
+	const channelName = `user:${recipientId}:${CHANNEL_SUFFIX[type]}`;
 	try {
-		await publishAblyEvent(
-			`user:${recipientId}:friend-requests`,
-			"new-notification",
-			{
-				...notification,
-				data: validatedData,
-			},
-		);
+		await publishAblyEvent(channelName, "new-notification", {
+			...notification,
+			data: validatedData,
+		});
 	} catch (error) {
 		console.warn("Realtime notification failed, but DB record saved", error);
 	}
