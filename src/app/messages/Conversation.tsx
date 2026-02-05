@@ -8,7 +8,7 @@ import Modal from "@pointwise/app/components/ui/modal";
 import AddUsersToConversationModal, {
 	getAddUsersToConversationModalId,
 } from "@pointwise/app/dashboard/modals/message/AddUsersToConversationModal";
-import { getAblyClient } from "@pointwise/lib/ably/client";
+import { useSubscribeConversation } from "@pointwise/lib/realtime";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import {
 	useArchiveConversationMutation,
@@ -24,7 +24,7 @@ import { notificationsApi } from "@pointwise/lib/redux/services/notificationsApi
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	IoArchiveOutline,
 	IoChevronBack,
@@ -74,48 +74,30 @@ export default function Conversation() {
 		});
 	}, [conversationId, markConversationRead]);
 
-	// Realtime: subscribe to this conversation's Ably channel for new messages
-	useEffect(() => {
+	const handleNewMessage = useCallback(() => {
 		if (!conversationId) return;
-		let channel: import("ably").RealtimeChannel | null = null;
-		let markReadTimeoutId: ReturnType<typeof setTimeout> | null = null;
-		const handleNewMessage = () => {
-			// Refresh messages list
-			dispatch(
-				messagesApi.util.invalidateTags([
-					{ type: "Messages", id: conversationId },
-				]),
-			);
-			// Mark as read after a short delay so the server has created the notification in the DB
-			markReadTimeoutId = setTimeout(() => {
-				markReadTimeoutId = null;
-				markConversationRead(conversationId)
-					.then(() => {
-						dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
-					})
-					.catch((err) => {
-						console.warn(
-							"Failed to mark conversation read after new message",
-							err,
-						);
-					});
-			}, 400);
-		};
-		const subscribe = async () => {
-			try {
-				const client = await getAblyClient();
-				channel = client.channels.get(`conversation:${conversationId}`);
-				channel.subscribe("new-message", handleNewMessage);
-			} catch (err) {
-				console.warn("Failed to subscribe to conversation channel", err);
-			}
-		};
-		void subscribe();
-		return () => {
-			if (markReadTimeoutId !== null) clearTimeout(markReadTimeoutId);
-			channel?.unsubscribe("new-message", handleNewMessage);
-		};
+		dispatch(
+			messagesApi.util.invalidateTags([
+				{ type: "Messages", id: conversationId },
+			]),
+		);
+		setTimeout(() => {
+			markConversationRead(conversationId)
+				.then(() => {
+					dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
+				})
+				.catch((err) => {
+					console.warn(
+						"Failed to mark conversation read after new message",
+						err,
+					);
+				});
+		}, 400);
 	}, [conversationId, dispatch, markConversationRead]);
+
+	useSubscribeConversation(conversationId, {
+		onNewMessage: handleNewMessage,
+	});
 
 	useEffect(() => {
 		if (conversationId && messages.length > 0) {

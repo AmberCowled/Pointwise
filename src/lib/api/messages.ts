@@ -1,4 +1,3 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import {
 	canUserSendInConversation,
 	ensureParticipant,
@@ -9,6 +8,7 @@ import {
 	truncateMessageSnippet,
 } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
+import { publishNewMessage } from "@pointwise/lib/realtime/publish";
 import type {
 	Message,
 	MessagesResponse,
@@ -157,13 +157,13 @@ export async function sendMessage(
 	}
 
 	try {
-		await publishAblyEvent(`conversation:${conversationId}`, "new-message", {
+		await publishNewMessage(conversationId, {
 			id: message.id,
 			conversationId: message.conversationId,
 			senderId: message.senderId,
 			content: message.content,
 			createdAt: message.createdAt,
-			sender: message.sender,
+			sender: message.sender ?? undefined,
 		});
 	} catch (err) {
 		console.warn("Failed to publish to conversation channel", err);

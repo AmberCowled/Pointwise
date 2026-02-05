@@ -2,7 +2,11 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
-import { getAblyClient } from "@pointwise/lib/ably/client";
+import {
+	RealtimePreset,
+	useSubscribeFriendUpdates,
+	useSubscribeUserNotifications,
+} from "@pointwise/lib/realtime";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import {
 	friendsApi,
@@ -10,7 +14,7 @@ import {
 	useHandleFriendRequestMutation,
 } from "@pointwise/lib/redux/services/friendsApi";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useCallback } from "react";
 import { IoCheckmark, IoClose, IoPersonAdd } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
@@ -41,46 +45,24 @@ export default function FriendRequestsMenu() {
 		}
 	};
 
-	useEffect(() => {
-		if (!userId) {
-			return;
-		}
-		let channel: ReturnType<
-			Awaited<ReturnType<typeof getAblyClient>>["channels"]["get"]
-		> | null = null;
-		let isActive = true;
+	const handleFriendUpdate = useCallback(() => {
+		dispatch(
+			friendsApi.util.invalidateTags([
+				"Friends",
+				"FriendRequests",
+				"FriendshipStatus",
+			]),
+		);
+	}, [dispatch]);
 
-		const handleMessage = (_message: import("ably").InboundMessage) => {
-			// Invalidate friend-related tags for any relevant Ably message
-			// This handles legacy events and the new unified notification event
-			dispatch(
-				friendsApi.util.invalidateTags(["FriendRequests", "FriendshipStatus"]),
-			);
-		};
+	useSubscribeUserNotifications(userId, {
+		preset: RealtimePreset.FRIEND_NOTIFICATIONS,
+		onEvent: handleFriendUpdate,
+	});
 
-		const subscribe = async () => {
-			try {
-				const client = await getAblyClient();
-				if (!isActive) {
-					return;
-				}
-				const channelName = `user:${userId}:friend-requests`;
-				channel = client.channels.get(channelName);
-				channel.subscribe(handleMessage);
-			} catch (error) {
-				console.warn("Failed to subscribe to friend request updates", error);
-			}
-		};
-
-		void subscribe();
-
-		return () => {
-			isActive = false;
-			if (channel) {
-				channel.unsubscribe(handleMessage);
-			}
-		};
-	}, [dispatch, userId]);
+	useSubscribeFriendUpdates(userId, {
+		onEvent: handleFriendUpdate,
+	});
 
 	return (
 		<Menu

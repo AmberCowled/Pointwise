@@ -1,4 +1,8 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
+import prisma from "@pointwise/lib/prisma";
+import { publishNotification } from "@pointwise/lib/realtime/publish";
+import type { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import type { Prisma } from "@prisma/client";
+import { type NotificationData, NotificationDataSchemas } from "./types";
 
 const MESSAGE_SNIPPET_MAX_LENGTH = 80;
 
@@ -8,22 +12,7 @@ export function truncateMessageSnippet(content: string): string {
 	return `${content.slice(0, MESSAGE_SNIPPET_MAX_LENGTH).trimEnd()}…`;
 }
 
-import prisma from "@pointwise/lib/prisma";
-import {
-	NotificationType,
-	type NotificationType as NotificationTypeValue,
-} from "@pointwise/lib/validation/notification-schema";
-import type { Prisma } from "@prisma/client";
-import { type NotificationData, NotificationDataSchemas } from "./types";
-
-/** Ably channel suffix per notification type (channel = user:${recipientId}:${suffix}) */
-const CHANNEL_SUFFIX: Record<NotificationTypeValue, string> = {
-	[NotificationType.FRIEND_REQUEST_ACCEPTED]: "friend-requests",
-	[NotificationType.FRIEND_REQUEST_RECEIVED]: "friend-requests",
-	[NotificationType.NEW_MESSAGE]: "messages",
-};
-
-export async function sendNotification<T extends NotificationTypeValue>(
+export async function sendNotification<T extends NotificationType>(
 	recipientId: string,
 	type: T,
 	data: NotificationData<T>,
@@ -42,9 +31,8 @@ export async function sendNotification<T extends NotificationTypeValue>(
 	});
 
 	// 3. Publish Realtime Event via Ably
-	const channelName = `user:${recipientId}:${CHANNEL_SUFFIX[type]}`;
 	try {
-		await publishAblyEvent(channelName, "new-notification", {
+		await publishNotification({
 			...notification,
 			data: validatedData,
 		});

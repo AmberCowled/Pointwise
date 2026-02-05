@@ -2,9 +2,14 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
-import { getAblyClient } from "@pointwise/lib/ably/client";
+import type { NewNotificationPayload } from "@pointwise/lib/realtime";
+import {
+	RealtimePreset,
+	useSubscribeUserNotifications,
+} from "@pointwise/lib/realtime";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import { conversationsApi } from "@pointwise/lib/redux/services/conversationsApi";
+import { messagesApi } from "@pointwise/lib/redux/services/messagesApi";
 import {
 	notificationsApi,
 	useGetNotificationsQuery,
@@ -13,7 +18,7 @@ import { NotificationType } from "@pointwise/lib/validation/notification-schema"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useCallback } from "react";
 import { IoMail } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
@@ -24,6 +29,30 @@ export default function MessagesMenu() {
 
 	const { data: notifications = [], isLoading: notificationsLoading } =
 		useGetNotificationsQuery(undefined, { skip: !userId });
+
+	const handleNotification = useCallback(
+		(payload: NewNotificationPayload) => {
+			dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
+			dispatch(conversationsApi.util.invalidateTags(["Conversations"]));
+			const data = payload.data as { conversationId?: string } | undefined;
+			if (
+				payload.type === "NEW_MESSAGE" &&
+				typeof data?.conversationId === "string"
+			) {
+				dispatch(
+					messagesApi.util.invalidateTags([
+						{ type: "Messages", id: data.conversationId },
+					]),
+				);
+			}
+		},
+		[dispatch],
+	);
+
+	useSubscribeUserNotifications(userId, {
+		preset: RealtimePreset.MESSAGE_NOTIFICATIONS,
+		onEvent: handleNotification,
+	});
 
 	const allMessageNotifications = notifications.filter(
 		(n) => n.type === NotificationType.NEW_MESSAGE && !n.read,
@@ -58,28 +87,6 @@ export default function MessagesMenu() {
 			)
 		: messageNotificationsByConversation;
 	const unreadCount = messageNotificationsForMenu.length;
-
-	useEffect(() => {
-		if (!userId) return;
-		let channel: import("ably").RealtimeChannel | null = null;
-		const handleMessage = () => {
-			dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
-			dispatch(conversationsApi.util.invalidateTags(["Conversations"]));
-		};
-		const subscribe = async () => {
-			try {
-				const client = await getAblyClient();
-				channel = client.channels.get(`user:${userId}:messages`);
-				channel.subscribe("new-notification", handleMessage);
-			} catch (err) {
-				console.warn("Failed to subscribe to messages channel", err);
-			}
-		};
-		void subscribe();
-		return () => {
-			channel?.unsubscribe("new-notification", handleMessage);
-		};
-	}, [userId, dispatch]);
 
 	return (
 		<Menu

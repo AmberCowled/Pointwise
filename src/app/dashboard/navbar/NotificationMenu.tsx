@@ -2,7 +2,10 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
-import { getAblyClient } from "@pointwise/lib/ably/client";
+import {
+	RealtimePreset,
+	useSubscribeUserNotifications,
+} from "@pointwise/lib/realtime";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import {
 	notificationsApi,
@@ -11,7 +14,7 @@ import {
 } from "@pointwise/lib/redux/services/notificationsApi";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useCallback } from "react";
 import { IoNotifications } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
@@ -28,40 +31,14 @@ export default function NotificationMenu() {
 	);
 	const [markAllRead] = useMarkAllReadMutation();
 
-	useEffect(() => {
-		if (!userId) return;
+	const handleNotification = useCallback(() => {
+		dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
+	}, [dispatch]);
 
-		let channel: import("ably").RealtimeChannel | null = null;
-		let isActive = true;
-
-		const handleMessage = (message: import("ably").InboundMessage) => {
-			// When any new notification arrives, invalidate the Redux cache
-			if (message.name === "new-notification") {
-				dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
-			}
-		};
-
-		const subscribe = async () => {
-			try {
-				const client = await getAblyClient();
-				if (!isActive) return;
-				const channelName = `user:${userId}:friend-requests`;
-				channel = client.channels.get(channelName);
-				channel.subscribe(handleMessage);
-			} catch (error) {
-				console.warn("Failed to subscribe to notifications", error);
-			}
-		};
-
-		void subscribe();
-
-		return () => {
-			isActive = false;
-			if (channel) {
-				channel.unsubscribe(handleMessage);
-			}
-		};
-	}, [userId, dispatch]);
+	useSubscribeUserNotifications(userId, {
+		preset: RealtimePreset.GENERAL_NOTIFICATIONS,
+		onEvent: handleNotification,
+	});
 
 	// Exclude NEW_MESSAGE; those are shown only in MessagesMenu
 	const notificationMenuItems = notifications.filter(
