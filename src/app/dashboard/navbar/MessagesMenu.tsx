@@ -98,39 +98,41 @@ export default function MessagesMenu() {
 				) : messageNotificationsForMenu.length === 0 ? (
 					<Menu.Option label="No unread messages" disabled />
 				) : (
-					messageNotificationsForMenu.slice(0, 5).map((n) => {
-						const data = n.data as {
-							conversationId?: string;
-							senderName?: string | null;
-							senderImage?: string | null;
-							messageSnippet?: string;
-						};
-						const href = data.conversationId
-							? `/messages/${data.conversationId}`
-							: "#";
-						return (
-							<Link
-								key={n.id}
-								href={href}
-								className="flex w-full items-center gap-3 px-3 py-2 min-w-[280px] text-left hover:bg-white/5 rounded-lg transition-colors"
-								aria-disabled={!data.conversationId}
-							>
-								<ProfilePicture
-									profilePicture={data.senderImage ?? ""}
-									displayName={data.senderName ?? "User"}
-									size="xs"
-								/>
-								<div className="flex-1 min-w-0">
-									<span className="block font-medium truncate text-zinc-100">
-										{data.senderName ?? "User"}
-									</span>
-									<span className="block text-xs text-zinc-500 truncate">
-										{data.messageSnippet ?? ""}
-									</span>
-								</div>
-							</Link>
-						);
-					})
+					messageNotificationsForMenu
+						.filter(
+							(n) =>
+								(n.data as { conversationId?: string }).conversationId != null,
+						)
+						.slice(0, 5)
+						.map((n) => {
+							const data = n.data as {
+								conversationId: string;
+								senderName?: string | null;
+								senderImage?: string | null;
+								messageSnippet?: string;
+							};
+							return (
+								<Link
+									key={n.id}
+									href={`/messages/${data.conversationId}`}
+									className="flex w-full items-center gap-3 px-3 py-2 min-w-[280px] text-left hover:bg-white/5 rounded-lg transition-colors"
+								>
+									<ProfilePicture
+										profilePicture={data.senderImage ?? ""}
+										displayName={data.senderName ?? "User"}
+										size="xs"
+									/>
+									<div className="flex-1 min-w-0">
+										<span className="block font-medium truncate text-zinc-100">
+											{data.senderName ?? "User"}
+										</span>
+										<span className="block text-xs text-zinc-500 truncate">
+											{data.messageSnippet ?? ""}
+										</span>
+									</div>
+								</Link>
+							);
+						})
 				)}
 			</Menu.Section>
 		</Menu>

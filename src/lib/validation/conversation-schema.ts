@@ -34,7 +34,6 @@ export const ConversationSchema = z.object({
 	updatedAt: z.date(),
 	participants: z.array(ConversationParticipantSchema).optional(),
 	messages: z.array(z.unknown()).optional(),
-	/** True if the current user is friends with at least one other participant (required to send messages). */
 	canSend: z.boolean().optional(),
 });
 
