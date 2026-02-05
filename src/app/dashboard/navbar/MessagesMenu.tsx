@@ -2,8 +2,8 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
-import type { NewNotificationPayload } from "@pointwise/lib/realtime";
 import {
+	type NewNotificationPayload,
 	RealtimePreset,
 	useSubscribeUserNotifications,
 } from "@pointwise/lib/realtime";
