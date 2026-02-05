@@ -323,3 +323,21 @@ export async function getFriendshipStatus(
 
 	return { status: "NONE" };
 }
+
+/**
+ * Returns true if the two users are friends (or the same user).
+ */
+export async function areFriends(
+	userId: string,
+	targetUserId: string,
+): Promise<boolean> {
+	if (userId === targetUserId) return true;
+	const [userAId, userBId] =
+		userId < targetUserId ? [userId, targetUserId] : [targetUserId, userId];
+	const friendship = await prisma.friendship.findUnique({
+		where: {
+			userAId_userBId: { userAId, userBId },
+		},
+	});
+	return !!friendship;
+}

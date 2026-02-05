@@ -3,6 +3,7 @@ import { z } from "zod";
 const notificationTypeValues = [
 	"FRIEND_REQUEST_ACCEPTED",
 	"FRIEND_REQUEST_RECEIVED",
+	"NEW_MESSAGE",
 ] as const;
 
 export const NotificationTypeSchema = z.enum(notificationTypeValues);
@@ -11,6 +12,7 @@ export const NotificationTypeSchema = z.enum(notificationTypeValues);
 export const NotificationType = {
 	FRIEND_REQUEST_ACCEPTED: "FRIEND_REQUEST_ACCEPTED",
 	FRIEND_REQUEST_RECEIVED: "FRIEND_REQUEST_RECEIVED",
+	NEW_MESSAGE: "NEW_MESSAGE",
 } as const satisfies Record<string, NotificationType>;
 
 export const FriendRequestAcceptedDataSchema = z.object({
@@ -25,9 +27,19 @@ export const FriendRequestReceivedDataSchema = z.object({
 	senderImage: z.string().nullable(),
 });
 
+export const NewMessageDataSchema = z.object({
+	conversationId: z.string(),
+	senderId: z.string(),
+	senderName: z.string().nullable(),
+	senderImage: z.string().nullable(),
+	messageSnippet: z.string(),
+	messageId: z.string(),
+});
+
 export const NotificationDataSchema = z.union([
 	FriendRequestAcceptedDataSchema,
 	FriendRequestReceivedDataSchema,
+	NewMessageDataSchema,
 ]);
 
 export const NotificationSchema = z.object({
@@ -47,3 +59,4 @@ export type FriendRequestAcceptedData = z.infer<
 export type FriendRequestReceivedData = z.infer<
 	typeof FriendRequestReceivedDataSchema
 >;
+export type NewMessageData = z.infer<typeof NewMessageDataSchema>;

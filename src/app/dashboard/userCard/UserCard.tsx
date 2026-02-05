@@ -2,6 +2,10 @@ import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import InviteModal from "@pointwise/app/dashboard/modals/invite/InviteModal";
 import {
+	useCreateConversationMutation,
+	useGetConversationsQuery,
+} from "@pointwise/lib/redux/services/conversationsApi";
+import {
 	useCancelFriendRequestMutation,
 	useGetFriendshipStatusQuery,
 	useHandleFriendRequestMutation,
@@ -9,6 +13,8 @@ import {
 	useSendFriendRequestMutation,
 } from "@pointwise/lib/redux/services/friendsApi";
 import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
 	IoChatbubble,
 	IoCheckmark,
@@ -22,8 +28,15 @@ import UserCardButton from "./UserCardButton";
 import UserLevelStats from "./UserLevelStats";
 
 export default function UserCard({ user }: { user: SearchableUser }) {
+	const router = useRouter();
 	const profilePicture = user.image ?? "";
 	const displayName = user.displayName;
+	const { data: session } = useSession();
+	const { data: conversations = [] } = useGetConversationsQuery(undefined, {
+		skip: !session?.user?.id,
+	});
+	const [createConversation, { isLoading: isCreatingConversation }] =
+		useCreateConversationMutation();
 
 	const { data: friendship, isLoading } = useGetFriendshipStatusQuery(user.id);
 	const [sendRequest, { isLoading: isSending }] =
@@ -72,6 +85,31 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 			await removeFriend(user.id).unwrap();
 		} catch (err) {
 			console.error("Failed to remove friend:", err);
+		}
+	};
+
+	const handleMessage = async () => {
+		const currentUserId = session?.user?.id;
+		if (!isFriend || !currentUserId) return;
+		const existingOneToOne = conversations.find((c) => {
+			const participantIds = c.participants?.map((p) => p.userId) ?? [];
+			return (
+				participantIds.length === 2 &&
+				participantIds.includes(currentUserId) &&
+				participantIds.includes(user.id)
+			);
+		});
+		if (existingOneToOne) {
+			router.push(`/messages/${existingOneToOne.id}`);
+		} else {
+			try {
+				const conversation = await createConversation({
+					participantIds: [user.id],
+				}).unwrap();
+				router.push(`/messages/${conversation.id}`);
+			} catch (err) {
+				console.error("Failed to create conversation:", err);
+			}
 		}
 	};
 
@@ -184,7 +222,8 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 								? "Add this user as a friend to send messages"
 								: undefined
 						}
-						disabled={!isFriend}
+						disabled={!isFriend || isCreatingConversation}
+						onClick={() => void handleMessage()}
 					/>
 					<UserCardButton
 						icon={<IoFolder className="size-4" />}

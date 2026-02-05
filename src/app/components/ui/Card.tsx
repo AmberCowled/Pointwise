@@ -237,7 +237,12 @@ export default function Card({
 						gap="sm"
 						className="flex-wrap justify-between"
 					>
-						<Container direction="vertical" width="auto" gap="xs">
+						<Container
+							direction="vertical"
+							width="auto"
+							gap="xs"
+							className="items-start text-left"
+						>
 							{label && (
 								<p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
 									{label}

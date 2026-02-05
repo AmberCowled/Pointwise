@@ -1,8 +1,16 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import prisma from "@pointwise/lib/prisma";
+import { publishNotification } from "@pointwise/lib/realtime/publish";
 import type { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import type { Prisma } from "@prisma/client";
 import { type NotificationData, NotificationDataSchemas } from "./types";
+
+const MESSAGE_SNIPPET_MAX_LENGTH = 80;
+
+/** Truncate message content for notification snippet (e.g. MessagesMenu preview). */
+export function truncateMessageSnippet(content: string): string {
+	if (content.length <= MESSAGE_SNIPPET_MAX_LENGTH) return content;
+	return `${content.slice(0, MESSAGE_SNIPPET_MAX_LENGTH).trimEnd()}…`;
+}
 
 export async function sendNotification<T extends NotificationType>(
 	recipientId: string,
@@ -24,14 +32,10 @@ export async function sendNotification<T extends NotificationType>(
 
 	// 3. Publish Realtime Event via Ably
 	try {
-		await publishAblyEvent(
-			`user:${recipientId}:friend-requests`,
-			"new-notification",
-			{
-				...notification,
-				data: validatedData,
-			},
-		);
+		await publishNotification({
+			...notification,
+			data: validatedData,
+		});
 	} catch (error) {
 		console.warn("Realtime notification failed, but DB record saved", error);
 	}

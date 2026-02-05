@@ -4,6 +4,7 @@ import { signOut } from "next-auth/react";
 import {
 	IoFolder,
 	IoLogOut,
+	IoMail,
 	IoMenu,
 	IoPerson,
 	IoSettings,
@@ -18,6 +19,12 @@ export default function UserMenu() {
 					label="Projects"
 					description="View all projects"
 					href="/dashboard"
+				/>
+				<Menu.Option
+					icon={<IoMail />}
+					label="Messages"
+					description="View conversations"
+					href="/messages"
 				/>
 			</Menu.Section>
 			<Menu.Section title="Account">
