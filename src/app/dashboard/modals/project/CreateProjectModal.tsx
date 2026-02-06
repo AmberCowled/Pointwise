@@ -6,6 +6,7 @@ import Modal from "@pointwise/app/components/ui/modal";
 import { useCreateProjectMutation } from "@pointwise/lib/redux/services/projectsApi";
 import { useState } from "react";
 import ProjectDescription from "./ProjectDescription";
+import ProjectGoal from "./ProjectGoal";
 import ProjectName from "./ProjectName";
 import VisibilitySelector from "./VisibilitySelector";
 
@@ -15,6 +16,7 @@ export default function CreateProjectModal() {
 
 	const [name, setName] = useState<string>("");
 	const [description, setDescription] = useState<string>("");
+	const [goal, setGoal] = useState<string>("");
 	const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
 		defaultVisibility,
 	);
@@ -26,6 +28,7 @@ export default function CreateProjectModal() {
 			await createProject({
 				name: name.trim(),
 				description: description?.trim() || null,
+				goal: goal.trim() || null,
 				visibility,
 			}).unwrap();
 			Modal.Manager.close("create-project-modal");
@@ -37,6 +40,7 @@ export default function CreateProjectModal() {
 	const handleReset = () => {
 		setName("");
 		setDescription("");
+		setGoal("");
 		setVisibility(defaultVisibility);
 	};
 
@@ -52,6 +56,7 @@ export default function CreateProjectModal() {
 				<Container direction="vertical" gap="md" className="items-stretch">
 					<ProjectName onChange={setName} />
 					<ProjectDescription onChange={setDescription} />
+					<ProjectGoal onChange={setGoal} />
 					<VisibilitySelector
 						defaultValue={defaultVisibility}
 						onChange={setVisibility}

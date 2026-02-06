@@ -8,6 +8,7 @@ const PROJECT_DESCRIPTION_SCHEMA = z
 	.max(1000)
 	.nullable()
 	.optional();
+const PROJECT_GOAL_SCHEMA = z.string().max(500).nullable().optional();
 const PROJECT_VISIBILITY_SCHEMA = z
 	.enum(["PUBLIC", "PRIVATE"])
 	.optional()
@@ -41,6 +42,7 @@ export const ProjectSchema = z.object({
 	id: PROJECT_ID_SCHEMA,
 	name: PROJECT_NAME_SCHEMA,
 	description: PROJECT_DESCRIPTION_SCHEMA,
+	goal: PROJECT_GOAL_SCHEMA,
 	visibility: PROJECT_VISIBILITY_SCHEMA,
 	adminUserIds: PROJECT_ADMIN_USER_IDS_SCHEMA,
 	projectUserIds: PROJECT_PROJECT_USER_IDS_SCHEMA,
@@ -58,6 +60,7 @@ export const ProjectsSchema = z.array(ProjectSchema);
 export const CreateProjectRequestSchema = z.object({
 	name: PROJECT_NAME_SCHEMA,
 	description: PROJECT_DESCRIPTION_SCHEMA,
+	goal: PROJECT_GOAL_SCHEMA,
 	visibility: PROJECT_VISIBILITY_SCHEMA,
 });
 
@@ -92,6 +95,7 @@ export const SearchPublicProjectsResponseSchema = z.object({
 export const UpdateProjectRequestSchema = z.object({
 	name: PROJECT_NAME_SCHEMA,
 	description: PROJECT_DESCRIPTION_SCHEMA,
+	goal: PROJECT_GOAL_SCHEMA,
 	visibility: PROJECT_VISIBILITY_SCHEMA,
 });
 

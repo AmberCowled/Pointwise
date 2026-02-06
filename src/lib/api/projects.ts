@@ -17,6 +17,7 @@ export async function createProject(
 		data: {
 			name: request.name,
 			description: request.description || null,
+			goal: request.goal ?? null,
 			visibility: request.visibility || "PRIVATE",
 			adminUserIds: [userId],
 		},
@@ -240,6 +241,7 @@ export function serializeProject(
 		id: project.id,
 		name: project.name,
 		description: project.description || null,
+		goal: project.goal || null,
 		visibility: project.visibility,
 		adminUserIds: project.adminUserIds || [],
 		projectUserIds: project.projectUserIds || [],
@@ -327,6 +329,7 @@ export async function updateProject(
 		data: {
 			name: request.name,
 			description: request.description ?? null,
+			goal: request.goal ?? null,
 			visibility: request.visibility,
 		},
 		include: {

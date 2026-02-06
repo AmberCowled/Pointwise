@@ -201,6 +201,7 @@ model Project {
   id          String            @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
+  goal        String?
   visibility  ProjectVisibility @default(PRIVATE)
 
   // User roles (using arrays for flexibility)

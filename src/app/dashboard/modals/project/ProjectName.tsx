@@ -11,7 +11,7 @@ export default function ProjectName({
 }: ProjectNameProps) {
 	return (
 		<Input
-			label="Project Name"
+			label="Name"
 			placeholder="My Project"
 			required
 			flex="grow"
