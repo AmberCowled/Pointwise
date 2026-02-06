@@ -36,6 +36,11 @@
 - **Level Progression** - Level up as you complete more tasks
 - **Progress Tracking** - Visual progress bars and XP tracking
 
+### AI Features
+
+- **LLM Queue System** - Queue-based AI integration (apifreellm) for extensible AI features
+- **Feature-Typed Requests** - Submit prompts with feature keys (e.g. XP suggestions, bio improvements) and receive typed results
+
 ### User Experience
 
 - **Modern UI** - Beautiful dark theme with gradient accents and role-based color coding
@@ -66,6 +71,7 @@
 - **NextAuth.js** - Authentication with credentials and OAuth
 - **bcrypt** - Secure password hashing
 - **Zod** - Schema validation
+- **apifreellm** - Free LLM API for AI features (queue-based, rate-limited)
 
 ### Development Tools
 
@@ -80,6 +86,7 @@ pointwise/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/                # API routes
 │   │   │   ├── auth/          # Authentication endpoints (NextAuth, signup)
+│   │   │   ├── llm/           # LLM queue (submit, tick, result)
 │   │   │   ├── projects/      # Project management endpoints
 │   │   │   │   ├── [id]/      # Single project operations (GET, PATCH, DELETE)
 │   │   │   │   │   └── join-request/ # Join request endpoints
@@ -90,7 +97,7 @@ pointwise/
 │   │   ├── components/         # React components
 │   │   │   ├── auth/          # Authentication components
 │   │   │   ├── general/       # General components (BrandHeader, etc.)
-│   │   │   ├── providers/     # Context providers (Session, Notifications)
+│   │   │   ├── providers/     # Context providers (Session, Notifications, LLM)
 │   │   │   └── ui/            # Reusable UI components
 │   │   │       ├── menu/      # Menu system
 │   │   │       ├── modal/     # Modal system
@@ -109,6 +116,7 @@ pointwise/
 │   │   └── globals.css        # Global styles
 │   ├── lib/                    # Utility libraries
 │   │   ├── api/               # API client and helpers
+│   │   ├── llm/               # apifreellm client, queue service
 │   │   │   ├── route-handler.ts # Route handler utilities
 │   │   │   ├── projects.ts    # Project API functions
 │   │   │   ├── tasks.ts       # Task API functions
@@ -121,6 +129,7 @@ pointwise/
 │   │   ├── prisma.ts          # Prisma client instance
 │   │   └── categories.ts      # Task categories
 │   └── hooks/                  # Custom React hooks
+│       ├── useLLMQueue.ts     # LLM queue (submit, getResult, polling)
 │       ├── useUserId.ts       # User ID hook with auth redirect
 │       ├── useSignin.ts       # Sign in hook
 │       └── useSignup.ts       # Sign up hook
@@ -165,11 +174,16 @@ pointwise/
    NEXTAUTH_URL="http://localhost:3000"
    NEXTAUTH_SECRET="your-secret-key-here"
 
+   # Required for AI features (free key from apifreellm.com – sign in + join Discord)
+   APIFREELLM_API_KEY="your-apifreellm-api-key"
+
    # Optional: OAuth providers
    GOOGLE_CLIENT_ID="your-google-client-id"
    GOOGLE_CLIENT_SECRET="your-google-client-secret"
    GITHUB_CLIENT_ID="your-github-client-id"
    GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+   # Optional: APIFREELLM_PREMIUM="true" to skip 5s rate limit (paid plan only)
    ```
 
 4. **Set up the database**
@@ -227,7 +241,7 @@ Pointwise includes a comprehensive UI component library:
 - **Type Safety** - End-to-end TypeScript with Prisma-generated types and Zod validation
 - **Component Composition** - Reusable, composable UI components with clear separation of concerns
 - **Redux Toolkit Query** - Efficient data fetching, caching, and automatic cache invalidation
-- **Custom Hooks** - Encapsulated business logic (useUserId, useSignin, useSignup)
+- **Custom Hooks** - Encapsulated business logic (useLLMQueue, useUserId, useSignin, useSignup)
 - **API Routes** - RESTful endpoints with type-safe route handlers and error handling
 - **Authentication** - Secure auth with NextAuth.js supporting credentials, Google, and GitHub OAuth
 - **Project-Based Architecture** - Tasks organized within projects for better collaboration
@@ -236,7 +250,7 @@ Pointwise includes a comprehensive UI component library:
 
 ## 📚 Documentation
 
-- [WebSocket Implementation Plan](./docs/private/websocket-implementation-plan.md) - Planned real-time features architecture
+- [LLM Queue Usage](./docs/private/llm-queue-usage.md) - How to add AI features (XP suggestions, bio improvements, etc.)
 
 ## 🚢 Deployment
 
@@ -244,7 +258,7 @@ The project is configured for easy deployment on Vercel:
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables (DATABASE_URL, NEXTAUTH_SECRET, OAuth credentials)
+3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `APIFREELLM_API_KEY`, and OAuth credentials (optional)
 4. Deploy!
 
 The live demo is hosted at: [https://pointwise-sepia.vercel.app/](https://pointwise-sepia.vercel.app/)
