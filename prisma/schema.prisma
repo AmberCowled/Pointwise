@@ -281,3 +281,27 @@ model Message {
   @@index([senderId])
   @@index([createdAt])
 }
+
+model LLMQueueEntry {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  feature     String // e.g. "summarize", "chat", "suggest"
+  prompt      String
+  status      LLMStatus @default(PENDING)
+  result      String? // AI response when done
+  error       String? // error message when failed
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum LLMStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
