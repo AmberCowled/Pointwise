@@ -248,10 +248,6 @@ Pointwise includes a comprehensive UI component library:
 - **Role-Based Access Control** - Admin, User, and Viewer roles with granular permissions
 - **Invite System** - Project invites with role assignment and join request workflow
 
-## 📚 Documentation
-
-- [LLM Queue Usage](./docs/private/llm-queue-usage.md) - How to add AI features (XP suggestions, bio improvements, etc.)
-
 ## 🚢 Deployment
 
 The project is configured for easy deployment on Vercel:
