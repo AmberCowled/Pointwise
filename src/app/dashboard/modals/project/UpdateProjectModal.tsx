@@ -8,6 +8,7 @@ import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useEffect, useState } from "react";
 import DeleteProjectModal from "./DeleteProjectModal";
 import ProjectDescription from "./ProjectDescription";
+import ProjectGoal from "./ProjectGoal";
 import ProjectName from "./ProjectName";
 import VisibilitySelector from "./VisibilitySelector";
 
@@ -22,6 +23,7 @@ export default function UpdateProjectModal({
 	const [description, setDescription] = useState<string>(
 		project?.description ?? "",
 	);
+	const [goal, setGoal] = useState<string>(project?.goal ?? "");
 	const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
 		project.visibility,
 	);
@@ -31,8 +33,9 @@ export default function UpdateProjectModal({
 	useEffect(() => {
 		setName(project.name);
 		setDescription(project?.description ?? "");
+		setGoal(project?.goal ?? "");
 		setVisibility(project.visibility);
-	}, [project.name, project.description, project.visibility]);
+	}, [project.name, project.description, project.goal, project.visibility]);
 
 	const handleUpdateProject = async () => {
 		try {
@@ -41,6 +44,7 @@ export default function UpdateProjectModal({
 				data: {
 					name: name.trim(),
 					description: description?.trim() || null,
+					goal: goal.trim() || null,
 					visibility,
 				},
 			}).unwrap();
@@ -57,10 +61,13 @@ export default function UpdateProjectModal({
 
 		const normalizedDescription = description.trim() || null;
 		const normalizedProjectDescription = project.description || null;
+		const normalizedGoal = goal.trim() || null;
+		const normalizedProjectGoal = project.goal || null;
 
 		const hasChanges =
 			name.trim() !== project.name ||
 			normalizedDescription !== normalizedProjectDescription ||
+			normalizedGoal !== normalizedProjectGoal ||
 			visibility !== project.visibility;
 
 		return hasChanges;
@@ -81,6 +88,10 @@ export default function UpdateProjectModal({
 						<ProjectDescription
 							defaultValue={project?.description ?? ""}
 							onChange={setDescription}
+						/>
+						<ProjectGoal
+							defaultValue={project?.goal ?? ""}
+							onChange={setGoal}
 						/>
 						<VisibilitySelector
 							defaultValue={project.visibility}
