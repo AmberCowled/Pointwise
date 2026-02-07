@@ -56,7 +56,10 @@ export default function TasksOverview() {
 	);
 	useEffect(() => {
 		if (!hasAiPending) return;
-		const id = setInterval(() => dispatch(tasksApi.util.invalidateTags(["Tasks"])), 5_000);
+		const id = setInterval(
+			() => dispatch(tasksApi.util.invalidateTags(["Tasks"])),
+			5_000,
+		);
 		return () => clearInterval(id);
 	}, [hasAiPending, dispatch]);
 
