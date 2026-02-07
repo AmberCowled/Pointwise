@@ -4,7 +4,10 @@ import {
 	handleProtectedRoute,
 	jsonResponse,
 } from "@pointwise/lib/api/route-handler";
-import { hasPendingXpSuggestionForTaskWithTx } from "@pointwise/lib/llm/queue-service";
+import {
+	enqueue,
+	hasPendingXpSuggestionForTask,
+} from "@pointwise/lib/llm/queue-service";
 import prisma from "@pointwise/lib/prisma";
 import { z } from "zod";
 
@@ -84,44 +87,25 @@ export async function POST(req: Request) {
 				);
 			}
 
+			if (await hasPendingXpSuggestionForTask(taskId)) {
+				return errorResponse("XP suggestion already in progress", 409);
+			}
+
 			const prompt = buildXpPrompt(
 				task.project.goal,
 				task.title,
 				task.description,
 			);
 
-			// Run check + enqueue + task update in a transaction to prevent race
-			// where two concurrent requests both pass hasPending and enqueue duplicates.
-			let requestId: string;
-			try {
-				requestId = await prisma.$transaction(async (tx) => {
-					if (await hasPendingXpSuggestionForTaskWithTx(taskId, tx)) {
-						throw new Error("XP_SUGGESTION_IN_PROGRESS");
-					}
-					const entry = await tx.lLMQueueEntry.create({
-						data: {
-							userId: user.id,
-							prompt,
-							feature: "xp-reward",
-							taskId,
-							status: "PENDING",
-						},
-					});
-					await tx.task.update({
-						where: { id: taskId },
-						data: { xpAwardSource: "AI_PENDING" },
-					});
-					return entry.id;
-				});
-			} catch (err) {
-				if (
-					err instanceof Error &&
-					err.message === "XP_SUGGESTION_IN_PROGRESS"
-				) {
-					return errorResponse("XP suggestion already in progress", 409);
-				}
-				throw err;
-			}
+			// Update task first so UI reflects AI_PENDING; then enqueue.
+			// Avoids Prisma transactions (require MongoDB replica set - breaks on standalone/Atlas M0).
+			// Duplicate prevention: hasPending check above + client-side loading guard on retry badge.
+			await prisma.task.update({
+				where: { id: taskId },
+				data: { xpAwardSource: "AI_PENDING" },
+			});
+
+			const requestId = await enqueue(user.id, prompt, "xp-reward", taskId);
 
 			return jsonResponse({ requestId }, 201);
 		},
