@@ -22,6 +22,10 @@ export interface ResultLLMResponse {
 export const llmApi = {
 	submit: (prompt: string, feature: string) =>
 		apiClient.post<SubmitLLMResponse>(`${BASE}/submit`, { prompt, feature }),
+	submitXpSuggestion: (taskId: string) =>
+		apiClient.post<SubmitLLMResponse>(`${BASE}/submit-xp-suggestion`, {
+			taskId,
+		}),
 	tick: () => apiClient.post<TickLLMResponse>(`${BASE}/tick`),
 	getResult: (requestId: string) =>
 		apiClient.get<ResultLLMResponse>(`${BASE}/result/${requestId}`),

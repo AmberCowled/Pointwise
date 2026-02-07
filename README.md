@@ -29,6 +29,7 @@
 - **Date & Time Management** - Set start dates, due dates, and optional times
 - **Task Filtering** - Filter tasks by project, status, and date ranges
 - **Task XP Rewards** - Assign experience points to tasks upon completion
+- **AI XP Suggestions** - Choose "AI Suggested" or "Manual" when creating/editing tasks; AI evaluates task impact against the project goal and suggests XP (queue-based, processes when anyone views tasks with pending suggestions)
 
 ### Gamification
 
@@ -39,6 +40,7 @@
 ### AI Features
 
 - **LLM Queue System** - Queue-based AI integration (apifreellm) for extensible AI features
+- **AI XP Suggestions** - Tasks can use "AI Suggested" mode; the LLM evaluates project goal, task name, and description to assign XP. Queue processes one request at a time (5s cooldown on free tier); any user viewing tasks with `AI_PENDING` triggers processing
 - **Feature-Typed Requests** - Submit prompts with feature keys (e.g. XP suggestions, bio improvements) and receive typed results
 
 ### User Experience
@@ -175,6 +177,7 @@ pointwise/
    NEXTAUTH_SECRET="your-secret-key-here"
 
    # Required for AI features (free key from apifreellm.com – sign in + join Discord)
+   # Used for AI XP suggestions and other LLM-powered features
    APIFREELLM_API_KEY="your-apifreellm-api-key"
 
    # Optional: OAuth providers

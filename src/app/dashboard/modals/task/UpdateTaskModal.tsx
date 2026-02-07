@@ -6,6 +6,7 @@ import {
 	timesEqual,
 	utcToLocal,
 } from "@pointwise/lib/api/date-time";
+import { llmApi } from "@pointwise/lib/api/llm";
 import { hasDeleteAccess } from "@pointwise/lib/api/projects";
 import {
 	CORE_TASK_CATEGORIES,
@@ -17,7 +18,7 @@ import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useCallback, useEffect, useState } from "react";
 import DeleteTaskModal from "./DeleteTaskModal";
-import TaskForm from "./TaskForm";
+import TaskForm, { XP_MODE_AI, XP_MODE_MANUAL, type XpMode } from "./TaskForm";
 
 export interface UpdateTaskModalProps {
 	task: Task;
@@ -47,6 +48,12 @@ export default function UpdateTaskModal({
 	const [customCategory, setCustomCategory] = useState<string>(
 		isTaskCustomCategory ? taskCategory : "",
 	);
+	const taskXpSource = task?.xpAwardSource ?? "MANUAL";
+	const initialXpMode: XpMode =
+		taskXpSource === "MANUAL" || taskXpSource === "AI_DONE"
+			? XP_MODE_MANUAL
+			: XP_MODE_AI;
+	const [xpMode, setXpMode] = useState<XpMode>(initialXpMode);
 	const [xpAward, setXpAward] = useState<number>(task?.xpAward ?? 50);
 	const [startDate, setStartDate] = useState<Date | null>(
 		localStartDate?.date ?? null,
@@ -80,6 +87,10 @@ export default function UpdateTaskModal({
 				: taskCategory || CORE_TASK_CATEGORIES[0],
 		);
 		setCustomCategory(isTaskCustomCategory ? taskCategory : "");
+		const src = task?.xpAwardSource ?? "MANUAL";
+		setXpMode(
+			src === "MANUAL" || src === "AI_DONE" ? XP_MODE_MANUAL : XP_MODE_AI,
+		);
 		setXpAward(task?.xpAward ?? 50);
 		setStartDate(localStartDate?.date ?? null);
 		setStartTime(task?.hasStartTime ? (localStartDate?.time ?? null) : null);
@@ -91,6 +102,7 @@ export default function UpdateTaskModal({
 		task?.description,
 		task?.category,
 		task?.xpAward,
+		task?.xpAwardSource,
 		task?.optional,
 		task?.startDate,
 		task?.dueDate,
@@ -110,6 +122,8 @@ export default function UpdateTaskModal({
 			startDate !== null ? localToUTC(startDate, startTime) : null;
 		const dueDateUtc = dueDate !== null ? localToUTC(dueDate, dueTime) : null;
 
+		const isAiSuggested = xpMode === XP_MODE_AI;
+
 		try {
 			await updateTask({
 				taskId: task.id,
@@ -118,7 +132,8 @@ export default function UpdateTaskModal({
 					title: title.trim(),
 					description: description.trim() || null,
 					category: finalCategory,
-					xpAward: xpAward,
+					xpAward: isAiSuggested ? 0 : xpAward,
+					xpAwardSource: isAiSuggested ? "AI_PENDING" : "MANUAL",
 					startDate: startDateUtc !== null ? startDateUtc?.date : null,
 					hasStartTime: startTime !== null,
 					dueDate: dueDateUtc !== null ? dueDateUtc?.date : null,
@@ -126,6 +141,15 @@ export default function UpdateTaskModal({
 					optional: optional,
 				},
 			}).unwrap();
+
+			if (isAiSuggested) {
+				try {
+					await llmApi.submitXpSuggestion(task.id);
+				} catch {
+					// Task updated with AI_PENDING; user can retry from card
+				}
+			}
+
 			Modal.Manager.close(`update-task-modal-${task.id}`);
 		} catch (error) {
 			console.error(error);
@@ -142,6 +166,7 @@ export default function UpdateTaskModal({
 		const finalCategory =
 			category === CUSTOM_CATEGORY_LABEL ? customCategory.trim() : category;
 		const taskFinalCategory = task.category ?? "";
+		const taskXpSource = task?.xpAwardSource ?? "MANUAL";
 
 		// Check if dates changed
 		const startDateChanged = !datesEqual(localStartDate?.date, startDate);
@@ -155,12 +180,21 @@ export default function UpdateTaskModal({
 		const startDateTimeChanged = startDateChanged || startTimeChanged;
 		const dueDateTimeChanged = dueDateChanged || dueTimeChanged;
 
+		const taskEffectiveXpMode: XpMode =
+			taskXpSource === "MANUAL" || taskXpSource === "AI_DONE"
+				? XP_MODE_MANUAL
+				: XP_MODE_AI;
+		const xpModeChanged = xpMode !== taskEffectiveXpMode;
+		const xpAwardChanged =
+			xpMode === XP_MODE_MANUAL && xpAward !== (task.xpAward ?? 50);
+
 		// Compare all fields
 		if (
 			title !== (task.title ?? "") ||
 			description !== (task.description ?? "") ||
 			finalCategory !== taskFinalCategory ||
-			xpAward !== (task.xpAward ?? 50) ||
+			xpModeChanged ||
+			xpAwardChanged ||
 			optional !== (task.optional ?? false) ||
 			startDateTimeChanged ||
 			dueDateTimeChanged
@@ -190,6 +224,8 @@ export default function UpdateTaskModal({
 						onCategoryChange={setCategory}
 						customCategory={customCategory}
 						onCustomCategoryChange={setCustomCategory}
+						xpMode={xpMode}
+						onXpModeChange={setXpMode}
 						xpAward={xpAward}
 						onXpAwardChange={setXpAward}
 						startDate={startDate}

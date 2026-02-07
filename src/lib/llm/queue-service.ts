@@ -15,16 +15,32 @@ export async function enqueue(
 	userId: string,
 	prompt: string,
 	feature: string,
+	taskId?: string,
 ): Promise<string> {
 	const entry = await prisma.lLMQueueEntry.create({
 		data: {
 			userId,
 			prompt,
 			feature,
+			taskId: taskId ?? null,
 			status: "PENDING",
 		},
 	});
 	return entry.id;
+}
+
+export async function hasPendingXpSuggestionForTask(
+	taskId: string,
+): Promise<boolean> {
+	const existing = await prisma.lLMQueueEntry.findFirst({
+		where: {
+			taskId,
+			feature: "xp-reward",
+			status: { in: ["PENDING", "PROCESSING"] },
+		},
+		select: { id: true },
+	});
+	return !!existing;
 }
 
 export async function getResult(
@@ -106,11 +122,18 @@ async function claimNextPending(): Promise<{
 	userId: string;
 	prompt: string;
 	feature: string;
+	taskId: string | null;
 } | null> {
 	const oldest = await prisma.lLMQueueEntry.findFirst({
 		where: { status: "PENDING" },
 		orderBy: { createdAt: "asc" },
-		select: { id: true, userId: true, prompt: true, feature: true },
+		select: {
+			id: true,
+			userId: true,
+			prompt: true,
+			feature: true,
+			taskId: true,
+		},
 	});
 	if (!oldest) return null;
 
@@ -120,7 +143,7 @@ async function claimNextPending(): Promise<{
 	});
 	if (count === 0) return null; // Another tick claimed it
 
-	return oldest;
+	return { ...oldest, taskId: oldest.taskId ?? null };
 }
 
 export async function tick(): Promise<boolean> {
@@ -151,6 +174,30 @@ export async function tick(): Promise<boolean> {
 			updatedAt: now,
 		},
 	});
+
+	// (e) If xp-reward with taskId, update the task
+	if (claimed.feature === "xp-reward" && claimed.taskId) {
+		if (success && response) {
+			const match = response.trim().match(/\d+/);
+			const xp = match ? parseInt(match[0], 10) : NaN;
+			if (!Number.isNaN(xp) && xp >= 0 && xp <= 1_000_000) {
+				await prisma.task.update({
+					where: { id: claimed.taskId },
+					data: { xpAward: xp, xpAwardSource: "AI_DONE" },
+				});
+			} else {
+				await prisma.task.update({
+					where: { id: claimed.taskId },
+					data: { xpAwardSource: "AI_FAILED" },
+				});
+			}
+		} else {
+			await prisma.task.update({
+				where: { id: claimed.taskId },
+				data: { xpAwardSource: "AI_FAILED" },
+			});
+		}
+	}
 
 	return true;
 }

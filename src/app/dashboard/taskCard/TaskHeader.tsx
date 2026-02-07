@@ -49,7 +49,7 @@ export default function TaskHeader({ task, open, onChange }: TaskHeaderProps) {
 			{/* Category and XP award */}
 			<Container width="full" gap="sm">
 				<TaskCardCategory category={task.category} />
-				<TaskCardXP xp={task.xpAward} />
+				<TaskCardXP xp={task.xpAward} xpAwardSource={task.xpAwardSource} />
 			</Container>
 		</Container>
 	);
