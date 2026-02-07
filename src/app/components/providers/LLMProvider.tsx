@@ -69,12 +69,7 @@ export function LLMProvider({ children }: { children: React.ReactNode }) {
 		const ids = loadPendingFromStorage();
 		if (ids.length === 0) return;
 
-		try {
-			await llmApi.tick();
-		} catch {
-			// Tick can fail (auth, network). Continue to poll results.
-		}
-
+		// Trigger.dev processes the queue; we only poll for results.
 		for (const requestId of ids) {
 			try {
 				const res = await llmApi.getResult(requestId);

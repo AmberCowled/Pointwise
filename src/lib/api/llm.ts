@@ -8,10 +8,6 @@ export interface SubmitLLMResponse {
 	requestId: string;
 }
 
-export interface TickLLMResponse {
-	processed: boolean;
-}
-
 export interface ResultLLMResponse {
 	status: "PENDING" | "PROCESSING" | "DONE" | "FAILED";
 	feature: string;
@@ -26,7 +22,6 @@ export const llmApi = {
 		apiClient.post<SubmitLLMResponse>(`${BASE}/submit-xp-suggestion`, {
 			taskId,
 		}),
-	tick: () => apiClient.post<TickLLMResponse>(`${BASE}/tick`),
 	getResult: (requestId: string) =>
 		apiClient.get<ResultLLMResponse>(`${BASE}/result/${requestId}`),
 };

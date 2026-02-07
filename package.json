@@ -3,10 +3,12 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
+		"dev": "concurrently -k -n \"next,trigger\" -c \"yellow,blue\" \"next dev\" \"pnpm run trigger:dev\"",
+		"dev:next": "next dev",
+		"trigger:dev": "pnpm dlx trigger.dev@4.3.3 dev",
 		"build": "next build",
 		"start": "next start",
-		"pd": "pnpm install && next dev",
+		"pd": "pnpm install && pnpm dev",
 		"format": "biome format --write ./src",
 		"lint": "biome lint ./src",
 		"check": "biome check ./src",
@@ -14,7 +16,8 @@
 		"typecheck": "tsc --noEmit",
 		"postinstall": "prisma generate",
 		"db:create-text-index": "node scripts/create-text-index.mjs",
-		"db:push": "pnpm prisma db push"
+		"db:push": "pnpm prisma db push",
+		"deploy:trigger": "pnpm dlx trigger.dev@4.3.3 deploy --env prod"
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^2.11.1",
@@ -41,6 +44,8 @@
 		"remark-breaks": "^4.0.0",
 		"remark-gemoji": "^8.0.0",
 		"remark-gfm": "^4.0.1",
+		"trigger.dev": "4.3.3",
+		"@trigger.dev/sdk": "4.3.3",
 		"uploadthing": "^7.7.4",
 		"zod": "^4.1.13"
 	},
@@ -51,6 +56,7 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"babel-plugin-react-compiler": "1.0.0",
+		"concurrently": "^9.1.0",
 		"mongodb": "^7.0.0",
 		"prisma": "^6.19.0",
 		"tailwindcss": "^4",
@@ -62,11 +68,13 @@
 		},
 		"ignoredBuiltDependencies": [
 			"@biomejs/biome",
+			"@depot/cli",
 			"@prisma/client",
 			"@prisma/engines",
 			"bcrypt",
 			"esbuild",
 			"prisma",
+			"protobufjs",
 			"sharp",
 			"unrs-resolver"
 		]
