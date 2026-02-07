@@ -103,6 +103,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.18
+      '@trigger.dev/build':
+        specifier: 4.3.3
+        version: 4.3.3(magicast@0.3.5)(supports-color@10.2.2)(typescript@5.9.3)
       '@types/node':
         specifier: ^20
         version: 20.19.32
