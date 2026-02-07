@@ -13,12 +13,17 @@ import {
 	localDayStart,
 	utcToLocal,
 } from "@pointwise/lib/api/date-time";
+import { llmApi } from "@pointwise/lib/api/llm";
 import { hasWriteAccess } from "@pointwise/lib/api/projects";
+import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
-import { useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
+import {
+	tasksApi,
+	useGetTasksQuery,
+} from "@pointwise/lib/redux/services/tasksApi";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
 import TaskCard from "../taskCard/TaskCard";
 import NoFilteredTasksView from "./NoFilteredTasksView";
@@ -36,6 +41,7 @@ export default function TasksOverview() {
 		isError: isProjectError,
 		refetch: refetchProject,
 	} = useGetProjectQuery(projectId ?? "", { skip: !projectId });
+	const dispatch = useAppDispatch();
 	const {
 		data: tasks,
 		isLoading: isTasksLoading,
@@ -44,6 +50,29 @@ export default function TasksOverview() {
 	} = useGetTasksQuery({ projectId: projectId ?? "" }, { skip: !projectId });
 
 	const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+
+	const TICK_INTERVAL_MS = 5_000;
+
+	// When any task has AI_PENDING, call tick() periodically to process the queue.
+	// Any user viewing tasks helps process pending XP suggestions.
+	useEffect(() => {
+		const taskList = tasks?.tasks ?? [];
+		const hasAiPending = taskList.some(
+			(t) => (t.xpAwardSource ?? "MANUAL") === "AI_PENDING",
+		);
+		if (!hasAiPending) return;
+
+		const runTick = () => {
+			llmApi
+				.tick()
+				.then(() => dispatch(tasksApi.util.invalidateTags(["Tasks"])))
+				.catch(() => {});
+		};
+
+		runTick(); // Run immediately
+		const id = setInterval(runTick, TICK_INTERVAL_MS);
+		return () => clearInterval(id);
+	}, [tasks?.tasks, dispatch]);
 
 	const project = projectData?.project;
 	const hasTasks =
@@ -151,7 +180,7 @@ export default function TasksOverview() {
 
 	return (
 		<>
-			<CreateTaskModal projectId={projectId} />
+			<CreateTaskModal projectId={projectId ?? ""} />
 			<Container direction="vertical" gap="sm" className="py-3">
 				<Card
 					title="Tasks"

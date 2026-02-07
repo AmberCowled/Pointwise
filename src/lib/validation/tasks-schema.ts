@@ -14,6 +14,10 @@ const TASK_DUE_DATE_SCHEMA = z.coerce.date().optional().nullable();
 const TASK_DUE_DATE_RESPONSE_SCHEMA = z.string().optional().nullable();
 const TASK_HAS_DUE_TIME_SCHEMA = z.boolean().optional();
 const TASK_STATUS_SCHEMA = z.enum(["PENDING", "COMPLETED"]).optional();
+export const TASK_XP_AWARD_SOURCE_SCHEMA = z
+	.enum(["MANUAL", "AI_PENDING", "AI_DONE", "AI_FAILED"])
+	.optional()
+	.default("MANUAL");
 const TASK_COMPLETED_AT_SCHEMA = z.coerce.date().optional().nullable();
 const TASK_COMPLETED_AT_RESPONSE_SCHEMA = z.string().optional().nullable();
 const TASK_CREATED_DATE_RESPONSE_SCHEMA = z.string();
@@ -25,6 +29,7 @@ export const TaskSchema = z.object({
 	title: TASK_TITLE_SCHEMA,
 	description: TASK_DESCRIPTION_SCHEMA,
 	xpAward: TASK_XPAWARD_SCHEMA,
+	xpAwardSource: TASK_XP_AWARD_SOURCE_SCHEMA,
 	category: TASK_CATEGORY_SCHEMA,
 	optional: TASK_OPTIONAL_SCHEMA,
 	startDate: TASK_START_DATE_RESPONSE_SCHEMA,
@@ -50,6 +55,7 @@ export const CreateTaskRequestSchema = z.object({
 	title: TASK_TITLE_SCHEMA,
 	description: TASK_DESCRIPTION_SCHEMA,
 	xpAward: TASK_XPAWARD_SCHEMA,
+	xpAwardSource: TASK_XP_AWARD_SOURCE_SCHEMA.optional(),
 	category: TASK_CATEGORY_SCHEMA,
 	optional: TASK_OPTIONAL_SCHEMA,
 	startDate: TASK_START_DATE_SCHEMA,
@@ -67,6 +73,7 @@ export const UpdateTaskRequestSchema = z.object({
 	title: TASK_TITLE_SCHEMA.optional(),
 	description: TASK_DESCRIPTION_SCHEMA.optional(),
 	xpAward: TASK_XPAWARD_SCHEMA.optional(),
+	xpAwardSource: TASK_XP_AWARD_SOURCE_SCHEMA.optional(),
 	category: TASK_CATEGORY_SCHEMA.optional(),
 	optional: TASK_OPTIONAL_SCHEMA.optional(),
 	startDate: TASK_START_DATE_SCHEMA.optional(),
@@ -98,3 +105,4 @@ export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>;
 export type UpdateTaskResponse = z.infer<typeof UpdateTaskResponseSchema>;
 export type DeleteTaskRequest = z.infer<typeof DeleteTaskRequestSchema>;
 export type DeleteTaskResponse = z.infer<typeof DeleteTaskResponseSchema>;
+export type XpAwardSource = z.infer<typeof TASK_XP_AWARD_SOURCE_SCHEMA>;

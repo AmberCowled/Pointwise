@@ -12,6 +12,11 @@ import {
 	MAX_CUSTOM_CATEGORY_LENGTH,
 } from "@pointwise/lib/categories";
 
+export const XP_MODE_AI = "AI Suggested";
+export const XP_MODE_MANUAL = "Manual";
+const XP_MODE_OPTIONS = [XP_MODE_AI, XP_MODE_MANUAL] as const;
+export type XpMode = (typeof XP_MODE_OPTIONS)[number];
+
 export interface TaskFormProps {
 	title?: string;
 	onTitleChange?: (title: string) => void;
@@ -21,6 +26,8 @@ export interface TaskFormProps {
 	onCategoryChange?: (category: string) => void;
 	customCategory?: string;
 	onCustomCategoryChange?: (customCategory: string) => void;
+	xpMode?: XpMode;
+	onXpModeChange?: (xpMode: XpMode) => void;
 	xpAward?: number;
 	onXpAwardChange?: (xpAward: number) => void;
 	startDate?: Date | null;
@@ -43,6 +50,8 @@ export default function TaskForm({
 	onCategoryChange,
 	customCategory,
 	onCustomCategoryChange,
+	xpMode = XP_MODE_AI,
+	onXpModeChange,
 	xpAward,
 	onXpAwardChange,
 	startDate,
@@ -102,13 +111,29 @@ export default function TaskForm({
 						/>
 					)}
 				</Container>
-				<Input
-					label="XP Award"
-					type="number"
-					flex="grow"
-					defaultValue={xpAward?.toString() ?? "50"}
-					onChange={(value: string) => onXpAwardChange?.(Number(value))}
-				/>
+				<Container
+					direction="vertical"
+					gap="sm"
+					className="items-stretch"
+					width="full"
+				>
+					<InputSelect
+						label="XP Reward"
+						flex="grow"
+						options={[...XP_MODE_OPTIONS]}
+						defaultValue={xpMode}
+						onSelect={(v) => onXpModeChange?.(v as XpMode)}
+					/>
+					{xpMode === XP_MODE_MANUAL && (
+						<Input
+							label="XP Value"
+							type="number"
+							flex="grow"
+							defaultValue={xpAward?.toString() ?? "50"}
+							onChange={(value: string) => onXpAwardChange?.(Number(value))}
+						/>
+					)}
+				</Container>
 			</Grid>
 
 			<Grid columns={{ default: 1, sm: 2 }} gap="md">

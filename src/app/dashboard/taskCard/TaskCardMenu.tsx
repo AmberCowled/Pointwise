@@ -3,8 +3,13 @@ import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { utcNow } from "@pointwise/lib/api/date-time";
+import { llmApi } from "@pointwise/lib/api/llm";
 import { hasDeleteAccess, hasWriteAccess } from "@pointwise/lib/api/projects";
-import { useUpdateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
+import { useAppDispatch } from "@pointwise/lib/redux/hooks";
+import {
+	tasksApi,
+	useUpdateTaskMutation,
+} from "@pointwise/lib/redux/services/tasksApi";
 import { useUpdateXPMutation } from "@pointwise/lib/redux/services/xpApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
@@ -22,9 +27,30 @@ export interface TaskCardMenuProps {
 }
 
 export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
+	const dispatch = useAppDispatch();
 	const [updateTask] = useUpdateTaskMutation();
 	const [updateXP] = useUpdateXPMutation();
 	const { showNotification } = useNotifications();
+
+	const xpReady =
+		(task.xpAwardSource ?? "MANUAL") === "MANUAL" ||
+		(task.xpAwardSource ?? "") === "AI_DONE";
+
+	const handleSuggestXp = async () => {
+		try {
+			await llmApi.submitXpSuggestion(task.id);
+			dispatch(tasksApi.util.invalidateTags(["Tasks"]));
+			showNotification({
+				message: "XP suggestion requested",
+				variant: "success",
+			});
+		} catch {
+			showNotification({
+				message: "Failed to request XP suggestion",
+				variant: "error",
+			});
+		}
+	};
 
 	const handleCompleteTask = async () => {
 		try {
@@ -69,7 +95,9 @@ export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
 					icon={<IoCheckmarkCircleOutline className="text-green-400" />}
 					onClick={handleCompleteTask}
 					disabled={
-						task.status === "COMPLETED" || !hasWriteAccess(project.role)
+						task.status === "COMPLETED" ||
+						!hasWriteAccess(project.role) ||
+						!xpReady
 					}
 				/>
 				<Menu.Option
@@ -80,6 +108,10 @@ export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
 						task.status === "COMPLETED" || !hasWriteAccess(project.role)
 					}
 				/>
+				{(task.xpAwardSource ?? "MANUAL") === "AI_FAILED" &&
+					hasWriteAccess(project.role) && (
+						<Menu.Option label="Suggest XP" onClick={handleSuggestXp} />
+					)}
 				<Menu.Option
 					label="Assign"
 					icon={<IoPersonAddOutline className="text-indigo-400" />}
