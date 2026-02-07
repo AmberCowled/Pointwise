@@ -3,9 +3,9 @@
 > A gamified productivity dashboard built with Next.js, React, and TypeScript. Transform your task management into an engaging experience with XP, levels, and team collaboration.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://pointwise-sepia.vercel.app/)
-[![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.x-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 
 ## 🚀 Live Demo
 
@@ -39,8 +39,8 @@
 
 ### AI Features
 
-- **LLM Queue System** - Queue-based AI integration (apifreellm) for extensible AI features
-- **AI XP Suggestions** - Tasks can use "AI Suggested" mode; the LLM evaluates project goal, task name, and description to assign XP. Queue processes one request at a time (5s cooldown on free tier); any user viewing tasks with `AI_PENDING` triggers processing
+- **LLM Queue System** - Queue-based AI integration (Google Gemini) for extensible AI features
+- **AI XP Suggestions** - Tasks can use "AI Suggested" mode; the LLM evaluates project goal, task name, and description to assign XP. Queue processes one request at a time (~4s cooldown on free tier); any user viewing tasks with `AI_PENDING` triggers processing
 - **Feature-Typed Requests** - Submit prompts with feature keys (e.g. XP suggestions, bio improvements) and receive typed results
 
 ### User Experience
@@ -73,7 +73,7 @@
 - **NextAuth.js** - Authentication with credentials and OAuth
 - **bcrypt** - Secure password hashing
 - **Zod** - Schema validation
-- **apifreellm** - Free LLM API for AI features (queue-based, rate-limited)
+- **Google Gemini** - Free LLM API for AI features (queue-based, rate-limited)
 
 ### Development Tools
 
@@ -118,7 +118,7 @@ pointwise/
 │   │   └── globals.css        # Global styles
 │   ├── lib/                    # Utility libraries
 │   │   ├── api/               # API client and helpers
-│   │   ├── llm/               # apifreellm client, queue service
+│   │   ├── llm/               # Gemini client, queue service
 │   │   │   ├── route-handler.ts # Route handler utilities
 │   │   │   ├── projects.ts    # Project API functions
 │   │   │   ├── tasks.ts       # Task API functions
@@ -176,17 +176,15 @@ pointwise/
    NEXTAUTH_URL="http://localhost:3000"
    NEXTAUTH_SECRET="your-secret-key-here"
 
-   # Required for AI features (free key from apifreellm.com – sign in + join Discord)
+   # Required for AI features (free key from https://aistudio.google.com/apikey)
    # Used for AI XP suggestions and other LLM-powered features
-   APIFREELLM_API_KEY="your-apifreellm-api-key"
+   GEMINI_API_KEY="your-gemini-api-key"
 
    # Optional: OAuth providers
    GOOGLE_CLIENT_ID="your-google-client-id"
    GOOGLE_CLIENT_SECRET="your-google-client-secret"
    GITHUB_CLIENT_ID="your-github-client-id"
    GITHUB_CLIENT_SECRET="your-github-client-secret"
-
-   # Optional: APIFREELLM_PREMIUM="true" to skip 5s rate limit (paid plan only)
    ```
 
 4. **Set up the database**
@@ -257,7 +255,7 @@ The project is configured for easy deployment on Vercel:
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `APIFREELLM_API_KEY`, and OAuth credentials (optional)
+3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `GEMINI_API_KEY`, and OAuth credentials (optional). For Trigger.dev (LLM queue processing), also add `GEMINI_API_KEY` to your Trigger.dev project environment variables.
 4. Deploy!
 
 The live demo is hosted at: [https://pointwise-sepia.vercel.app/](https://pointwise-sepia.vercel.app/)

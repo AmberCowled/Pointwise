@@ -4,12 +4,12 @@
  * Lazy recovery resets stuck PROCESSING entries.
  */
 
-import { callApifreeLLM } from "@pointwise/lib/llm/apifreellm";
+import { callGemini } from "@pointwise/lib/llm/gemini";
 import prisma from "@pointwise/lib/prisma";
 import type { LLMStatus } from "@prisma/client";
 
-const STUCK_PROCESSING_MS = 15_000; // 15 seconds - apifreellm typically responds in ~8s
-const COOLDOWN_MS = 5_000; // 5 seconds for free tier rate limit
+const STUCK_PROCESSING_MS = 15_000; // 15 seconds - Gemini typically responds in 2–5s
+const COOLDOWN_MS = 4_000; // ~4s cooldown for free tier rate limit
 
 export async function enqueue(
 	userId: string,
@@ -98,12 +98,8 @@ async function tryUnstickProcessing(): Promise<void> {
 	}
 }
 
-/** Check if cooldown has passed since last processed. Free tier: 1 req/5s. */
+/** Check if cooldown has passed since last processed. Free tier: ~4s cooldown. */
 async function isCooldownPassed(): Promise<boolean> {
-	const isPremium = process.env.APIFREELLM_PREMIUM === "true";
-	if (isPremium) {
-		return true; // Premium: no rate limit
-	}
 	const last = await prisma.lLMQueueEntry.findFirst({
 		where: { status: { in: ["DONE", "FAILED"] } },
 		orderBy: { processedAt: "desc" },
@@ -161,8 +157,8 @@ export async function tick(): Promise<boolean> {
 		return false;
 	}
 
-	// (d) Call apifreellm and update
-	const { success, response, error } = await callApifreeLLM(claimed.prompt);
+	// (d) Call Gemini and update
+	const { success, response, error } = await callGemini(claimed.prompt);
 	const now = new Date();
 	await prisma.lLMQueueEntry.update({
 		where: { id: claimed.id },
