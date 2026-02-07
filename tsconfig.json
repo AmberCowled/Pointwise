@@ -23,9 +23,8 @@
       }
     ],
     "paths": {
-      "@pointwise/*": [
-        "./src/*"
-      ]
+      "@pointwise/*": ["./src/*"],
+      "~/trigger/*": ["./trigger/*"]
     },
     // Intellisense improvements
     "declaration": false,

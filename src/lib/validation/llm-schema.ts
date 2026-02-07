@@ -9,10 +9,6 @@ export const SubmitLLMResponseSchema = z.object({
 	requestId: z.string(),
 });
 
-export const TickLLMResponseSchema = z.object({
-	processed: z.boolean(),
-});
-
 export const ResultLLMResponseSchema = z.object({
 	status: z.enum(["PENDING", "PROCESSING", "DONE", "FAILED"]),
 	feature: z.string(),
@@ -22,5 +18,4 @@ export const ResultLLMResponseSchema = z.object({
 
 export type SubmitLLMRequest = z.infer<typeof SubmitLLMRequestSchema>;
 export type SubmitLLMResponse = z.infer<typeof SubmitLLMResponseSchema>;
-export type TickLLMResponse = z.infer<typeof TickLLMResponseSchema>;
 export type ResultLLMResponse = z.infer<typeof ResultLLMResponseSchema>;

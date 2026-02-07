@@ -9,7 +9,9 @@ import {
 	hasPendingXpSuggestionForTask,
 } from "@pointwise/lib/llm/queue-service";
 import prisma from "@pointwise/lib/prisma";
+import { tasks } from "@trigger.dev/sdk/v3";
 import { z } from "zod";
+import type { processLlmQueue } from "~/trigger/process-llm-queue";
 
 const SubmitXpSuggestionSchema = z.object({
 	taskId: z.string().min(1, "Task ID is required"),
@@ -106,6 +108,9 @@ export async function POST(req: Request) {
 			});
 
 			const requestId = await enqueue(user.id, prompt, "xp-reward", taskId);
+
+			// Fire-and-forget: Trigger.dev processes the queue (no Vercel timeout)
+			tasks.trigger<typeof processLlmQueue>("process-llm-queue", undefined);
 
 			return jsonResponse({ requestId }, 201);
 		},
