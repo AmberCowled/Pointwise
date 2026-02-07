@@ -6,7 +6,7 @@
 
 import { callApifreeLLM } from "@pointwise/lib/llm/apifreellm";
 import prisma from "@pointwise/lib/prisma";
-import type { LLMStatus } from "@prisma/client";
+import type { LLMStatus, Prisma } from "@prisma/client";
 
 const STUCK_PROCESSING_MS = 15_000; // 15 seconds - apifreellm typically responds in ~8s
 const COOLDOWN_MS = 5_000; // 5 seconds for free tier rate limit
@@ -33,6 +33,22 @@ export async function hasPendingXpSuggestionForTask(
 	taskId: string,
 ): Promise<boolean> {
 	const existing = await prisma.lLMQueueEntry.findFirst({
+		where: {
+			taskId,
+			feature: "xp-reward",
+			status: { in: ["PENDING", "PROCESSING"] },
+		},
+		select: { id: true },
+	});
+	return !!existing;
+}
+
+/** Transaction-scoped check for pending XP suggestion (used for atomic enqueue). */
+export async function hasPendingXpSuggestionForTaskWithTx(
+	taskId: string,
+	tx: Prisma.TransactionClient,
+): Promise<boolean> {
+	const existing = await tx.lLMQueueEntry.findFirst({
 		where: {
 			taskId,
 			feature: "xp-reward",
