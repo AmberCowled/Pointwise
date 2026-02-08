@@ -29,7 +29,7 @@
 - **Date & Time Management** - Set start dates, due dates, and optional times
 - **Task Filtering** - Filter tasks by project, status, and date ranges
 - **Task XP Rewards** - Assign experience points to tasks upon completion
-- **AI XP Suggestions** - Choose "AI Suggested" or "Manual" when creating/editing tasks; AI evaluates task impact against the project goal and suggests XP (queue-based, processes when anyone views tasks with pending suggestions)
+- **AI XP Suggestions** - Choose "AI Suggested" or "Manual" when creating/editing tasks; AI evaluates task impact against the project goal and suggests XP
 
 ### Gamification
 
@@ -39,9 +39,7 @@
 
 ### AI Features
 
-- **LLM Queue System** - Queue-based AI integration (Google Gemini) for extensible AI features
-- **AI XP Suggestions** - Tasks can use "AI Suggested" mode; the LLM evaluates project goal, task name, and description to assign XP. Queue processes one request at a time (~4s cooldown on free tier); any user viewing tasks with `AI_PENDING` triggers processing
-- **Feature-Typed Requests** - Submit prompts with feature keys (e.g. XP suggestions, bio improvements) and receive typed results
+- **AI XP Suggestions** - Tasks can use "AI Suggested" mode; Google Gemini evaluates project goal, task name, and description to assign XP before create/update
 
 ### User Experience
 
@@ -73,7 +71,7 @@
 - **NextAuth.js** - Authentication with credentials and OAuth
 - **bcrypt** - Secure password hashing
 - **Zod** - Schema validation
-- **Google Gemini** - Free LLM API for AI features (queue-based, rate-limited)
+- **Google Gemini** - Free LLM API for AI XP suggestions
 
 ### Development Tools
 
@@ -88,7 +86,7 @@ pointwise/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/                # API routes
 │   │   │   ├── auth/          # Authentication endpoints (NextAuth, signup)
-│   │   │   ├── llm/           # LLM queue (submit, tick, result)
+│   │   │   ├── llm/           # AI XP suggestion endpoint
 │   │   │   ├── projects/      # Project management endpoints
 │   │   │   │   ├── [id]/      # Single project operations (GET, PATCH, DELETE)
 │   │   │   │   │   └── join-request/ # Join request endpoints
@@ -99,7 +97,7 @@ pointwise/
 │   │   ├── components/         # React components
 │   │   │   ├── auth/          # Authentication components
 │   │   │   ├── general/       # General components (BrandHeader, etc.)
-│   │   │   ├── providers/     # Context providers (Session, Notifications, LLM)
+│   │   │   ├── providers/     # Context providers (Session, Notifications)
 │   │   │   └── ui/            # Reusable UI components
 │   │   │       ├── menu/      # Menu system
 │   │   │       ├── modal/     # Modal system
@@ -118,7 +116,7 @@ pointwise/
 │   │   └── globals.css        # Global styles
 │   ├── lib/                    # Utility libraries
 │   │   ├── api/               # API client and helpers
-│   │   ├── llm/               # Gemini client, queue service
+│   │   ├── llm/               # Gemini client
 │   │   │   ├── route-handler.ts # Route handler utilities
 │   │   │   ├── projects.ts    # Project API functions
 │   │   │   ├── tasks.ts       # Task API functions
@@ -131,7 +129,6 @@ pointwise/
 │   │   ├── prisma.ts          # Prisma client instance
 │   │   └── categories.ts      # Task categories
 │   └── hooks/                  # Custom React hooks
-│       ├── useLLMQueue.ts     # LLM queue (submit, getResult, polling)
 │       ├── useUserId.ts       # User ID hook with auth redirect
 │       ├── useSignin.ts       # Sign in hook
 │       └── useSignup.ts       # Sign up hook
@@ -242,7 +239,7 @@ Pointwise includes a comprehensive UI component library:
 - **Type Safety** - End-to-end TypeScript with Prisma-generated types and Zod validation
 - **Component Composition** - Reusable, composable UI components with clear separation of concerns
 - **Redux Toolkit Query** - Efficient data fetching, caching, and automatic cache invalidation
-- **Custom Hooks** - Encapsulated business logic (useLLMQueue, useUserId, useSignin, useSignup)
+- **Custom Hooks** - Encapsulated business logic (useUserId, useSignin, useSignup)
 - **API Routes** - RESTful endpoints with type-safe route handlers and error handling
 - **Authentication** - Secure auth with NextAuth.js supporting credentials, Google, and GitHub OAuth
 - **Project-Based Architecture** - Tasks organized within projects for better collaboration
@@ -255,7 +252,7 @@ The project is configured for easy deployment on Vercel:
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `GEMINI_API_KEY`, and OAuth credentials (optional). For Trigger.dev (LLM queue processing), also add `GEMINI_API_KEY` to your Trigger.dev project environment variables.
+3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `GEMINI_API_KEY`, and OAuth credentials (optional).
 4. Deploy!
 
 The live demo is hosted at: [https://pointwise-sepia.vercel.app/](https://pointwise-sepia.vercel.app/)

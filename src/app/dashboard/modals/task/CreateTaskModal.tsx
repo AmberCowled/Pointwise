@@ -2,34 +2,43 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Modal from "@pointwise/app/components/ui/modal";
+import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { apiClient } from "@pointwise/lib/api/client";
 import { localToUTC } from "@pointwise/lib/api/date-time";
-import { llmApi } from "@pointwise/lib/api/llm";
+import { getErrorMessage } from "@pointwise/lib/api/errors";
 import {
 	CORE_TASK_CATEGORIES,
 	CUSTOM_CATEGORY_LABEL,
 } from "@pointwise/lib/categories";
 import { useCreateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
+import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useState } from "react";
-import TaskForm, { XP_MODE_AI, type XpMode } from "./TaskForm";
+import TaskForm, { XpMode } from "./TaskForm";
 
 export interface CreateTaskModalProps {
-	projectId: string;
+	project: Project;
 }
 
-export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
+type LoadingState = "idle" | "generating" | "creating";
+
+export default function CreateTaskModal({ project }: CreateTaskModalProps) {
+	const projectId = project.id;
+	const goal = project.goal ?? null;
 	const [title, setTitle] = useState<string>("");
 	const [description, setDescription] = useState<string>("");
 	const [category, setCategory] = useState<string>(CORE_TASK_CATEGORIES[0]);
 	const [customCategory, setCustomCategory] = useState<string>("");
-	const [xpMode, setXpMode] = useState<XpMode>(XP_MODE_AI);
+	const [xpMode, setXpMode] = useState<XpMode>(XpMode.AI);
 	const [xpAward, setXpAward] = useState<number>(50);
 	const [startDate, setStartDate] = useState<Date | null>(null);
 	const [startTime, setStartTime] = useState<string | null>(null);
 	const [dueDate, setDueDate] = useState<Date | null>(null);
 	const [dueTime, setDueTime] = useState<string | null>(null);
 	const [optional, setOptional] = useState<boolean>(false);
+	const [loadingState, setLoadingState] = useState<LoadingState>("idle");
 
-	const [createTask, { isLoading }] = useCreateTaskMutation();
+	const { showNotification } = useNotifications();
+	const [createTask, { isLoading: isCreateLoading }] = useCreateTaskMutation();
 
 	const handleCreateTask = async () => {
 		const finalCategory =
@@ -37,46 +46,83 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
 		const startDateUtc =
 			startDate !== null ? localToUTC(startDate, startTime) : null;
 		const dueDateUtc = dueDate !== null ? localToUTC(dueDate, dueTime) : null;
+		const isAiSuggested = xpMode === XpMode.AI;
 
-		const isAiSuggested = xpMode === XP_MODE_AI;
+		let resolvedXp = xpAward;
 
-		const response = await createTask({
-			projectId,
-			title: title.trim(),
-			description: description.trim() || null,
-			category: finalCategory,
-			xpAward: isAiSuggested ? 0 : xpAward,
-			xpAwardSource: isAiSuggested ? "AI_PENDING" : "MANUAL",
-			startDate: startDateUtc !== null ? startDateUtc?.date : null,
-			hasStartTime: startTime !== null,
-			dueDate: dueDateUtc !== null ? dueDateUtc?.date : null,
-			hasDueTime: dueTime !== null,
-			optional: optional,
-		}).unwrap();
-
-		if (isAiSuggested && response.task?.id) {
+		if (isAiSuggested) {
+			setLoadingState("generating");
 			try {
-				await llmApi.submitXpSuggestion(response.task.id);
-			} catch {
-				// Task is created with AI_PENDING; user can retry from card
+				const res = await apiClient.post<{ xp?: number; error?: string }>(
+					"/api/llm/xp-suggestion",
+					{
+						goal,
+						taskName: title.trim(),
+						description: description.trim() || undefined,
+					},
+				);
+				if (res.xp !== undefined) {
+					resolvedXp = res.xp;
+				} else {
+					resolvedXp = 0;
+				}
+			} catch (err) {
+				showNotification({
+					message: getErrorMessage(err),
+					variant: "error",
+				});
+				setLoadingState("idle");
+				return;
 			}
+			setLoadingState("creating");
 		}
 
-		Modal.Manager.close(`create-task-modal-${projectId}`);
+		try {
+			await createTask({
+				projectId,
+				title: title.trim(),
+				description: description.trim() || null,
+				category: finalCategory,
+				xpAward: resolvedXp,
+				startDate: startDateUtc !== null ? startDateUtc?.date : null,
+				hasStartTime: startTime !== null,
+				dueDate: dueDateUtc !== null ? dueDateUtc?.date : null,
+				hasDueTime: dueTime !== null,
+				optional: optional,
+			}).unwrap();
+
+			Modal.Manager.close(`create-task-modal-${projectId}`);
+		} catch (err) {
+			showNotification({
+				message: getErrorMessage(err),
+				variant: "error",
+			});
+		} finally {
+			setLoadingState("idle");
+		}
 	};
+
+	const isLoading = loadingState !== "idle" || isCreateLoading;
+	const loadingMessage =
+		loadingState === "generating"
+			? "Generating XP"
+			: loadingState === "creating"
+				? "Creating Task"
+				: undefined;
 
 	const handleReset = () => {
 		setTitle("");
 		setDescription("");
 		setCategory(CORE_TASK_CATEGORIES[0]);
 		setCustomCategory("");
-		setXpMode(XP_MODE_AI);
+		setXpMode(XpMode.AI);
 		setXpAward(50);
 		setStartDate(null);
 		setStartTime(null);
 		setDueDate(null);
 		setDueTime(null);
 		setOptional(false);
+		setLoadingState("idle");
 	};
 
 	const canSubmit = () => {
@@ -92,6 +138,7 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
 			id={`create-task-modal-${projectId}`}
 			size="2xl"
 			loading={isLoading}
+			loadingMessage={loadingMessage}
 			onAfterClose={handleReset}
 		>
 			<Modal.Header title="Create Task" />
@@ -123,7 +170,7 @@ export default function CreateTaskModal({ projectId }: CreateTaskModalProps) {
 			</Modal.Body>
 			<Modal.Footer align="end">
 				<Button variant="secondary">Cancel</Button>
-				<Button disabled={!canSubmit()} onClick={handleCreateTask}>
+				<Button disabled={!canSubmit() || isLoading} onClick={handleCreateTask}>
 					Create
 				</Button>
 			</Modal.Footer>

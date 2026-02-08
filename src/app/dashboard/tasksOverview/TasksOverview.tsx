@@ -14,15 +14,11 @@ import {
 	utcToLocal,
 } from "@pointwise/lib/api/date-time";
 import { hasWriteAccess } from "@pointwise/lib/api/projects";
-import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
-import {
-	tasksApi,
-	useGetTasksQuery,
-} from "@pointwise/lib/redux/services/tasksApi";
+import { useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
 import TaskCard from "../taskCard/TaskCard";
 import NoFilteredTasksView from "./NoFilteredTasksView";
@@ -40,7 +36,6 @@ export default function TasksOverview() {
 		isError: isProjectError,
 		refetch: refetchProject,
 	} = useGetProjectQuery(projectId ?? "", { skip: !projectId });
-	const dispatch = useAppDispatch();
 	const {
 		data: tasks,
 		isLoading: isTasksLoading,
@@ -49,19 +44,6 @@ export default function TasksOverview() {
 	} = useGetTasksQuery({ projectId: projectId ?? "" }, { skip: !projectId });
 
 	const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
-
-	// Trigger.dev processes the queue; we refetch tasks when AI_PENDING exists to pick up AI_DONE.
-	const hasAiPending = (tasks?.tasks ?? []).some(
-		(t) => (t.xpAwardSource ?? "MANUAL") === "AI_PENDING",
-	);
-	useEffect(() => {
-		if (!hasAiPending) return;
-		const id = setInterval(
-			() => dispatch(tasksApi.util.invalidateTags(["Tasks"])),
-			5_000,
-		);
-		return () => clearInterval(id);
-	}, [hasAiPending, dispatch]);
 
 	const project = projectData?.project;
 	const hasTasks =
@@ -169,7 +151,7 @@ export default function TasksOverview() {
 
 	return (
 		<>
-			<CreateTaskModal projectId={projectId ?? ""} />
+			{project && <CreateTaskModal project={project} />}
 			<Container direction="vertical" gap="sm" className="py-3">
 				<Card
 					title="Tasks"

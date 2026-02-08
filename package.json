@@ -3,9 +3,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "concurrently -k -n \"next,trigger\" -c \"yellow,blue\" \"next dev\" \"pnpm run trigger:dev\"",
-		"dev:next": "next dev",
-		"trigger:dev": "pnpm dlx trigger.dev@4.3.3 dev",
+		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
 		"pd": "pnpm install && pnpm dev",
@@ -16,8 +14,7 @@
 		"typecheck": "tsc --noEmit",
 		"postinstall": "prisma generate",
 		"db:create-text-index": "node scripts/create-text-index.mjs",
-		"db:push": "pnpm prisma db push",
-		"deploy:trigger": "pnpm dlx trigger.dev@4.3.3 deploy --env prod"
+		"db:push": "pnpm prisma db push"
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^2.11.1",
@@ -25,7 +22,6 @@
 		"@headlessui/react": "^2.2.9",
 		"@prisma/client": "^6.19.0",
 		"@reduxjs/toolkit": "^2.5.0",
-		"@trigger.dev/sdk": "4.3.3",
 		"@uploadthing/react": "^7.3.3",
 		"ably": "^2.17.0",
 		"bcrypt": "^6.0.0",
@@ -44,14 +40,12 @@
 		"remark-breaks": "^4.0.0",
 		"remark-gemoji": "^8.0.0",
 		"remark-gfm": "^4.0.1",
-		"trigger.dev": "4.3.3",
 		"uploadthing": "^7.7.4",
 		"zod": "^4.1.13"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.4",
 		"@tailwindcss/postcss": "^4",
-		"@trigger.dev/build": "4.3.3",
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",

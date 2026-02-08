@@ -12,10 +12,12 @@ import {
 	MAX_CUSTOM_CATEGORY_LENGTH,
 } from "@pointwise/lib/categories";
 
-export const XP_MODE_AI = "AI Suggested";
-export const XP_MODE_MANUAL = "Manual";
-const XP_MODE_OPTIONS = [XP_MODE_AI, XP_MODE_MANUAL] as const;
-export type XpMode = (typeof XP_MODE_OPTIONS)[number];
+export enum XpMode {
+	AI = "AI Suggested",
+	MANUAL = "Manual",
+}
+
+const XP_MODE_OPTIONS = Object.values(XpMode);
 
 export interface TaskFormProps {
 	title?: string;
@@ -50,7 +52,7 @@ export default function TaskForm({
 	onCategoryChange,
 	customCategory,
 	onCustomCategoryChange,
-	xpMode = XP_MODE_AI,
+	xpMode = XpMode.AI,
 	onXpModeChange,
 	xpAward,
 	onXpAwardChange,
@@ -124,7 +126,7 @@ export default function TaskForm({
 						defaultValue={xpMode}
 						onSelect={(v) => onXpModeChange?.(v as XpMode)}
 					/>
-					{xpMode === XP_MODE_MANUAL && (
+					{xpMode === XpMode.MANUAL && (
 						<Input
 							label="XP Value"
 							type="number"

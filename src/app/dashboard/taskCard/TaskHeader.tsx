@@ -9,19 +9,9 @@ export interface TaskHeaderProps {
 	task: Task;
 	open: boolean;
 	onChange?: (open: boolean) => void;
-	onRetryXp?: () => void;
-	canRetryXp?: boolean;
-	isRetryingXp?: boolean;
 }
 
-export default function TaskHeader({
-	task,
-	open,
-	onChange,
-	onRetryXp,
-	canRetryXp,
-	isRetryingXp,
-}: TaskHeaderProps) {
+export default function TaskHeader({ task, open, onChange }: TaskHeaderProps) {
 	const handleExpandToggle = () => {
 		onChange?.(!open);
 	};
@@ -59,13 +49,7 @@ export default function TaskHeader({
 			{/* Category and XP award */}
 			<Container width="full" gap="sm">
 				<TaskCardCategory category={task.category} />
-				<TaskCardXP
-					xp={task.xpAward}
-					xpAwardSource={task.xpAwardSource}
-					onRetry={onRetryXp}
-					canRetry={canRetryXp}
-					isRetrying={isRetryingXp}
-				/>
+				<TaskCardXP xp={task.xpAward} />
 			</Container>
 		</Container>
 	);

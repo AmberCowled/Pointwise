@@ -72,7 +72,14 @@ export const UpdateXPResponseSchema = z.object({
 	xp: XP_SCHEMA,
 });
 
+export const XpSuggestionRequestSchema = z.object({
+	goal: z.string().optional().nullable(),
+	taskName: z.string().min(1, "Task name is required"),
+	description: z.string().optional().nullable(),
+});
+
 export type XP = z.infer<typeof XP_SCHEMA>;
 export type GetXPResponse = z.infer<typeof GetXPResponseSchema>;
 export type UpdateXPRequest = z.infer<typeof UpdateXPRequestSchema>;
 export type UpdateXPResponse = z.infer<typeof UpdateXPResponseSchema>;
+export type XpSuggestionRequest = z.infer<typeof XpSuggestionRequestSchema>;
