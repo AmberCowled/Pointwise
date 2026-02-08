@@ -6,7 +6,6 @@ import {
 import prisma from "@pointwise/lib/prisma";
 import {
 	type CreateTaskRequest,
-	TASK_XP_AWARD_SOURCE_SCHEMA,
 	type Task,
 	TaskSchema,
 	type UpdateTaskRequest,
@@ -46,9 +45,6 @@ export async function createTask(
 			title: request.title,
 			description: request.description ?? null,
 			xpAward: request.xpAward ?? 0,
-			xpAwardSource: TASK_XP_AWARD_SOURCE_SCHEMA.parse(
-				request.xpAwardSource ?? "MANUAL",
-			),
 			category: request.category,
 			optional: request.optional ?? false,
 			startDate: request.startDate ?? null,
@@ -68,7 +64,6 @@ type TaskUpdateFields = Pick<
 	| "title"
 	| "description"
 	| "xpAward"
-	| "xpAwardSource"
 	| "category"
 	| "optional"
 	| "startDate"
@@ -108,11 +103,6 @@ export async function updateTask(
 	}
 	if (request.xpAward !== undefined) {
 		updateData.xpAward = request.xpAward;
-	}
-	if (request.xpAwardSource !== undefined) {
-		updateData.xpAwardSource = TASK_XP_AWARD_SOURCE_SCHEMA.parse(
-			request.xpAwardSource,
-		);
 	}
 	if (request.category !== undefined) {
 		updateData.category = request.category;
@@ -183,7 +173,6 @@ export function serializeTask(task: PrismaTask): Task {
 		title: task.title,
 		description: task.description,
 		xpAward: task.xpAward,
-		xpAwardSource: task.xpAwardSource ?? "MANUAL",
 		projectId: task.projectId,
 		category: task.category,
 		optional: task.optional,

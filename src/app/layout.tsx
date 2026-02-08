@@ -4,7 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
 import "./globals.css";
-import { LLMProviderWrapper } from "./components/providers/LLMProviderWrapper";
 import { NotificationProviderWrapper } from "./components/providers/NotificationProviderWrapper";
 import { SessionProviderWrapper } from "./components/providers/SessionProviderWrapper";
 import { ModalProvider } from "./components/ui/modal";
@@ -70,7 +69,7 @@ export default function RootLayout({
 					<StoreProvider>
 						<ModalProvider>
 							<NotificationProviderWrapper>
-								<LLMProviderWrapper>{children}</LLMProviderWrapper>
+								{children}
 							</NotificationProviderWrapper>
 						</ModalProvider>
 					</StoreProvider>

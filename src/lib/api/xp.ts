@@ -1,3 +1,4 @@
+import { callGemini } from "@pointwise/lib/llm/gemini";
 import prisma from "@pointwise/lib/prisma";
 import {
 	type UpdateXPRequest,
@@ -51,6 +52,82 @@ function calculateLevelFromXp(totalXp: number) {
 		level < MAX_LEVEL && xpToNext > 0 ? xpIntoLevel / xpToNext : 1;
 
 	return { level, progress, xpIntoLevel, xpToNext, start, nextStart };
+}
+
+/**
+ * Build the prompt for AI XP suggestion based on project goal, task name, and description.
+ */
+export function buildXpSuggestionPrompt(
+	goal: string | null,
+	taskName: string,
+	description: string | null,
+): string {
+	return `You are assigning an XP reward for completing a task.
+  
+  Output ONLY a single integer (no text) between 0 and 1000000.
+  
+  XP represents:
+  - Time required
+  - Mental or physical effort
+  - Difficulty and persistence
+  - Impact on the person's broader goal or life
+  
+  IMPORTANT CONSTRAINTS:
+  - Most normal tasks should fall below 10000 XP.
+  - Values above 100000 XP are EXTREMELY rare and should only be used for life-altering, multi-year, or near-impossible achievements.
+  - A task that could reasonably be completed within weeks or months should NOT exceed 50000 XP.
+  
+  XP SCALE (use these as anchors):
+  - 0: optional items, no meaningful effort, or tasks that contribute nothing to the goal
+  - 25–200: trivial or routine tasks
+  - 200–800: small but useful tasks
+  - 800–3000: meaningful effort or clear progress
+  - 3000–10000: challenging tasks requiring focus and commitment
+  - 10000–50000: major milestones or sustained effort over a long period
+  - 50000–150000: transformational achievements with long-term impact
+  - 150000–1000000: nearly impossible, life-defining, or world-changing accomplishments
+  
+  When deciding XP, consider:
+  - How hard this would be for an average person
+  - How long it would realistically take
+  - Whether it represents incremental progress or a major turning point
+  - How much it advances the stated goal
+  
+  Project goal:
+  ${goal || "Not specified"}
+  
+  Task name:
+  ${taskName}
+  
+  Task description:
+  ${description || "None"}`;
+}
+
+function parseXpFromResponse(response: string): number | null {
+	const match = response.trim().match(/\d+/);
+	if (!match) return null;
+	const xp = parseInt(match[0], 10);
+	if (Number.isNaN(xp) || xp < 0 || xp > 1_000_000) return null;
+	return xp;
+}
+
+/**
+ * Get AI XP suggestion for a task. Calls Gemini with the built prompt.
+ *
+ * @param goal - Project or broader goal context
+ * @param taskName - Task name
+ * @param description - Task description
+ * @returns XP value (0–1_000_000) or null on failure
+ */
+export async function getXpSuggestion(
+	goal: string | null,
+	taskName: string,
+	description: string | null,
+): Promise<number | null> {
+	const prompt = buildXpSuggestionPrompt(goal, taskName, description);
+	const { success, response } = await callGemini(prompt);
+	if (!success || !response) return null;
+	return parseXpFromResponse(response);
 }
 
 /**

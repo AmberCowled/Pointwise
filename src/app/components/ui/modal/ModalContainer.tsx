@@ -112,6 +112,11 @@ export interface ModalContainerProps extends PropsWithChildren {
 	 */
 	loadingMessage?: string;
 	/**
+	 * Size of the loading spinner
+	 * @default 'lg'
+	 */
+	loadingSpinnerSize?: "sm" | "md" | "lg" | "xl";
+	/**
 	 * Callback fired when modal opens
 	 */
 	onOpen?: () => void;
@@ -159,6 +164,7 @@ export function ModalContainer({
 	animation,
 	loading = false,
 	loadingMessage,
+	loadingSpinnerSize = "lg",
 	onOpen,
 	onAfterClose,
 	zIndex = 50,
@@ -356,7 +362,7 @@ export function ModalContainer({
 									style={{ zIndex: calculatedZIndex + 1 }}
 								>
 									<div className="flex flex-col items-center gap-3">
-										<Spinner size="lg" variant="primary" />
+										<Spinner size={loadingSpinnerSize} variant="primary" />
 										{loadingMessage && (
 											<p className="text-sm text-zinc-300">{loadingMessage}</p>
 										)}
@@ -389,7 +395,7 @@ export function ModalContainer({
 									style={{ zIndex: calculatedZIndex + 1 }}
 								>
 									<div className="flex flex-col items-center gap-3">
-										<Spinner size="lg" variant="primary" />
+										<Spinner size={loadingSpinnerSize} variant="primary" />
 										{loadingMessage && (
 											<p className="text-sm text-zinc-300">{loadingMessage}</p>
 										)}

@@ -1,12 +1,14 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Modal from "@pointwise/app/components/ui/modal";
+import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { apiClient } from "@pointwise/lib/api/client";
 import {
 	datesEqual,
 	localToUTC,
 	timesEqual,
 	utcToLocal,
 } from "@pointwise/lib/api/date-time";
-import { llmApi } from "@pointwise/lib/api/llm";
+import { getErrorMessage } from "@pointwise/lib/api/errors";
 import { hasDeleteAccess } from "@pointwise/lib/api/projects";
 import {
 	CORE_TASK_CATEGORIES,
@@ -18,7 +20,7 @@ import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useCallback, useEffect, useState } from "react";
 import DeleteTaskModal from "./DeleteTaskModal";
-import TaskForm, { XP_MODE_AI, XP_MODE_MANUAL, type XpMode } from "./TaskForm";
+import TaskForm, { XpMode } from "./TaskForm";
 
 export interface UpdateTaskModalProps {
 	task: Task;
@@ -48,12 +50,7 @@ export default function UpdateTaskModal({
 	const [customCategory, setCustomCategory] = useState<string>(
 		isTaskCustomCategory ? taskCategory : "",
 	);
-	const taskXpSource = task?.xpAwardSource ?? "MANUAL";
-	const initialXpMode: XpMode =
-		taskXpSource === "MANUAL" || taskXpSource === "AI_DONE"
-			? XP_MODE_MANUAL
-			: XP_MODE_AI;
-	const [xpMode, setXpMode] = useState<XpMode>(initialXpMode);
+	const [xpMode, setXpMode] = useState<XpMode>(XpMode.MANUAL);
 	const [xpAward, setXpAward] = useState<number>(task?.xpAward ?? 50);
 	const [startDate, setStartDate] = useState<Date | null>(
 		localStartDate?.date ?? null,
@@ -68,8 +65,12 @@ export default function UpdateTaskModal({
 		task?.hasDueTime ? (localDueDate?.time ?? null) : null,
 	);
 	const [optional, setOptional] = useState<boolean>(task?.optional ?? false);
+	const [loadingState, setLoadingState] = useState<
+		"idle" | "generating" | "updating"
+	>("idle");
 
-	const [updateTask, { isLoading }] = useUpdateTaskMutation();
+	const { showNotification } = useNotifications();
+	const [updateTask, { isLoading: isUpdateLoading }] = useUpdateTaskMutation();
 
 	// Reset state from task data - reusable function
 	const resetStateFromTask = useCallback(() => {
@@ -87,22 +88,19 @@ export default function UpdateTaskModal({
 				: taskCategory || CORE_TASK_CATEGORIES[0],
 		);
 		setCustomCategory(isTaskCustomCategory ? taskCategory : "");
-		const src = task?.xpAwardSource ?? "MANUAL";
-		setXpMode(
-			src === "MANUAL" || src === "AI_DONE" ? XP_MODE_MANUAL : XP_MODE_AI,
-		);
+		setXpMode(XpMode.MANUAL);
 		setXpAward(task?.xpAward ?? 50);
 		setStartDate(localStartDate?.date ?? null);
 		setStartTime(task?.hasStartTime ? (localStartDate?.time ?? null) : null);
 		setDueDate(localDueDate?.date ?? null);
 		setDueTime(task?.hasDueTime ? (localDueDate?.time ?? null) : null);
 		setOptional(task?.optional ?? false);
+		setLoadingState("idle");
 	}, [
 		task?.title,
 		task?.description,
 		task?.category,
 		task?.xpAward,
-		task?.xpAwardSource,
 		task?.optional,
 		task?.startDate,
 		task?.dueDate,
@@ -121,8 +119,36 @@ export default function UpdateTaskModal({
 		const startDateUtc =
 			startDate !== null ? localToUTC(startDate, startTime) : null;
 		const dueDateUtc = dueDate !== null ? localToUTC(dueDate, dueTime) : null;
+		const isAiSuggested = xpMode === XpMode.AI;
 
-		const isAiSuggested = xpMode === XP_MODE_AI;
+		let resolvedXp = xpAward;
+
+		if (isAiSuggested) {
+			setLoadingState("generating");
+			try {
+				const res = await apiClient.post<{ xp?: number; error?: string }>(
+					"/api/llm/xp-suggestion",
+					{
+						goal: project.goal ?? null,
+						taskName: title.trim(),
+						description: description.trim() || undefined,
+					},
+				);
+				if (res.xp !== undefined) {
+					resolvedXp = res.xp;
+				} else {
+					resolvedXp = 0;
+				}
+			} catch (err) {
+				showNotification({
+					message: getErrorMessage(err),
+					variant: "error",
+				});
+				setLoadingState("idle");
+				return;
+			}
+			setLoadingState("updating");
+		}
 
 		try {
 			await updateTask({
@@ -132,8 +158,7 @@ export default function UpdateTaskModal({
 					title: title.trim(),
 					description: description.trim() || null,
 					category: finalCategory,
-					xpAward: isAiSuggested ? 0 : xpAward,
-					xpAwardSource: isAiSuggested ? "AI_PENDING" : "MANUAL",
+					xpAward: resolvedXp,
 					startDate: startDateUtc !== null ? startDateUtc?.date : null,
 					hasStartTime: startTime !== null,
 					dueDate: dueDateUtc !== null ? dueDateUtc?.date : null,
@@ -142,19 +167,24 @@ export default function UpdateTaskModal({
 				},
 			}).unwrap();
 
-			if (isAiSuggested) {
-				try {
-					await llmApi.submitXpSuggestion(task.id);
-				} catch {
-					// Task updated with AI_PENDING; user can retry from card
-				}
-			}
-
 			Modal.Manager.close(`update-task-modal-${task.id}`);
-		} catch (error) {
-			console.error(error);
+		} catch (err) {
+			showNotification({
+				message: getErrorMessage(err),
+				variant: "error",
+			});
+		} finally {
+			setLoadingState("idle");
 		}
 	};
+
+	const isLoading = loadingState !== "idle" || isUpdateLoading;
+	const loadingMessage =
+		loadingState === "generating"
+			? "Generating XP"
+			: loadingState === "updating"
+				? "Updating Task"
+				: undefined;
 
 	const canSubmit = () => {
 		if (title.trim() === "") return false;
@@ -166,7 +196,6 @@ export default function UpdateTaskModal({
 		const finalCategory =
 			category === CUSTOM_CATEGORY_LABEL ? customCategory.trim() : category;
 		const taskFinalCategory = task.category ?? "";
-		const taskXpSource = task?.xpAwardSource ?? "MANUAL";
 
 		// Check if dates changed
 		const startDateChanged = !datesEqual(localStartDate?.date, startDate);
@@ -180,20 +209,13 @@ export default function UpdateTaskModal({
 		const startDateTimeChanged = startDateChanged || startTimeChanged;
 		const dueDateTimeChanged = dueDateChanged || dueTimeChanged;
 
-		const taskEffectiveXpMode: XpMode =
-			taskXpSource === "MANUAL" || taskXpSource === "AI_DONE"
-				? XP_MODE_MANUAL
-				: XP_MODE_AI;
-		const xpModeChanged = xpMode !== taskEffectiveXpMode;
-		const xpAwardChanged =
-			xpMode === XP_MODE_MANUAL && xpAward !== (task.xpAward ?? 50);
+		const xpAwardChanged = xpAward !== (task.xpAward ?? 50);
 
 		// Compare all fields
 		if (
 			title !== (task.title ?? "") ||
 			description !== (task.description ?? "") ||
 			finalCategory !== taskFinalCategory ||
-			xpModeChanged ||
 			xpAwardChanged ||
 			optional !== (task.optional ?? false) ||
 			startDateTimeChanged ||
@@ -211,6 +233,7 @@ export default function UpdateTaskModal({
 				id={`update-task-modal-${task.id}`}
 				size="2xl"
 				loading={isLoading}
+				loadingMessage={loadingMessage}
 				onOpen={resetStateFromTask}
 			>
 				<Modal.Header title="Update Task" />
@@ -250,7 +273,10 @@ export default function UpdateTaskModal({
 							Delete
 						</Button>
 					)}
-					<Button disabled={!canSubmit()} onClick={handleUpdateTask}>
+					<Button
+						disabled={!canSubmit() || isLoading}
+						onClick={handleUpdateTask}
+					>
 						Update
 					</Button>
 				</Modal.Footer>

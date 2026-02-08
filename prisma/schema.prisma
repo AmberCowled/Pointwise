@@ -6,7 +6,6 @@
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 // Connection URL configuration:
@@ -129,7 +128,6 @@ model Task {
   title          String
   description    String?
   xpAward        Int           @default(0)
-  xpAwardSource  XpAwardSource @default(MANUAL)
 
   // Project relation
   projectId   String @db.ObjectId
@@ -157,13 +155,6 @@ model Task {
 enum TaskStatus {
   PENDING
   COMPLETED
-}
-
-enum XpAwardSource {
-  MANUAL
-  AI_PENDING
-  AI_DONE
-  AI_FAILED
 }
 
 enum ProjectVisibility {
@@ -290,30 +281,4 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
-}
-
-model LLMQueueEntry {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String    @db.ObjectId
-  feature     String // e.g. "summarize", "chat", "xp-reward"
-  prompt      String
-  taskId      String?   @db.ObjectId // for xp-reward: links to Task to update
-  status      LLMStatus @default(PENDING)
-  result      String? // AI response when done
-  error       String? // error message when failed
-  createdAt   DateTime  @default(now())
-  processedAt DateTime?
-  updatedAt   DateTime  @updatedAt
-
-  @@index([status])
-  @@index([userId])
-  @@index([taskId])
-  @@index([createdAt])
-}
-
-enum LLMStatus {
-  PENDING
-  PROCESSING
-  DONE
-  FAILED
 }
