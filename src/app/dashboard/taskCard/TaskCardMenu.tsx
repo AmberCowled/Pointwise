@@ -4,8 +4,9 @@ import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { utcNow } from "@pointwise/lib/api/date-time";
 import { hasDeleteAccess, hasWriteAccess } from "@pointwise/lib/api/projects";
+import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import { useUpdateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
-import { useUpdateXPMutation } from "@pointwise/lib/redux/services/xpApi";
+import { xpApi } from "@pointwise/lib/redux/services/xpApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import {
@@ -22,13 +23,13 @@ export interface TaskCardMenuProps {
 }
 
 export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
+	const dispatch = useAppDispatch();
 	const [updateTask] = useUpdateTaskMutation();
-	const [updateXP] = useUpdateXPMutation();
 	const { showNotification } = useNotifications();
 
 	const handleCompleteTask = async () => {
 		try {
-			const response = await updateTask({
+			await updateTask({
 				taskId: task.id,
 				data: {
 					projectId: project.id,
@@ -36,9 +37,7 @@ export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
 					status: "COMPLETED",
 				},
 			}).unwrap();
-			if (response.task) {
-				await updateXP({ delta: response.task.xpAward }).unwrap();
-			}
+			dispatch(xpApi.util.invalidateTags(["XP"]));
 
 			showNotification({
 				message: "Task completed successfully",
