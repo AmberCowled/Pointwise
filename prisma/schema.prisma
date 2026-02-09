@@ -138,12 +138,18 @@ model VerificationToken {
   @@index([identifier])
 }
 
+enum XpMode {
+  AI
+  MANUAL
+}
+
 model Task {
   // Basic
   id             String        @id @default(auto()) @map("_id") @db.ObjectId
   title          String
   description    String?
   xpAward        Int           @default(0)
+  xpMode         XpMode        @default(AI)
 
   // Project relation
   projectId   String @db.ObjectId

@@ -50,7 +50,8 @@ export default function UpdateTaskModal({
 	const [customCategory, setCustomCategory] = useState<string>(
 		isTaskCustomCategory ? taskCategory : "",
 	);
-	const [xpMode, setXpMode] = useState<XpMode>(XpMode.MANUAL);
+	const taskXpMode = task?.xpMode === "MANUAL" ? XpMode.MANUAL : XpMode.AI;
+	const [xpMode, setXpMode] = useState<XpMode>(taskXpMode);
 	const [xpAward, setXpAward] = useState<number>(task?.xpAward ?? 50);
 	const [startDate, setStartDate] = useState<Date | null>(
 		localStartDate?.date ?? null,
@@ -88,7 +89,7 @@ export default function UpdateTaskModal({
 				: taskCategory || CORE_TASK_CATEGORIES[0],
 		);
 		setCustomCategory(isTaskCustomCategory ? taskCategory : "");
-		setXpMode(XpMode.MANUAL);
+		setXpMode(task?.xpMode === "MANUAL" ? XpMode.MANUAL : XpMode.AI);
 		setXpAward(task?.xpAward ?? 50);
 		setStartDate(localStartDate?.date ?? null);
 		setStartTime(task?.hasStartTime ? (localStartDate?.time ?? null) : null);
@@ -101,6 +102,7 @@ export default function UpdateTaskModal({
 		task?.description,
 		task?.category,
 		task?.xpAward,
+		task?.xpMode,
 		task?.optional,
 		task?.startDate,
 		task?.dueDate,
@@ -159,6 +161,7 @@ export default function UpdateTaskModal({
 					description: description.trim() || null,
 					category: finalCategory,
 					xpAward: resolvedXp,
+					xpMode: xpMode === XpMode.MANUAL ? "MANUAL" : "AI",
 					startDate: startDateUtc !== null ? startDateUtc?.date : null,
 					hasStartTime: startTime !== null,
 					dueDate: dueDateUtc !== null ? dueDateUtc?.date : null,
@@ -197,25 +200,36 @@ export default function UpdateTaskModal({
 			category === CUSTOM_CATEGORY_LABEL ? customCategory.trim() : category;
 		const taskFinalCategory = task.category ?? "";
 
-		// Check if dates changed
-		const startDateChanged = !datesEqual(localStartDate?.date, startDate);
-		const dueDateChanged = !datesEqual(localDueDate?.date, dueDate);
+		// Normalize undefined -> null so datesEqual/timesEqual treat "no value" consistently
+		const origStartDate = localStartDate?.date ?? null;
+		const origDueDate = localDueDate?.date ?? null;
+		const origStartTime = task?.hasStartTime
+			? (localStartDate?.time ?? null)
+			: null;
+		const origDueTime = task?.hasDueTime ? (localDueDate?.time ?? null) : null;
 
-		// Check if times changed
-		const startTimeChanged = !timesEqual(localStartDate?.time, startTime);
-		const dueTimeChanged = !timesEqual(localDueDate?.time, dueTime);
+		const startDateChanged = !datesEqual(origStartDate, startDate);
+		const dueDateChanged = !datesEqual(origDueDate, dueDate);
+		const startTimeChanged = !timesEqual(origStartTime, startTime);
+		const dueTimeChanged = !timesEqual(origDueTime, dueTime);
 
 		// Check if date/time combination changed
 		const startDateTimeChanged = startDateChanged || startTimeChanged;
 		const dueDateTimeChanged = dueDateChanged || dueTimeChanged;
 
-		const xpAwardChanged = xpAward !== (task.xpAward ?? 50);
+		// Compare against task's stored xpMode (AI = re-evaluate on save, MANUAL = fixed xpAward)
+		const origXpMode = task.xpMode === "MANUAL" ? XpMode.MANUAL : XpMode.AI;
+		const xpModeChanged = xpMode !== origXpMode;
+		// In AI mode, XP is re-evaluated on save; only count xpAward as changed in Manual mode
+		const xpAwardChanged =
+			xpMode === XpMode.MANUAL && xpAward !== (task.xpAward ?? 50);
 
-		// Compare all fields
+		// Compare all fields - Update disabled until an actual change
 		if (
 			title !== (task.title ?? "") ||
 			description !== (task.description ?? "") ||
 			finalCategory !== taskFinalCategory ||
+			xpModeChanged ||
 			xpAwardChanged ||
 			optional !== (task.optional ?? false) ||
 			startDateTimeChanged ||

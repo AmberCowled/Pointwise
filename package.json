@@ -12,6 +12,7 @@
 		"check": "biome check ./src",
 		"check:fix": "biome check --write ./src",
 		"typecheck": "tsc --noEmit",
+		"audit": "pnpm audit --audit-level=high",
 		"postinstall": "prisma generate",
 		"db:create-text-index": "node scripts/create-text-index.mjs",
 		"db:push": "pnpm prisma db push"
