@@ -478,15 +478,32 @@ export async function leaveProject(
 		);
 	}
 
+	const data: {
+		adminUserIds?: { set: string[] };
+		projectUserIds?: { set: string[] };
+		viewerUserIds?: { set: string[] };
+	} = {};
+
+	if (role === "ADMIN") {
+		data.adminUserIds = {
+			set: prismaProject.adminUserIds.filter((id) => id !== userId),
+		};
+	} else if (role === "USER") {
+		data.projectUserIds = {
+			set: prismaProject.projectUserIds.filter((id) => id !== userId),
+		};
+	} else {
+		// VIEWER
+		data.viewerUserIds = {
+			set: prismaProject.viewerUserIds.filter((id) => id !== userId),
+		};
+	}
+
 	const updatedProject = await prisma.project.update({
 		where: {
 			id: projectId,
 		},
-		data: {
-			projectUserIds: {
-				set: prismaProject.projectUserIds.filter((id) => id !== userId),
-			},
-		},
+		data,
 		include: {
 			_count: {
 				select: {

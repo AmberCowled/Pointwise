@@ -3,14 +3,11 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
-import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import ManageJoinRequestsModal from "@pointwise/app/dashboard/modals/joinRequest/ManageJoinRequestsModal";
+import LeaveProjectConfirmModal from "@pointwise/app/dashboard/modals/project/LeaveProjectConfirmModal";
 import ManageProjectInvitesModal from "@pointwise/app/dashboard/modals/project/ManageProjectInvitesModal";
 import UpdateProjectModal from "@pointwise/app/dashboard/modals/project/UpdateProjectModal";
-import { getErrorMessage } from "@pointwise/lib/api/errors";
-import { useLeaveProjectMutation } from "@pointwise/lib/redux/services/projectsApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
-import { useRouter } from "next/navigation";
 import {
 	IoClipboard,
 	IoFolder,
@@ -28,25 +25,8 @@ export interface ProjectCardMenuProps {
 }
 
 export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
-	const router = useRouter();
-	const { showNotification } = useNotifications();
-	const [leaveProject] = useLeaveProjectMutation();
-
-	const handleLeaveProject = async () => {
-		try {
-			await leaveProject({ projectId: project.id }).unwrap();
-			showNotification({
-				message: "Project left successfully",
-				variant: "success",
-			});
-			router.push("/dashboard");
-		} catch (error) {
-			showNotification({
-				message: getErrorMessage(error),
-				variant: "error",
-			});
-		}
-	};
+	const isOnlyAdmin =
+		project.role === "ADMIN" && project.adminUserIds?.length === 1;
 
 	return (
 		<>
@@ -56,6 +36,9 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 					<ManageProjectInvitesModal project={project} />
 					<ManageJoinRequestsModal project={project} />
 				</>
+			)}
+			{project.role !== "NONE" && (
+				<LeaveProjectConfirmModal project={project} />
 			)}
 			{(project.role !== "NONE" || project.visibility === "PUBLIC") && (
 				<Menu trigger={<Button variant="ghost" size="xs" icon={IoSettings} />}>
@@ -87,7 +70,10 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 								icon={<IoPersonRemove />}
 								label="Leave Project"
 								description="Leave project"
-								onClick={handleLeaveProject}
+								disabled={isOnlyAdmin}
+								onClick={() =>
+									Modal.Manager.open(`leave-project-modal-${project.id}`)
+								}
 							/>
 						</Menu.Section>
 					)}
