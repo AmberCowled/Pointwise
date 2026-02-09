@@ -84,6 +84,7 @@ export default function CreateTaskModal({ project }: CreateTaskModalProps) {
 				description: description.trim() || null,
 				category: finalCategory,
 				xpAward: resolvedXp,
+				xpMode: xpMode === XpMode.MANUAL ? "MANUAL" : "AI",
 				startDate: startDateUtc !== null ? startDateUtc?.date : null,
 				hasStartTime: startTime !== null,
 				dueDate: dueDateUtc !== null ? dueDateUtc?.date : null,

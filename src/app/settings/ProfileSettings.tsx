@@ -144,6 +144,23 @@ export default function ProfileSettings() {
 		isDisplayNameChanged &&
 		(isCheckingAvailability || displayName !== debouncedDisplayName);
 
+	// Disable Save when nothing has changed
+	const hasChanges = (() => {
+		if (!user) return false;
+		if (displayName.trim() !== (user.displayName || "").trim()) return true;
+		if ((bio || "").trim() !== (user.bio || "").trim()) return true;
+		if ((location || "").trim() !== (user.location || "").trim()) return true;
+		if ((website || "").trim() !== (user.website || "").trim()) return true;
+		const origVisibility =
+			(user.profileVisibility as "PRIVATE" | "PUBLIC") || "PRIVATE";
+		if (profileVisibility !== origVisibility) return true;
+		const userGender = user.gender ?? null;
+		if (gender !== userGender) return true;
+		if (croppedImageBlob) return true;
+		if (isImageRemoved && user.image) return true;
+		return false;
+	})();
+
 	const handleSave = async () => {
 		const trimmedDisplayName = displayName.trim();
 
@@ -389,7 +406,7 @@ export default function ProfileSettings() {
 				<Button
 					fullWidth
 					onClick={handleSave}
-					disabled={isUpdating || isChecking || isNameTaken}
+					disabled={isUpdating || isChecking || isNameTaken || !hasChanges}
 					loading={isUpdating}
 				>
 					<IoSave className="text-lg" />

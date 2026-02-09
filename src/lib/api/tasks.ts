@@ -46,6 +46,7 @@ export async function createTask(
 			title: request.title,
 			description: request.description ?? null,
 			xpAward: request.xpAward ?? 0,
+			xpMode: request.xpMode ?? "AI",
 			category: request.category,
 			optional: request.optional ?? false,
 			startDate: request.startDate ?? null,
@@ -65,6 +66,7 @@ type TaskUpdateFields = Pick<
 	| "title"
 	| "description"
 	| "xpAward"
+	| "xpMode"
 	| "category"
 	| "optional"
 	| "startDate"
@@ -111,6 +113,9 @@ export async function updateTask(
 	}
 	if (request.xpAward !== undefined) {
 		updateData.xpAward = request.xpAward;
+	}
+	if (request.xpMode !== undefined) {
+		updateData.xpMode = request.xpMode;
 	}
 	if (request.category !== undefined) {
 		updateData.category = request.category;
@@ -195,6 +200,7 @@ export function serializeTask(task: PrismaTask): Task {
 		title: task.title,
 		description: task.description,
 		xpAward: task.xpAward,
+		xpMode: task.xpMode ?? "AI",
 		projectId: task.projectId,
 		category: task.category,
 		optional: task.optional,
