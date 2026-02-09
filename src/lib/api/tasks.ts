@@ -3,6 +3,7 @@ import {
 	isProjectUserOrHigher,
 	verifyProjectAccess,
 } from "@pointwise/lib/api/projects";
+import { awardXpForTaskCompletion } from "@pointwise/lib/api/xp";
 import prisma from "@pointwise/lib/prisma";
 import {
 	type CreateTaskRequest,
@@ -81,7 +82,14 @@ export async function updateTask(
 ): Promise<PrismaTask> {
 	const existingTask = await prisma.task.findUnique({
 		where: { id: taskId },
-		select: { projectId: true },
+		select: {
+			projectId: true,
+			status: true,
+			title: true,
+			category: true,
+			xpAward: true,
+			project: { select: { name: true } },
+		},
 	});
 
 	if (!existingTask) {
@@ -139,6 +147,20 @@ export async function updateTask(
 		where: { id: taskId },
 		data: updateData,
 	});
+
+	// When transitioning to COMPLETED, award XP and create XPEvent
+	const isNewlyCompleted =
+		existingTask.status !== "COMPLETED" &&
+		(request.status === "COMPLETED" || updatedTask.status === "COMPLETED");
+	if (isNewlyCompleted && updatedTask.xpAward > 0) {
+		await awardXpForTaskCompletion(
+			userId,
+			updatedTask.xpAward,
+			existingTask.project.name ?? null,
+			updatedTask.title,
+			updatedTask.category ?? null,
+		);
+	}
 
 	return updatedTask;
 }

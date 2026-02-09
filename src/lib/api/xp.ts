@@ -147,6 +147,47 @@ export async function getXP(userId: string): Promise<number> {
 }
 
 /**
+ * Award XP for task completion and create an immutable XPEvent.
+ * Updates User.xp and creates XPEvent with snapshot of task/project metadata.
+ *
+ * @param userId - User ID to award XP to
+ * @param xpAwarded - XP amount
+ * @param projectName - Project name at time of completion (nullable)
+ * @param taskName - Task title
+ * @param taskCategory - Task category (nullable)
+ * @returns New total XP for user
+ */
+export async function awardXpForTaskCompletion(
+	userId: string,
+	xpAwarded: number,
+	projectName: string | null,
+	taskName: string,
+	taskCategory: string | null,
+): Promise<number> {
+	if (xpAwarded <= 0) {
+		return await getXP(userId);
+	}
+
+	await prisma.$transaction([
+		prisma.xPEvent.create({
+			data: {
+				userId,
+				projectName,
+				taskName,
+				taskCategory,
+				xpAwarded,
+			},
+		}),
+		prisma.user.update({
+			where: { id: userId },
+			data: { xp: { increment: xpAwarded } },
+		}),
+	]);
+
+	return await getXP(userId);
+}
+
+/**
  * Update XP for a user by ID
  *
  * @param userId - User ID to update XP for
