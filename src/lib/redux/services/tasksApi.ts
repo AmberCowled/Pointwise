@@ -55,6 +55,25 @@ export const tasksApi = createApi({
 				url: `/tasks/${taskId}/like?projectId=${projectId}`,
 				method: "POST",
 			}),
+			async onQueryStarted(
+				{ taskId, projectId },
+				{ dispatch, queryFulfilled },
+			) {
+				const patchResult = dispatch(
+					tasksApi.util.updateQueryData("getTasks", { projectId }, (draft) => {
+						const task = draft.tasks.find((t) => t.id === taskId);
+						if (task) {
+							task.likedByCurrentUser = true;
+							task.likeCount = (task.likeCount ?? 0) + 1;
+						}
+					}),
+				);
+				try {
+					await queryFulfilled;
+				} catch {
+					patchResult.undo();
+				}
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 		unlikeTask: builder.mutation<
@@ -65,6 +84,25 @@ export const tasksApi = createApi({
 				url: `/tasks/${taskId}/like?projectId=${projectId}`,
 				method: "DELETE",
 			}),
+			async onQueryStarted(
+				{ taskId, projectId },
+				{ dispatch, queryFulfilled },
+			) {
+				const patchResult = dispatch(
+					tasksApi.util.updateQueryData("getTasks", { projectId }, (draft) => {
+						const task = draft.tasks.find((t) => t.id === taskId);
+						if (task) {
+							task.likedByCurrentUser = false;
+							task.likeCount = Math.max(0, (task.likeCount ?? 0) - 1);
+						}
+					}),
+				);
+				try {
+					await queryFulfilled;
+				} catch {
+					patchResult.undo();
+				}
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 	}),
