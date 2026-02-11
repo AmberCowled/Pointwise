@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 			// Type assertion needed due to TypeScript overload resolution limitations
 			const queryData = query as unknown as GetTasksQuery;
 			const tasks = await getTasks(queryData.projectId, user.id);
-			const serializedTasks = tasks.map(serializeTask);
+			const serializedTasks = tasks.map((task) => serializeTask(task, user.id));
 			return jsonResponse({ tasks: serializedTasks });
 		},
 		GetTasksRequestSchema,
