@@ -47,6 +47,26 @@ export const tasksApi = createApi({
 			}),
 			invalidatesTags: ["Tasks"],
 		}),
+		likeTask: builder.mutation<
+			UpdateTaskResponse,
+			{ taskId: string; projectId: string }
+		>({
+			query: ({ taskId, projectId }) => ({
+				url: `/tasks/${taskId}/like?projectId=${projectId}`,
+				method: "POST",
+			}),
+			invalidatesTags: ["Tasks"],
+		}),
+		unlikeTask: builder.mutation<
+			UpdateTaskResponse,
+			{ taskId: string; projectId: string }
+		>({
+			query: ({ taskId, projectId }) => ({
+				url: `/tasks/${taskId}/like?projectId=${projectId}`,
+				method: "DELETE",
+			}),
+			invalidatesTags: ["Tasks"],
+		}),
 	}),
 });
 
@@ -55,4 +75,6 @@ export const {
 	useCreateTaskMutation,
 	useUpdateTaskMutation,
 	useDeleteTaskMutation,
+	useLikeTaskMutation,
+	useUnlikeTaskMutation,
 } = tasksApi;

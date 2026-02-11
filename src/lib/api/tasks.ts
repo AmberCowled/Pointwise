@@ -13,10 +13,29 @@ import {
 } from "@pointwise/lib/validation/tasks-schema";
 import type { Prisma, Task as PrismaTask } from "@prisma/client";
 
+export type TaskWithLikes = PrismaTask & {
+	taskLikes: { userId: string; createdAt: Date }[];
+};
+
+export async function getTask(
+	taskId: string,
+	projectId: string,
+	userId: string,
+): Promise<TaskWithLikes | null> {
+	if (!(await verifyProjectAccess(projectId, userId))) {
+		throw new Error("Forbidden: You do not have access to this project");
+	}
+	const task = await prisma.task.findFirst({
+		where: { id: taskId, projectId },
+		include: { taskLikes: true },
+	});
+	return task as TaskWithLikes | null;
+}
+
 export async function getTasks(
 	projectId: string,
 	userId: string,
-): Promise<PrismaTask[]> {
+): Promise<TaskWithLikes[]> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
 		throw new Error("Forbidden: You do not have access to this project");
 	}
@@ -25,9 +44,10 @@ export async function getTasks(
 		where: {
 			projectId: projectId,
 		},
+		include: { taskLikes: true },
 	});
 
-	return tasks;
+	return tasks as TaskWithLikes[];
 }
 
 export async function createTask(
@@ -194,7 +214,15 @@ export async function deleteTask(
 	});
 }
 
-export function serializeTask(task: PrismaTask): Task {
+export function serializeTask(
+	task: PrismaTask | TaskWithLikes,
+	userId?: string,
+): Task {
+	const taskLikes = "taskLikes" in task ? task.taskLikes : [];
+	const likeCount = taskLikes.length;
+	const likedByCurrentUser =
+		userId !== undefined && taskLikes.some((like) => like.userId === userId);
+
 	return TaskSchema.parse({
 		id: task.id,
 		title: task.title,
@@ -212,5 +240,7 @@ export function serializeTask(task: PrismaTask): Task {
 		status: task.status as "PENDING" | "COMPLETED",
 		createdAt: task.createdAt.toString(),
 		updatedAt: task.updatedAt.toString(),
+		likeCount,
+		likedByCurrentUser,
 	});
 }

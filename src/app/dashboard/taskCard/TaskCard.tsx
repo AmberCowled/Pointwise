@@ -69,7 +69,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 
 				<Container width="full" gap="sm" className="pt-2 justify-between">
 					<Container width="auto" gap="xs">
-						<TaskCardLikeButton />
+						<TaskCardLikeButton task={task} />
 						<TaskCardCommentButton />
 					</Container>
 
