@@ -19,8 +19,9 @@ const TASK_COMPLETED_AT_SCHEMA = z.coerce.date().optional().nullable();
 const TASK_COMPLETED_AT_RESPONSE_SCHEMA = z.string().optional().nullable();
 const TASK_CREATED_DATE_RESPONSE_SCHEMA = z.string();
 const TASK_UPDATED_DATE_RESPONSE_SCHEMA = z.string();
-const TASK_LIKED_BY_CURRENT_USER_SCHEMA = z.boolean().optional();
 const TASK_LIKE_COUNT_SCHEMA = z.number().int().min(0).optional();
+const TASK_LIKED_BY_CURRENT_USER_SCHEMA = z.boolean().optional();
+
 
 export const TaskSchema = z.object({
 	id: TASK_ID_SCHEMA,
@@ -39,8 +40,8 @@ export const TaskSchema = z.object({
 	status: TASK_STATUS_SCHEMA,
 	createdAt: TASK_CREATED_DATE_RESPONSE_SCHEMA,
 	updatedAt: TASK_UPDATED_DATE_RESPONSE_SCHEMA,
-	likedByCurrentUser: TASK_LIKED_BY_CURRENT_USER_SCHEMA,
 	likeCount: TASK_LIKE_COUNT_SCHEMA,
+	likedByCurrentUser: TASK_LIKED_BY_CURRENT_USER_SCHEMA,
 });
 
 export const GetTasksRequestSchema = z.object({
