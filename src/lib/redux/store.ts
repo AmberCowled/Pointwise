@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { commentsApi } from "./services/commentsApi";
 import { conversationsApi } from "./services/conversationsApi";
 import { friendsApi } from "./services/friendsApi";
 import { invitesApi } from "./services/invitesApi";
@@ -12,6 +13,7 @@ import { xpApi } from "./services/xpApi";
 
 export const store = configureStore({
 	reducer: {
+		[commentsApi.reducerPath]: commentsApi.reducer,
 		[xpApi.reducerPath]: xpApi.reducer,
 		[projectApi.reducerPath]: projectApi.reducer,
 		[tasksApi.reducerPath]: tasksApi.reducer,
@@ -25,6 +27,7 @@ export const store = configureStore({
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(
+			commentsApi.middleware,
 			xpApi.middleware,
 			projectApi.middleware,
 			tasksApi.middleware,

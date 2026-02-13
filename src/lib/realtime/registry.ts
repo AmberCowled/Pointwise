@@ -7,6 +7,10 @@ export const RealtimeChannels = {
 	},
 	/** Entity-scoped channel for live conversation messages. */
 	conversation: (conversationId: string) => `conversation:${conversationId}`,
+	/** Task-scoped channels. */
+	task: {
+		comments: (taskId: string) => `task:${taskId}:comments`,
+	},
 } as const;
 
 /** Event names published on Ably channels. */
@@ -18,6 +22,9 @@ export const RealtimeEvents = {
 	FRIEND_REQUEST_RECEIVED: "friend-request:received",
 	FRIEND_REQUEST_DECLINED: "friend-request:declined",
 	FRIEND_REQUEST_CANCELLED: "friend-request:cancelled",
+	COMMENT_CREATED: "comment:created",
+	COMMENT_EDITED: "comment:edited",
+	COMMENT_DELETED: "comment:deleted",
 } as const;
 
 /** Maps NotificationType to user channel suffix (for publish logic). */

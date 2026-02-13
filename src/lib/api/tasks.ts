@@ -15,7 +15,35 @@ import type { Prisma, Task as PrismaTask } from "@prisma/client";
 
 export type TaskWithLikes = PrismaTask & {
 	taskLikes: { userId: string; createdAt: Date }[];
+	commentThread: {
+		_count: { comments: number };
+		comments: {
+			replyThread: { _count: { comments: number } } | null;
+		}[];
+	} | null;
 };
+
+function getTotalTaskCommentCount(task: PrismaTask | TaskWithLikes): number {
+	const taskCommentThread =
+		"commentThread" in task ? task.commentThread : undefined;
+	const topLevelCount = taskCommentThread?._count.comments ?? 0;
+	const replyCount =
+		taskCommentThread?.comments.reduce(
+			(
+				total: number,
+				comment: { replyThread: { _count: { comments: number } } | null },
+			) => total + (comment.replyThread?._count.comments ?? 0),
+			0,
+		) ?? 0;
+
+	// Fallback to the denormalized field when thread data is absent.
+	const storedCount =
+		"commentCount" in task && typeof task.commentCount === "number"
+			? task.commentCount
+			: 0;
+
+	return topLevelCount + replyCount || storedCount;
+}
 
 export async function getTask(
 	taskId: string,
@@ -27,7 +55,23 @@ export async function getTask(
 	}
 	const task = await prisma.task.findFirst({
 		where: { id: taskId, projectId },
-		include: { taskLikes: true },
+		include: {
+			taskLikes: true,
+			commentThread: {
+				include: {
+					_count: { select: { comments: true } },
+					comments: {
+						select: {
+							replyThread: {
+								select: {
+									_count: { select: { comments: true } },
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	});
 	return task as TaskWithLikes | null;
 }
@@ -44,7 +88,23 @@ export async function getTasks(
 		where: {
 			projectId: projectId,
 		},
-		include: { taskLikes: true },
+		include: {
+			taskLikes: true,
+			commentThread: {
+				include: {
+					_count: { select: { comments: true } },
+					comments: {
+						select: {
+							replyThread: {
+								select: {
+									_count: { select: { comments: true } },
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	});
 
 	return tasks as TaskWithLikes[];
@@ -242,5 +302,6 @@ export function serializeTask(
 		updatedAt: task.updatedAt.toString(),
 		likeCount,
 		likedByCurrentUser,
+		commentCount: getTotalTaskCommentCount(task),
 	});
 }

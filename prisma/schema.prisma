@@ -59,6 +59,9 @@ model User {
 
   taskLikes TaskLike[]
 
+  comments     Comment[]
+  commentLikes CommentLike[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -175,7 +178,9 @@ model Task {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  taskLikes   TaskLike[]
+  taskLikes      TaskLike[]
+  commentThread  CommentThread?
+  commentCount   Int            @default(0)
 }
 
 model TaskLike {
@@ -321,4 +326,54 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
+}
+
+model CommentThread {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+
+  taskId          String?   @unique @db.ObjectId
+  task            Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  parentCommentId String?   @unique @db.ObjectId
+  parentComment   Comment?  @relation("ReplyThread", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  comments        Comment[] @relation("ThreadComments")
+
+  createdAt       DateTime  @default(now())
+}
+
+model Comment {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+
+  threadId     String         @db.ObjectId
+  thread       CommentThread  @relation("ThreadComments", fields: [threadId], references: [id], onDelete: Cascade)
+
+  authorId     String         @db.ObjectId
+  author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  content      String
+  editedAt     DateTime?
+
+  replyThread  CommentThread? @relation("ReplyThread")
+  commentLikes CommentLike[]
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([threadId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model CommentLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String   @db.ObjectId
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
 }
