@@ -242,5 +242,9 @@ export function serializeTask(
 		updatedAt: task.updatedAt.toString(),
 		likeCount,
 		likedByCurrentUser,
+		commentCount:
+			"commentCount" in task
+				? (task as PrismaTask & { commentCount: number }).commentCount
+				: 0,
 	});
 }

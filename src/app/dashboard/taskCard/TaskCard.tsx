@@ -5,6 +5,7 @@ import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useState } from "react";
 import UpdateTaskModal from "../modals/task/UpdateTaskModal";
+import TaskCardCommentSection from "./comments/TaskCardCommentSection";
 import TaskCardCommentButton from "./TaskCardCommentButton";
 import TaskCardDate from "./TaskCardDate";
 import TaskCardLikeButton from "./TaskCardLikeButton";
@@ -21,6 +22,7 @@ export interface TaskCardProps {
 
 export default function TaskCard({ task, project }: TaskCardProps) {
 	const [open, setOpen] = useState(false);
+	const [commentsOpen, setCommentsOpen] = useState(false);
 	const compact = !open;
 
 	return (
@@ -30,7 +32,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 				direction="vertical"
 				width="full"
 				gap="none"
-				className="bg-zinc-900/50 px-4 py-2 rounded-lg border border-zinc-700/50 hover:border-white/20 items-start"
+				className={`bg-zinc-900/50 px-4 py-2 ${commentsOpen ? "rounded-t-lg" : "rounded-lg"} border border-zinc-700/50 hover:border-white/20 items-start`}
 			>
 				<TaskHeader task={task} open={open} onChange={setOpen} />
 				{task.description && (
@@ -70,12 +72,23 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 				<Container width="full" gap="sm" className="pt-2 justify-between">
 					<Container width="auto" gap="xs">
 						<TaskCardLikeButton task={task} />
-						<TaskCardCommentButton />
+						<TaskCardCommentButton
+							commentCount={task.commentCount ?? 0}
+							onClick={() => setCommentsOpen(!commentsOpen)}
+							isOpen={commentsOpen}
+						/>
 					</Container>
 
 					<TaskCardMenu task={task} project={project} />
 				</Container>
 			</Container>
+			{commentsOpen && (
+				<TaskCardCommentSection
+					taskId={task.id}
+					projectId={task.projectId}
+					isProjectAdmin={project.role === "ADMIN"}
+				/>
+			)}
 		</>
 	);
 }

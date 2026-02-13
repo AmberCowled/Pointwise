@@ -9,7 +9,7 @@ import {
 	RealtimeChannels,
 	RealtimeEvents,
 } from "./registry";
-import type { NewMessagePayload } from "./types";
+import type { CommentEventPayload, NewMessagePayload } from "./types";
 
 /**
  * Publish a notification to the recipient's Ably channel.
@@ -56,4 +56,20 @@ export async function publishNewMessage(
 					: String(message.createdAt),
 	};
 	await publishAblyEvent(channelName, RealtimeEvents.NEW_MESSAGE, payload);
+}
+
+/**
+ * Publish a comment event to the task's comment channel.
+ */
+export async function publishCommentEvent(
+	taskId: string,
+	eventName: string,
+	payload: CommentEventPayload,
+): Promise<void> {
+	const channelName = RealtimeChannels.task.comments(taskId);
+	await publishAblyEvent(
+		channelName,
+		eventName,
+		payload as unknown as Record<string, unknown>,
+	);
 }

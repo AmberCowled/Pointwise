@@ -22,5 +22,17 @@ export interface NewMessagePayload {
 	};
 }
 
+/** Payload for comment events on task channels. */
+export interface CommentEventPayload {
+	commentId: string;
+	threadId: string;
+	taskId: string;
+	parentCommentId: string | null;
+	comment: Record<string, unknown> | null;
+}
+
 /** Union of all known event payloads (for handlers). */
-export type RealtimeEventPayload = NewNotificationPayload | NewMessagePayload;
+export type RealtimeEventPayload =
+	| NewNotificationPayload
+	| NewMessagePayload
+	| CommentEventPayload;

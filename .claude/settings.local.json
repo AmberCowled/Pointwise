@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(while read f)",
+      "Bash(do if grep -q \"handleRoute[^P]\" \"$f\")",
+      "Bash(then echo \"$f\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm biome check:*)"
+    ]
+  }
+}
