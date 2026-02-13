@@ -31,8 +31,6 @@ export default function ProfilePicture({
 }: ProfilePictureProps) {
 	const { dimension, className } = sizeMappings[size];
 
-	const isBlob = profilePicture?.startsWith("blob:");
-
 	const content = (
 		<>
 			{profilePicture ? (
@@ -42,7 +40,7 @@ export default function ProfilePicture({
 					width={dimension || 500}
 					height={dimension || 500}
 					className="rounded-full w-full h-full object-cover"
-					unoptimized={isBlob}
+					unoptimized
 				/>
 			) : (
 				<IoPersonCircle className="w-full h-full text-zinc-400 scale-120" />

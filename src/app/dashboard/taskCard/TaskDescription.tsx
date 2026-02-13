@@ -222,9 +222,7 @@ export default function TaskDescription({
 						sizes="100vw"
 						style={{ width: "100%", height: "auto" }}
 						className="rounded-lg border border-zinc-700/50 shadow-lg shadow-black/20"
-						unoptimized={
-							src.startsWith("http://localhost") || src.startsWith("/")
-						}
+						unoptimized
 					/>
 				</span>
 			);

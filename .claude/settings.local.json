@@ -10,7 +10,9 @@
       "Bash(npx prisma db push:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm check:*)",
-      "Bash(pnpm biome check:*)"
+      "Bash(pnpm biome check:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx @biomejs/biome check:*)"
     ]
   }
 }

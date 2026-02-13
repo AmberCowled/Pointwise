@@ -107,6 +107,7 @@ export default function CommentItem({
 						width={24}
 						height={24}
 						className="rounded-full shrink-0 mt-0.5"
+						unoptimized
 					/>
 				) : (
 					<div className="w-6 h-6 rounded-full bg-zinc-700 shrink-0 mt-0.5 flex items-center justify-center text-xs text-zinc-400">

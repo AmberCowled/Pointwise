@@ -18,12 +18,100 @@ import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
 import { useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
 import TaskCard from "../taskCard/TaskCard";
 import NoFilteredTasksView from "./NoFilteredTasksView";
 import NoTasksView from "./NoTasksView";
 import TaskFilters, { type TaskFiltersRequest } from "./TaskFilters";
+
+const filterByStatus = (task: Task, filters: TaskFiltersRequest) => {
+	return (
+		filters.status === "All" || task.status === filters.status.toUpperCase()
+	);
+};
+
+const filterByDate = (task: Task, filters: TaskFiltersRequest) => {
+	if (filters.date === "All") {
+		return true;
+	}
+
+	const dayStart = localDayStart();
+	const dayEnd = localDayEnd();
+	const localTaskStartDate = utcToLocal(task.startDate ?? "")?.date;
+	const localTaskDueDate = utcToLocal(task.dueDate ?? "")?.date;
+
+	if (filters.date === "Today") {
+		// Task is "today" if:
+		// - startDate is today, OR
+		// - dueDate is today, OR
+		// - task spans today (started before/on today AND due on/after today)
+		if (
+			localTaskStartDate &&
+			isDateBetween(localTaskStartDate, dayStart, dayEnd)
+		) {
+			return true;
+		}
+
+		if (localTaskDueDate && isDateBetween(localTaskDueDate, dayStart, dayEnd)) {
+			return true;
+		}
+
+		// Task spans today (started before today but due today or later)
+		if (
+			localTaskStartDate &&
+			isDateBefore(localTaskStartDate, dayStart) &&
+			localTaskDueDate &&
+			!isDateBefore(localTaskDueDate, dayStart)
+		) {
+			return true;
+		}
+
+		return false;
+	}
+
+	if (filters.date === "Overdue") {
+		// Overdue: dueDate has passed (is before today)
+		// Only check tasks that have a dueDate and it's in the past
+		if (localTaskDueDate && isDateBefore(localTaskDueDate, dayStart)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	if (filters.date === "Upcoming") {
+		// Upcoming: startDate or dueDate is after today
+		if (
+			(localTaskStartDate && isDateAfter(localTaskStartDate, dayEnd)) ||
+			(localTaskDueDate && isDateAfter(localTaskDueDate, dayEnd))
+		) {
+			return true;
+		}
+
+		return false;
+	}
+
+	return false; // Default: don't include if filter doesn't match
+};
+
+const filterByCategory = (task: Task, filters: TaskFiltersRequest) => {
+	return (
+		filters.category === "All" ||
+		task.category === filters.category ||
+		task.category === filters.customCategory
+	);
+};
+
+const filterByOptional = (task: Task, filters: TaskFiltersRequest) => {
+	return !task.optional || filters.optional;
+};
+
+const applyFilters = (task: Task, filters: TaskFiltersRequest) =>
+	filterByStatus(task, filters) &&
+	filterByDate(task, filters) &&
+	filterByCategory(task, filters) &&
+	filterByOptional(task, filters);
 
 export default function TasksOverview() {
 	const params = useParams<{ id: string }>();
@@ -43,6 +131,8 @@ export default function TasksOverview() {
 		refetch: refetchTasks,
 	} = useGetTasksQuery({ projectId: projectId ?? "" }, { skip: !projectId });
 
+	const [currentFilters, setCurrentFilters] =
+		useState<TaskFiltersRequest | null>(null);
 	const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
 
 	const project = projectData?.project;
@@ -53,101 +143,22 @@ export default function TasksOverview() {
 	const isLoading = isProjectLoading || isTasksLoading;
 	const isError = isProjectError || isTasksError;
 
-	const filterByStatus = (task: Task, filters: TaskFiltersRequest) => {
-		return (
-			filters.status === "All" || task.status === filters.status.toUpperCase()
-		);
-	};
-
-	const filterByDate = (task: Task, filters: TaskFiltersRequest) => {
-		if (filters.date === "All") {
-			return true;
-		}
-
-		const dayStart = localDayStart();
-		const dayEnd = localDayEnd();
-		const localTaskStartDate = utcToLocal(task.startDate ?? "")?.date;
-		const localTaskDueDate = utcToLocal(task.dueDate ?? "")?.date;
-
-		if (filters.date === "Today") {
-			// Task is "today" if:
-			// - startDate is today, OR
-			// - dueDate is today, OR
-			// - task spans today (started before/on today AND due on/after today)
-			if (
-				localTaskStartDate &&
-				isDateBetween(localTaskStartDate, dayStart, dayEnd)
-			) {
-				return true;
-			}
-
-			if (
-				localTaskDueDate &&
-				isDateBetween(localTaskDueDate, dayStart, dayEnd)
-			) {
-				return true;
-			}
-
-			// Task spans today (started before today but due today or later)
-			if (
-				localTaskStartDate &&
-				isDateBefore(localTaskStartDate, dayStart) &&
-				localTaskDueDate &&
-				!isDateBefore(localTaskDueDate, dayStart)
-			) {
-				return true;
-			}
-
-			return false;
-		}
-
-		if (filters.date === "Overdue") {
-			// Overdue: dueDate has passed (is before today)
-			// Only check tasks that have a dueDate and it's in the past
-			if (localTaskDueDate && isDateBefore(localTaskDueDate, dayStart)) {
-				return true;
-			}
-
-			return false;
-		}
-
-		if (filters.date === "Upcoming") {
-			// Upcoming: startDate or dueDate is after today
-			if (
-				(localTaskStartDate && isDateAfter(localTaskStartDate, dayEnd)) ||
-				(localTaskDueDate && isDateAfter(localTaskDueDate, dayEnd))
-			) {
-				return true;
-			}
-
-			return false;
-		}
-
-		return false; // Default: don't include if filter doesn't match
-	};
-
-	const filterByCategory = (task: Task, filters: TaskFiltersRequest) => {
-		return (
-			filters.category === "All" ||
-			task.category === filters.category ||
-			task.category === filters.customCategory
-		);
-	};
-
-	const filterByOptional = (task: Task, filters: TaskFiltersRequest) => {
-		return !task.optional || filters.optional;
-	};
-
 	const handleFiltersChange = (filters: TaskFiltersRequest) => {
-		const filteredTasks = tasks?.tasks.filter(
-			(task) =>
-				filterByStatus(task, filters) &&
-				filterByDate(task, filters) &&
-				filterByCategory(task, filters) &&
-				filterByOptional(task, filters),
-		);
-		setFilteredTasks(filteredTasks || []);
+		setCurrentFilters(filters);
 	};
+
+	// Re-derive filteredTasks whenever the underlying task data or filters change.
+	// This ensures optimistic cache updates (e.g. commentCount, likeCount) are
+	// reflected immediately, not just when the filter UI changes.
+	useEffect(() => {
+		if (!currentFilters || !tasks?.tasks) {
+			setFilteredTasks([]);
+			return;
+		}
+		setFilteredTasks(
+			tasks.tasks.filter((t) => applyFilters(t, currentFilters)),
+		);
+	}, [tasks, currentFilters]);
 
 	return (
 		<>
