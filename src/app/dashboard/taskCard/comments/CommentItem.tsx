@@ -5,7 +5,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import {
 	useDeleteCommentMutation,
 	useEditCommentMutation,
-} from "@pointwise/lib/redux/services/commentsApi";
+} from "@pointwise/generated/api";
 import type { Comment } from "@pointwise/lib/validation/comments-schema";
 import Image from "next/image";
 import { useSession } from "next-auth/react";

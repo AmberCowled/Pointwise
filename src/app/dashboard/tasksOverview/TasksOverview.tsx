@@ -5,6 +5,7 @@ import Card from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Modal from "@pointwise/app/components/ui/modal/index";
+import { useGetProjectQuery, useGetTasksQuery } from "@pointwise/generated/api";
 import {
 	isDateAfter,
 	isDateBefore,
@@ -14,8 +15,6 @@ import {
 	utcToLocal,
 } from "@pointwise/lib/api/date-time";
 import { hasWriteAccess } from "@pointwise/lib/api/projects";
-import { useGetProjectQuery } from "@pointwise/lib/redux/services/projectsApi";
-import { useGetTasksQuery } from "@pointwise/lib/redux/services/tasksApi";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";

@@ -3,8 +3,9 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
-		"build": "next build",
+		"generate": "tsx scripts/generate-api.ts",
+		"dev": "pnpm generate && concurrently \"next dev\" \"tsx watch scripts/generate-api.ts\"",
+		"build": "pnpm generate && next build",
 		"start": "next start",
 		"pd": "pnpm install && pnpm dev",
 		"format": "biome format --write ./src",
@@ -56,6 +57,8 @@
 		"mongodb": "^7.0.0",
 		"prisma": "^6.19.0",
 		"tailwindcss": "^4",
+		"ts-morph": "^27.0.2",
+		"tsx": "^4.21.0",
 		"typescript": "^5"
 	},
 	"pnpm": {

@@ -2,16 +2,14 @@ import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import InviteModal from "@pointwise/app/dashboard/modals/invite/InviteModal";
 import {
+	useCancelFriendRequestMutation,
 	useCreateConversationMutation,
 	useGetConversationsQuery,
-} from "@pointwise/lib/redux/services/conversationsApi";
-import {
-	useCancelFriendRequestMutation,
 	useGetFriendshipStatusQuery,
 	useHandleFriendRequestMutation,
 	useRemoveFriendMutation,
 	useSendFriendRequestMutation,
-} from "@pointwise/lib/redux/services/friendsApi";
+} from "@pointwise/generated/api";
 import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";

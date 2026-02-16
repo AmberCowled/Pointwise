@@ -5,7 +5,7 @@ import Card from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Modal from "@pointwise/app/components/ui/modal/index";
-import { useGetProjectsQuery } from "@pointwise/lib/redux/services/projectsApi";
+import { useGetProjectsQuery } from "@pointwise/generated/api";
 import CreateProjectModal from "../modals/project/CreateProjectModal";
 import ProjectCard from "../projectCard/ProjectCard";
 import NoProjectsView from "./NoProjectsView";

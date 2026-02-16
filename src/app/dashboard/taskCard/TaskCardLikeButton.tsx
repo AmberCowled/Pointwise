@@ -4,7 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import {
 	useLikeTaskMutation,
 	useUnlikeTaskMutation,
-} from "@pointwise/lib/redux/services/tasksApi";
+} from "@pointwise/generated/api";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { IoHeart, IoHeartOutline } from "react-icons/io5";
 

@@ -4,7 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import {
 	useLikeCommentMutation,
 	useUnlikeCommentMutation,
-} from "@pointwise/lib/redux/services/commentsApi";
+} from "@pointwise/generated/api";
 import { IoHeart, IoHeartOutline } from "react-icons/io5";
 
 export interface CommentLikeButtonProps {

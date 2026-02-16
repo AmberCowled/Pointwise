@@ -4,7 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
-import { useArchiveConversationMutation } from "@pointwise/lib/redux/services/conversationsApi";
+import { useArchiveConversationMutation } from "@pointwise/generated/api";
 import type { ConversationListItem } from "@pointwise/lib/validation/conversation-schema";
 import Link from "next/link";
 import { IoArchiveOutline } from "react-icons/io5";

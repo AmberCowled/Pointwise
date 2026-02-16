@@ -1,6 +1,6 @@
 "use client";
 
-import { store } from "@pointwise/lib/redux/store";
+import { store } from "@pointwise/generated/store";
 import { Provider } from "react-redux";
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {

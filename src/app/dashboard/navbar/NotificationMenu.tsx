@@ -3,15 +3,15 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import {
+	useGetNotificationsQuery,
+	useMarkAllReadMutation,
+} from "@pointwise/generated/api";
+import { invalidateTags } from "@pointwise/generated/invalidation";
+import {
 	RealtimePreset,
 	useSubscribeUserNotifications,
 } from "@pointwise/lib/realtime";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
-import {
-	notificationsApi,
-	useGetNotificationsQuery,
-	useMarkAllReadMutation,
-} from "@pointwise/lib/redux/services/notificationsApi";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { useSession } from "next-auth/react";
 import { useCallback } from "react";
@@ -32,7 +32,7 @@ export default function NotificationMenu() {
 	const [markAllRead] = useMarkAllReadMutation();
 
 	const handleNotification = useCallback(() => {
-		dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
+		dispatch(invalidateTags(["Notifications"]));
 	}, [dispatch]);
 
 	useSubscribeUserNotifications(userId, {

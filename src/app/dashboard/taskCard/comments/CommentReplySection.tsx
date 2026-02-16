@@ -1,7 +1,7 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
-import { useGetRepliesQuery } from "@pointwise/lib/redux/services/commentsApi";
+import { useGetRepliesQuery } from "@pointwise/generated/api";
 import CommentInput from "./CommentInput";
 import CommentItem from "./CommentItem";
 

@@ -2,7 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
-import { useGetXPQuery } from "@pointwise/lib/redux/services/xpApi";
+import { useGetXPQuery } from "@pointwise/generated/api";
 import clsx from "clsx";
 import { IoRefresh } from "react-icons/io5";
 

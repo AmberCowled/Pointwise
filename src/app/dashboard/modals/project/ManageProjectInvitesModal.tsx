@@ -5,11 +5,11 @@ import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
-import { getErrorMessage } from "@pointwise/lib/api/errors";
 import {
 	useGetProjectInvitesQuery,
 	useRejectInviteMutation,
-} from "@pointwise/lib/redux/services/invitesApi";
+} from "@pointwise/generated/api";
+import { getErrorMessage } from "@pointwise/lib/api/errors";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useState } from "react";
 import InviteCard from "./InviteCard";

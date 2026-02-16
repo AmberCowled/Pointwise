@@ -1,7 +1,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
-import { useDeleteTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
+import { useDeleteTaskMutation } from "@pointwise/generated/api";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 
 export default function DeleteTaskModal({ task }: { task: Task }) {

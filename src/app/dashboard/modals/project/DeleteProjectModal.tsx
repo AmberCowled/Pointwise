@@ -2,7 +2,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Input from "@pointwise/app/components/ui/Input";
 import Modal from "@pointwise/app/components/ui/modal";
-import { useDeleteProjectMutation } from "@pointwise/lib/redux/services/projectsApi";
+import { useDeleteProjectMutation } from "@pointwise/generated/api";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useState } from "react";
 

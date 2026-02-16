@@ -50,5 +50,6 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
-
-/src/generated/prisma
+/src/generated/api.ts
+/src/generated/store.ts
+/src/generated/invalidation.ts

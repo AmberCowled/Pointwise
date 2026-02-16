@@ -2,11 +2,11 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { useUpdateTaskMutation } from "@pointwise/generated/api";
+import { invalidateTags } from "@pointwise/generated/invalidation";
 import { utcNow } from "@pointwise/lib/api/date-time";
 import { hasDeleteAccess, hasWriteAccess } from "@pointwise/lib/api/projects";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
-import { useUpdateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
-import { xpApi } from "@pointwise/lib/redux/services/xpApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import {
@@ -37,7 +37,7 @@ export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
 					status: "COMPLETED",
 				},
 			}).unwrap();
-			dispatch(xpApi.util.invalidateTags(["XP"]));
+			dispatch(invalidateTags(["XP"]));
 
 			showNotification({
 				message: "Task completed successfully",

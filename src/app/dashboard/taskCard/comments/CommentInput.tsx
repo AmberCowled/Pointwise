@@ -4,7 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import {
 	useCreateCommentMutation,
 	useCreateReplyMutation,
-} from "@pointwise/lib/redux/services/commentsApi";
+} from "@pointwise/generated/api";
 import { useState } from "react";
 import { IoSend } from "react-icons/io5";
 
