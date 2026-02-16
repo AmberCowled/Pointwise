@@ -9,8 +9,8 @@ import {
 } from "@pointwise/lib/redux/services/commentsApi";
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
-import CommentInput from "./CommentInput";
-import CommentList from "./CommentList";
+import CommentInput from "./comments/CommentInput";
+import CommentList from "./comments/CommentList";
 
 export interface TaskCardCommentSectionProps {
 	taskId: string;
@@ -69,7 +69,7 @@ export default function TaskCardCommentSection({
 			direction="vertical"
 			width="full"
 			gap="sm"
-			className="px-4 py-3 bg-zinc-900/30 rounded-b-lg border border-t-0 border-zinc-700/50 items-stretch"
+			className="py-3 border-t border-zinc-700/50 items-stretch"
 		>
 			{isLoading ? (
 				<p className="text-sm text-zinc-500 text-center py-2">
