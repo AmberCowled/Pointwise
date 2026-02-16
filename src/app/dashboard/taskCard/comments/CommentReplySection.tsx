@@ -25,9 +25,9 @@ export default function CommentReplySection({
 	return (
 		<Container
 			direction="vertical"
-			width="full"
+			width="auto"
 			gap="sm"
-			className="ml-6 mt-2 border-l-2 border-zinc-700/50 pl-4 items-stretch"
+			className="ml-6 mt-2 border-l-2 border-zinc-700/50 pl-4 items-stretch min-w-0 overflow-hidden w-[calc(100%-1.5rem)]"
 		>
 			{isLoading && <p className="text-xs text-zinc-500">Loading replies...</p>}
 			{data?.replies.map((reply) => (

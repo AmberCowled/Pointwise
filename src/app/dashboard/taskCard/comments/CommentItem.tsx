@@ -137,7 +137,7 @@ export default function CommentItem({
 								onChange={(e) => setEditContent(e.target.value)}
 								onKeyDown={handleEditKeyDown}
 								rows={2}
-								className="w-full resize-none rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-200 focus:border-zinc-500 focus:outline-none"
+								className="w-full resize-none rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-2 text-[16px] text-zinc-200 focus:border-zinc-500 focus:outline-none"
 							/>
 							<Container width="auto" gap="xs">
 								<Button
