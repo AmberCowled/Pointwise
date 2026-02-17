@@ -15,7 +15,8 @@
       "Bash(npx @biomejs/biome check:*)",
       "Bash(ls:*)",
       "Bash(npx tsx:*)",
-      "Bash(npx biome check:*)"
+      "Bash(npx biome check:*)",
+      "Bash(pnpm generate:*)"
     ]
   }
 }

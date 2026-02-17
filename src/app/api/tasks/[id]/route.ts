@@ -5,5 +5,5 @@ import updateTaskEndpoint from "@pointwise/endpoints/tasks/[id]/update";
 import { createRouteHandler } from "@pointwise/lib/ertk/route-handler";
 
 export const DELETE = createRouteHandler(deleteTaskEndpoint);
-export const PATCH = createRouteHandler(updateTaskEndpoint);
 export const GET = createRouteHandler(getTaskEndpoint);
+export const PATCH = createRouteHandler(updateTaskEndpoint);

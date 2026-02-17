@@ -85,7 +85,7 @@ function parseEndpointFile(
 	// Find the default export
 	const defaultExport = sourceFile.getDefaultExportSymbol();
 	if (!defaultExport) {
-		console.warn(`No default export in ${filePath}, skipping`);
+		console.warn(`ERTK: No default export in ${filePath}, skipping`);
 		return null;
 	}
 
@@ -118,7 +118,7 @@ function parseEndpointFile(
 	}
 
 	if (!endpointCall || !method) {
-		console.warn(`No endpoint.{method}() call found in ${filePath}, skipping`);
+		console.warn(`ERTK: No endpoint.{method}() call found in ${filePath}, skipping`);
 		return null;
 	}
 
@@ -130,7 +130,7 @@ function parseEndpointFile(
 	// Extract config object
 	const configArg = endpointCall.getArguments()[0];
 	if (!configArg || configArg.getKind() !== SyntaxKind.ObjectLiteralExpression) {
-		console.warn(`Config argument not found in ${filePath}, skipping`);
+		console.warn(`ERTK: Config argument not found in ${filePath}, skipping`);
 		return null;
 	}
 
@@ -149,7 +149,7 @@ function parseEndpointFile(
 		: "";
 
 	if (!name) {
-		console.warn(`No name property in ${filePath}, skipping`);
+		console.warn(`ERTK: No name property in ${filePath}, skipping`);
 		return null;
 	}
 
@@ -809,45 +809,31 @@ function parseAllEndpoints(): Map<string, ParsedEndpoint> {
 	const files = scanEndpointFiles();
 	const cache = new Map<string, ParsedEndpoint>();
 
-	console.log(`Found ${files.length} endpoint files`);
-
 	for (const file of files) {
 		const parsed = parseEndpointFile(tsProject, file);
 		if (parsed) {
 			cache.set(file, parsed);
-			console.log(
-				`  ${parsed.name} (${parsed.method.toUpperCase()} ${parsed.routePath})`,
-			);
 		}
 	}
 
-	console.log(`Parsed ${cache.size} endpoints`);
 	return cache;
 }
 
-function generate(endpoints: ParsedEndpoint[]): void {
+function generate(endpoints: ParsedEndpoint[]): number {
 	fs.mkdirSync(GENERATED_DIR, { recursive: true });
 
 	// 1. Generate api.ts
 	const apiContent = generateApiTs(endpoints);
-	if (writeIfChanged(path.join(GENERATED_DIR, "api.ts"), apiContent)) {
-		console.log("Generated: src/generated/api.ts");
-	}
+	writeIfChanged(path.join(GENERATED_DIR, "api.ts"), apiContent);
 
 	// 2. Generate store.ts
-	if (writeIfChanged(path.join(GENERATED_DIR, "store.ts"), generateStoreTs())) {
-		console.log("Generated: src/generated/store.ts");
-	}
+	writeIfChanged(path.join(GENERATED_DIR, "store.ts"), generateStoreTs());
 
 	// 3. Generate invalidation.ts
-	if (
-		writeIfChanged(
-			path.join(GENERATED_DIR, "invalidation.ts"),
-			generateInvalidationTs(),
-		)
-	) {
-		console.log("Generated: src/generated/invalidation.ts");
-	}
+	writeIfChanged(
+		path.join(GENERATED_DIR, "invalidation.ts"),
+		generateInvalidationTs(),
+	);
 
 	// 4. Generate route handlers
 	const routeGroups = groupEndpointsByRoute(endpoints);
@@ -855,21 +841,12 @@ function generate(endpoints: ParsedEndpoint[]): void {
 
 	for (const [, group] of routeGroups) {
 		if (isNonErtkRoute(group.appRouteDir)) continue;
-
 		const routeContent = generateRouteFile(group);
-		if (
-			writeIfChanged(
-				path.join(group.appRouteDir, "route.ts"),
-				routeContent,
-			)
-		) {
-			routeCount++;
-		}
+		writeIfChanged(path.join(group.appRouteDir, "route.ts"), routeContent);
+		routeCount++;
 	}
 
-	if (routeCount > 0) {
-		console.log(`Generated: ${routeCount} route files`);
-	}
+	return routeCount;
 }
 
 // ─── Main ─────────────────────────────────────────────────────
@@ -878,12 +855,11 @@ const isWatch = process.argv.includes("--watch");
 
 if (isWatch) {
 	// Watch mode: full initial build, then incremental on changes
-	console.log("ERTK Codegen: Initial build...");
 	const cache = parseAllEndpoints();
-	generate([...cache.values()]);
+	const routeCount = generate([...cache.values()]);
 	const manifest = buildManifest(scanEndpointFiles());
 	saveManifest(manifest);
-	console.log("ERTK Codegen: Initial build complete!");
+	console.log(`ERTK: Watching — ${cache.size} endpoints, ${routeCount} routes ready.`);
 
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -907,35 +883,32 @@ if (isWatch) {
 				const parsed = parseEndpointFile(tsProject, relPath);
 				if (parsed) {
 					cache.set(relPath, parsed);
-					console.log(`[watch] Re-parsed: ${parsed.name}`);
+					console.log(`ERTK: Updated ${parsed.name}`);
 				}
 			} else {
 				// File was deleted
 				delete manifest[relPath];
 				cache.delete(relPath);
-				console.log(`[watch] Removed: ${relPath}`);
+				console.log(`ERTK: Removed ${relPath}`);
 			}
 
 			generate([...cache.values()]);
 			saveManifest(manifest);
 		}, 300);
 	});
-
-	console.log("\n[watch] Watching src/endpoints/ for changes...");
 } else {
 	// One-shot mode: skip entirely if nothing changed
-	console.log("ERTK Codegen: Scanning endpoints...");
 	const files = scanEndpointFiles();
 	const oldManifest = loadManifest();
 	const newManifest = buildManifest(files);
 
 	if (manifestsMatch(oldManifest, newManifest)) {
-		console.log("ERTK: Nothing changed, skipping codegen.");
+		console.log("ERTK: Nothing changed.");
 		process.exit(0);
 	}
 
 	const cache = parseAllEndpoints();
-	generate([...cache.values()]);
+	const routeCount = generate([...cache.values()]);
 	saveManifest(newManifest);
-	console.log("\nERTK Codegen complete!");
+	console.log(`ERTK: Generated ${cache.size} endpoints, ${routeCount} routes.`);
 }
