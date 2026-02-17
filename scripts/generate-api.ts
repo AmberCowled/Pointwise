@@ -9,6 +9,7 @@
  */
 
 import { Project, SyntaxKind } from "ts-morph";
+import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,6 +20,12 @@ const ROOT = path.resolve(__dirname, "..");
 const ENDPOINTS_DIR = path.join(ROOT, "src/endpoints");
 const GENERATED_DIR = path.join(ROOT, "src/generated");
 const APP_API_DIR = path.join(ROOT, "src/app/api");
+const MANIFEST_PATH = path.join(GENERATED_DIR, ".ertk-manifest.json");
+
+const tsProject = new Project({
+	tsConfigFilePath: path.join(ROOT, "tsconfig.json"),
+	skipAddingFilesFromTsConfig: true,
+});
 
 // CRUD filenames that don't add URL segments
 const CRUD_FILENAMES = new Set([
@@ -735,80 +742,200 @@ function isNonErtkRoute(routeDir: string): boolean {
 	return NON_ERTK_ROUTES.has(topLevel);
 }
 
-// ─── Main ─────────────────────────────────────────────────────
+// ─── Incremental Build Helpers ────────────────────────────────
 
-async function main() {
-	console.log("ERTK Codegen: Scanning endpoints...");
-
-	// Find all endpoint files
+function scanEndpointFiles(): string[] {
 	const allFiles = fs.readdirSync(ENDPOINTS_DIR, { recursive: true }) as string[];
-	const endpointFiles = allFiles
+	return allFiles
 		.filter((f) => f.endsWith(".ts"))
 		.map((f) => f.replace(/\\/g, "/"))
 		.sort();
+}
 
-	console.log(`Found ${endpointFiles.length} endpoint files`);
+function hashFile(filePath: string): string {
+	return crypto
+		.createHash("md5")
+		.update(fs.readFileSync(filePath))
+		.digest("hex");
+}
 
-	// Parse all endpoint files
-	const tsProject = new Project({
-		tsConfigFilePath: path.join(ROOT, "tsconfig.json"),
-		skipAddingFilesFromTsConfig: true,
-	});
+function loadManifest(): Record<string, string> {
+	try {
+		return JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf-8"));
+	} catch {
+		return {};
+	}
+}
 
-	const endpoints: ParsedEndpoint[] = [];
-	for (const file of endpointFiles) {
+function saveManifest(manifest: Record<string, string>): void {
+	fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + "\n");
+}
+
+function buildManifest(files: string[]): Record<string, string> {
+	const manifest: Record<string, string> = {};
+	for (const file of files) {
+		manifest[file] = hashFile(path.join(ENDPOINTS_DIR, file));
+	}
+	return manifest;
+}
+
+function manifestsMatch(
+	a: Record<string, string>,
+	b: Record<string, string>,
+): boolean {
+	const keysA = Object.keys(a).sort();
+	const keysB = Object.keys(b).sort();
+	if (keysA.length !== keysB.length) return false;
+	for (let i = 0; i < keysA.length; i++) {
+		if (keysA[i] !== keysB[i]) return false;
+		if (a[keysA[i]] !== b[keysB[i]]) return false;
+	}
+	return true;
+}
+
+function writeIfChanged(filePath: string, content: string): boolean {
+	try {
+		const existing = fs.readFileSync(filePath, "utf-8");
+		if (existing === content) return false;
+	} catch {
+		// File doesn't exist yet
+	}
+	fs.mkdirSync(path.dirname(filePath), { recursive: true });
+	fs.writeFileSync(filePath, content);
+	return true;
+}
+
+function parseAllEndpoints(): Map<string, ParsedEndpoint> {
+	const files = scanEndpointFiles();
+	const cache = new Map<string, ParsedEndpoint>();
+
+	console.log(`Found ${files.length} endpoint files`);
+
+	for (const file of files) {
 		const parsed = parseEndpointFile(tsProject, file);
 		if (parsed) {
-			endpoints.push(parsed);
+			cache.set(file, parsed);
 			console.log(
 				`  ${parsed.name} (${parsed.method.toUpperCase()} ${parsed.routePath})`,
 			);
 		}
 	}
 
-	console.log(`\nParsed ${endpoints.length} endpoints`);
+	console.log(`Parsed ${cache.size} endpoints`);
+	return cache;
+}
 
-	// Generate files
+function generate(endpoints: ParsedEndpoint[]): void {
 	fs.mkdirSync(GENERATED_DIR, { recursive: true });
 
 	// 1. Generate api.ts
 	const apiContent = generateApiTs(endpoints);
-	fs.writeFileSync(path.join(GENERATED_DIR, "api.ts"), apiContent);
-	console.log("Generated: src/generated/api.ts");
+	if (writeIfChanged(path.join(GENERATED_DIR, "api.ts"), apiContent)) {
+		console.log("Generated: src/generated/api.ts");
+	}
 
 	// 2. Generate store.ts
-	fs.writeFileSync(path.join(GENERATED_DIR, "store.ts"), generateStoreTs());
-	console.log("Generated: src/generated/store.ts");
+	if (writeIfChanged(path.join(GENERATED_DIR, "store.ts"), generateStoreTs())) {
+		console.log("Generated: src/generated/store.ts");
+	}
 
 	// 3. Generate invalidation.ts
-	fs.writeFileSync(
-		path.join(GENERATED_DIR, "invalidation.ts"),
-		generateInvalidationTs(),
-	);
-	console.log("Generated: src/generated/invalidation.ts");
+	if (
+		writeIfChanged(
+			path.join(GENERATED_DIR, "invalidation.ts"),
+			generateInvalidationTs(),
+		)
+	) {
+		console.log("Generated: src/generated/invalidation.ts");
+	}
 
 	// 4. Generate route handlers
 	const routeGroups = groupEndpointsByRoute(endpoints);
 	let routeCount = 0;
 
 	for (const [, group] of routeGroups) {
-		// Skip non-ERTK routes
 		if (isNonErtkRoute(group.appRouteDir)) continue;
 
 		const routeContent = generateRouteFile(group);
-		fs.mkdirSync(group.appRouteDir, { recursive: true });
-		fs.writeFileSync(
-			path.join(group.appRouteDir, "route.ts"),
-			routeContent,
-		);
-		routeCount++;
+		if (
+			writeIfChanged(
+				path.join(group.appRouteDir, "route.ts"),
+				routeContent,
+			)
+		) {
+			routeCount++;
+		}
 	}
 
-	console.log(`Generated: ${routeCount} route files`);
-	console.log("\nERTK Codegen complete!");
+	if (routeCount > 0) {
+		console.log(`Generated: ${routeCount} route files`);
+	}
 }
 
-main().catch((err) => {
-	console.error("ERTK Codegen failed:", err);
-	process.exit(1);
-});
+// ─── Main ─────────────────────────────────────────────────────
+
+const isWatch = process.argv.includes("--watch");
+
+if (isWatch) {
+	// Watch mode: full initial build, then incremental on changes
+	console.log("ERTK Codegen: Initial build...");
+	const cache = parseAllEndpoints();
+	generate([...cache.values()]);
+	const manifest = buildManifest(scanEndpointFiles());
+	saveManifest(manifest);
+	console.log("ERTK Codegen: Initial build complete!");
+
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+	fs.watch(ENDPOINTS_DIR, { recursive: true }, (_event, filename) => {
+		if (!filename?.endsWith(".ts")) return;
+		if (debounceTimer) clearTimeout(debounceTimer);
+
+		debounceTimer = setTimeout(() => {
+			const relPath = filename.replace(/\\/g, "/");
+			const fullPath = path.join(ENDPOINTS_DIR, relPath);
+
+			if (fs.existsSync(fullPath)) {
+				const hash = hashFile(fullPath);
+				if (manifest[relPath] === hash) return; // No real change
+				manifest[relPath] = hash;
+
+				// Remove old source file from project so it re-reads from disk
+				const existing = tsProject.getSourceFile(fullPath);
+				if (existing) existing.forget();
+
+				const parsed = parseEndpointFile(tsProject, relPath);
+				if (parsed) {
+					cache.set(relPath, parsed);
+					console.log(`[watch] Re-parsed: ${parsed.name}`);
+				}
+			} else {
+				// File was deleted
+				delete manifest[relPath];
+				cache.delete(relPath);
+				console.log(`[watch] Removed: ${relPath}`);
+			}
+
+			generate([...cache.values()]);
+			saveManifest(manifest);
+		}, 300);
+	});
+
+	console.log("\n[watch] Watching src/endpoints/ for changes...");
+} else {
+	// One-shot mode: skip entirely if nothing changed
+	console.log("ERTK Codegen: Scanning endpoints...");
+	const files = scanEndpointFiles();
+	const oldManifest = loadManifest();
+	const newManifest = buildManifest(files);
+
+	if (manifestsMatch(oldManifest, newManifest)) {
+		console.log("ERTK: Nothing changed, skipping codegen.");
+		process.exit(0);
+	}
+
+	const cache = parseAllEndpoints();
+	generate([...cache.values()]);
+	saveManifest(newManifest);
+	console.log("\nERTK Codegen complete!");
+}

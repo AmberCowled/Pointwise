@@ -53,6 +53,7 @@ next-env.d.ts
 /src/generated/api.ts
 /src/generated/store.ts
 /src/generated/invalidation.ts
+/src/generated/.ertk-manifest.json
 
 # claude
 .claude/settings.local.json

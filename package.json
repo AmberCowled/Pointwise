@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"generate": "tsx scripts/generate-api.ts",
-		"dev": "pnpm generate && concurrently \"next dev\" \"tsx watch scripts/generate-api.ts\"",
+		"dev": "concurrently \"next dev\" \"tsx scripts/generate-api.ts --watch\"",
 		"build": "pnpm generate && next build",
 		"start": "next start",
 		"pd": "pnpm install && pnpm dev",
