@@ -1,7 +1,7 @@
 "use client";
 
 import { Stat } from "@pointwise/app/components/ui/Stat";
-import { useGetXPQuery } from "@pointwise/lib/redux/services/xpApi";
+import { useGetXPQuery } from "@pointwise/generated/api";
 import { IoStar } from "react-icons/io5";
 
 /**

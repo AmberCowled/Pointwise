@@ -45,6 +45,15 @@ export const TaskSchema = z.object({
 	commentCount: TASK_COMMENT_COUNT_SCHEMA,
 });
 
+export const GetTaskRequestSchema = z.object({
+	projectId: TASK_PROJECT_ID_SCHEMA,
+	taskId: TASK_ID_SCHEMA,
+});
+
+export const GetTaskResponseSchema = z.object({
+	task: TaskSchema,
+});
+
 export const GetTasksRequestSchema = z.object({
 	projectId: TASK_ID_SCHEMA,
 });
@@ -100,6 +109,8 @@ export const DeleteTaskResponseSchema = z.object({
 });
 
 export type Task = z.infer<typeof TaskSchema>;
+export type GetTaskRequest = z.infer<typeof GetTaskRequestSchema>;
+export type GetTaskResponse = z.infer<typeof GetTaskResponseSchema>;
 export type GetTasksRequest = z.infer<typeof GetTasksRequestSchema>;
 export type GetTasksResponse = z.infer<typeof GetTasksResponseSchema>;
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>;

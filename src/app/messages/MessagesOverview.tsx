@@ -8,7 +8,7 @@ import Modal from "@pointwise/app/components/ui/modal";
 import NewMessageModal, {
 	NEW_MESSAGE_MODAL_ID,
 } from "@pointwise/app/dashboard/modals/message/NewMessageModal";
-import { useGetConversationsQuery } from "@pointwise/lib/redux/services/conversationsApi";
+import { useGetConversationsQuery } from "@pointwise/generated/api";
 import { useSession } from "next-auth/react";
 import ConversationCard from "./ConversationCard";
 import NoMessagesView from "./NoMessagesView";

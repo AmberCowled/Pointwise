@@ -6,12 +6,12 @@ import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import Page from "@pointwise/app/components/ui/Page";
-import { getErrorMessage } from "@pointwise/lib/api/errors";
 import {
 	useApproveJoinRequestMutation,
 	useGetProjectJoinRequestsQuery,
 	useRejectJoinRequestMutation,
-} from "@pointwise/lib/redux/services/joinRequestsApi";
+} from "@pointwise/generated/api";
+import { getErrorMessage } from "@pointwise/lib/api/errors";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useState } from "react";
 import JoinRequestCard from "../../joinRequest/JoinRequestCard";

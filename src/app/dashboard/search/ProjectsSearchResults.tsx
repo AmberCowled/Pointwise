@@ -2,7 +2,7 @@ import { Card } from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import ProjectCard from "@pointwise/app/dashboard/projectCard/ProjectCard";
-import { useSearchPublicProjectsQuery } from "@pointwise/lib/redux/services/projectsApi";
+import { useSearchPublicProjectsQuery } from "@pointwise/generated/api";
 import { IoSearchOutline } from "react-icons/io5";
 
 interface ProjectsSearchResultsProps {

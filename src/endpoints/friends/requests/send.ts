@@ -1,0 +1,53 @@
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
+import { sendFriendRequest } from "@pointwise/lib/api/friends";
+import { endpoint } from "@pointwise/lib/ertk";
+import { sendNotification } from "@pointwise/lib/notifications/service";
+import { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import { z } from "zod";
+
+const SendRequestSchema = z.object({ receiverId: z.string() });
+
+export default endpoint.post<{ status: string }, { receiverId: string }>({
+	name: "sendFriendRequest",
+	request: SendRequestSchema,
+	tags: {
+		invalidates: (_result, _error, { receiverId }) => [
+			"FriendRequests",
+			{ type: "FriendshipStatus", id: receiverId },
+		],
+	},
+	protected: true,
+	query: (body) => ({ url: "/friends/requests", method: "POST", body }),
+	handler: async ({ user, body }) => {
+		const result = await sendFriendRequest(user.id, body.receiverId);
+		if (result.status === "PENDING") {
+			try {
+				await publishAblyEvent(
+					`user:${body.receiverId}:friend-requests`,
+					"friend-request:received",
+					{ senderId: user.id },
+				);
+			} catch (error) {
+				console.warn("Failed to publish friend request event", error);
+			}
+		} else if (result.status === "FRIENDS") {
+			try {
+				await sendNotification(
+					body.receiverId,
+					NotificationType.FRIEND_REQUEST_ACCEPTED,
+					{
+						accepterId: user.id,
+						accepterName: user.name,
+						accepterImage: user.image,
+					},
+				);
+			} catch (error) {
+				console.warn(
+					"Failed to publish friend request acceptance event (mutual)",
+					error,
+				);
+			}
+		}
+		return result;
+	},
+});

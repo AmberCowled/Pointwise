@@ -8,19 +8,16 @@ import Modal from "@pointwise/app/components/ui/modal";
 import AddUsersToConversationModal, {
 	getAddUsersToConversationModalId,
 } from "@pointwise/app/dashboard/modals/message/AddUsersToConversationModal";
-import { useSubscribeConversation } from "@pointwise/lib/realtime";
-import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import {
 	useArchiveConversationMutation,
 	useGetConversationQuery,
-	useMarkConversationReadMutation,
-} from "@pointwise/lib/redux/services/conversationsApi";
-import {
-	messagesApi,
 	useGetMessagesQuery,
+	useMarkConversationReadMutation,
 	useSendMessageMutation,
-} from "@pointwise/lib/redux/services/messagesApi";
-import { notificationsApi } from "@pointwise/lib/redux/services/notificationsApi";
+} from "@pointwise/generated/api";
+import { invalidateTags } from "@pointwise/generated/invalidation";
+import { useSubscribeConversation } from "@pointwise/lib/realtime";
+import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -76,15 +73,11 @@ export default function Conversation() {
 
 	const handleNewMessage = useCallback(() => {
 		if (!conversationId) return;
-		dispatch(
-			messagesApi.util.invalidateTags([
-				{ type: "Messages", id: conversationId },
-			]),
-		);
+		dispatch(invalidateTags([{ type: "Messages", id: conversationId }]));
 		setTimeout(() => {
 			markConversationRead(conversationId)
 				.then(() => {
-					dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
+					dispatch(invalidateTags(["Notifications"]));
 				})
 				.catch((err) => {
 					console.warn(

@@ -2,18 +2,14 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
+import { useGetNotificationsQuery } from "@pointwise/generated/api";
+import { invalidateTags } from "@pointwise/generated/invalidation";
 import {
 	type NewNotificationPayload,
 	RealtimePreset,
 	useSubscribeUserNotifications,
 } from "@pointwise/lib/realtime";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
-import { conversationsApi } from "@pointwise/lib/redux/services/conversationsApi";
-import { messagesApi } from "@pointwise/lib/redux/services/messagesApi";
-import {
-	notificationsApi,
-	useGetNotificationsQuery,
-} from "@pointwise/lib/redux/services/notificationsApi";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -32,17 +28,15 @@ export default function MessagesMenu() {
 
 	const handleNotification = useCallback(
 		(payload: NewNotificationPayload) => {
-			dispatch(notificationsApi.util.invalidateTags(["Notifications"]));
-			dispatch(conversationsApi.util.invalidateTags(["Conversations"]));
+			dispatch(invalidateTags(["Notifications"]));
+			dispatch(invalidateTags(["Conversations"]));
 			const data = payload.data as { conversationId?: string } | undefined;
 			if (
 				payload.type === "NEW_MESSAGE" &&
 				typeof data?.conversationId === "string"
 			) {
 				dispatch(
-					messagesApi.util.invalidateTags([
-						{ type: "Messages", id: data.conversationId },
-					]),
+					invalidateTags([{ type: "Messages", id: data.conversationId }]),
 				);
 			}
 		},

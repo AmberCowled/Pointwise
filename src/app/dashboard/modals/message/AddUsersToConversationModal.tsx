@@ -4,9 +4,9 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Modal from "@pointwise/app/components/ui/modal";
 import {
 	useGetConversationQuery,
+	useGetFriendsQuery,
 	useUpdateConversationMutation,
-} from "@pointwise/lib/redux/services/conversationsApi";
-import { useGetFriendsQuery } from "@pointwise/lib/redux/services/friendsApi";
+} from "@pointwise/generated/api";
 import { useCallback, useMemo, useState } from "react";
 import { IoCheckmark } from "react-icons/io5";
 import ProfilePicture from "../../userCard/ProfilePicture";

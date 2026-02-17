@@ -4,8 +4,10 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import Page from "@pointwise/app/components/ui/Page";
-import { useCanInviteQuery } from "@pointwise/lib/redux/services/invitesApi";
-import { useGetProjectsQuery } from "@pointwise/lib/redux/services/projectsApi";
+import {
+	useCanInviteQuery,
+	useGetProjectsQuery,
+} from "@pointwise/generated/api";
 import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import React from "react";
 import { getErrorMessage } from "../../../../lib/api/errors";

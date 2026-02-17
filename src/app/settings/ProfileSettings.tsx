@@ -13,7 +13,7 @@ import {
 	useCheckDisplayNameAvailabilityQuery,
 	useGetUserQuery,
 	useUpdateUserMutation,
-} from "@pointwise/lib/redux/services/usersApi";
+} from "@pointwise/generated/api";
 import { getCroppedImg } from "@pointwise/lib/utils/image";
 import { useUploadThing } from "@pointwise/lib/utils/uploadthing";
 import { useCallback, useEffect, useRef, useState } from "react";

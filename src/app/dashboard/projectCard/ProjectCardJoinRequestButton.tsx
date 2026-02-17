@@ -3,12 +3,12 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
-import { useUserId } from "@pointwise/hooks/useUserId";
-import { getErrorMessage } from "@pointwise/lib/api/errors";
 import {
 	useCancelRequestToJoinProjectMutation,
 	useRequestToJoinProjectMutation,
-} from "@pointwise/lib/redux/services/projectsApi";
+} from "@pointwise/generated/api";
+import { useUserId } from "@pointwise/hooks/useUserId";
+import { getErrorMessage } from "@pointwise/lib/api/errors";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useState } from "react";
 

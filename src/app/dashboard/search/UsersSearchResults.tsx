@@ -2,7 +2,7 @@ import { Card } from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Grid from "@pointwise/app/components/ui/Grid";
-import { useSearchUsersQuery } from "@pointwise/lib/redux/services/usersApi";
+import { useSearchUsersQuery } from "@pointwise/generated/api";
 import { IoSearchOutline } from "react-icons/io5";
 import UserCard from "../userCard/UserCard";
 

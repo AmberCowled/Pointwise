@@ -1,0 +1,18 @@
+import { endpoint } from "@pointwise/lib/ertk";
+import prisma from "@pointwise/lib/prisma";
+import type { Notification } from "@pointwise/lib/validation/notification-schema";
+
+export default endpoint.get<Notification[], void>({
+	name: "getNotifications",
+	tags: { provides: ["Notifications"] },
+	protected: true,
+	query: () => "/notifications",
+	handler: async ({ user }) => {
+		const notifications = await prisma.notification.findMany({
+			where: { userId: user.id },
+			orderBy: { createdAt: "desc" },
+			take: 20,
+		});
+		return notifications;
+	},
+});

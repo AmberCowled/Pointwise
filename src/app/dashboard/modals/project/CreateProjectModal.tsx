@@ -3,7 +3,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
-import { useCreateProjectMutation } from "@pointwise/lib/redux/services/projectsApi";
+import { useCreateProjectMutation } from "@pointwise/generated/api";
 import { useState } from "react";
 import ProjectDescription from "./ProjectDescription";
 import ProjectGoal from "./ProjectGoal";

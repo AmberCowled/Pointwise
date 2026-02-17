@@ -3,7 +3,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
-import { useUpdateProjectMutation } from "@pointwise/lib/redux/services/projectsApi";
+import { useUpdateProjectMutation } from "@pointwise/generated/api";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useEffect, useState } from "react";
 import DeleteProjectModal from "./DeleteProjectModal";

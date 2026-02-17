@@ -1,6 +1,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { useUpdateTaskMutation } from "@pointwise/generated/api";
 import { apiClient } from "@pointwise/lib/api/client";
 import {
 	datesEqual,
@@ -15,7 +16,6 @@ import {
 	CUSTOM_CATEGORY_LABEL,
 	isCoreTaskCategory,
 } from "@pointwise/lib/categories";
-import { useUpdateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useCallback, useEffect, useState } from "react";

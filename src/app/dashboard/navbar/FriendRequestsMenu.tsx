@@ -3,16 +3,16 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import {
+	useGetPendingRequestsQuery,
+	useHandleFriendRequestMutation,
+} from "@pointwise/generated/api";
+import { invalidateTags } from "@pointwise/generated/invalidation";
+import {
 	RealtimePreset,
 	useSubscribeFriendUpdates,
 	useSubscribeUserNotifications,
 } from "@pointwise/lib/realtime";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
-import {
-	friendsApi,
-	useGetPendingRequestsQuery,
-	useHandleFriendRequestMutation,
-} from "@pointwise/lib/redux/services/friendsApi";
 import { useSession } from "next-auth/react";
 import { useCallback } from "react";
 import { IoCheckmark, IoClose, IoPersonAdd } from "react-icons/io5";
@@ -46,13 +46,7 @@ export default function FriendRequestsMenu() {
 	};
 
 	const handleFriendUpdate = useCallback(() => {
-		dispatch(
-			friendsApi.util.invalidateTags([
-				"Friends",
-				"FriendRequests",
-				"FriendshipStatus",
-			]),
-		);
+		dispatch(invalidateTags(["Friends", "FriendRequests", "FriendshipStatus"]));
 	}, [dispatch]);
 
 	useSubscribeUserNotifications(userId, {

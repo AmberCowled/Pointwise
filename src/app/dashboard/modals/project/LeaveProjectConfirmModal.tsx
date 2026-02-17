@@ -4,8 +4,8 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { useLeaveProjectMutation } from "@pointwise/generated/api";
 import { getErrorMessage } from "@pointwise/lib/api/errors";
-import { useLeaveProjectMutation } from "@pointwise/lib/redux/services/projectsApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
 

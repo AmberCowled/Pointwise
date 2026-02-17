@@ -3,6 +3,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { useCreateTaskMutation } from "@pointwise/generated/api";
 import { apiClient } from "@pointwise/lib/api/client";
 import { localToUTC } from "@pointwise/lib/api/date-time";
 import { getErrorMessage } from "@pointwise/lib/api/errors";
@@ -10,7 +11,6 @@ import {
 	CORE_TASK_CATEGORIES,
 	CUSTOM_CATEGORY_LABEL,
 } from "@pointwise/lib/categories";
-import { useCreateTaskMutation } from "@pointwise/lib/redux/services/tasksApi";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useState } from "react";
 import TaskForm, { XpMode } from "./TaskForm";
