@@ -16,7 +16,8 @@
 		"audit": "pnpm audit --audit-level=high",
 		"postinstall": "prisma generate",
 		"db:create-text-index": "node scripts/create-text-index.mjs",
-		"db:push": "pnpm prisma db push"
+		"db:push": "pnpm prisma db push",
+		"prepare": "simple-git-hooks"
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^2.11.1",
@@ -54,12 +55,20 @@
 		"@types/react-syntax-highlighter": "^15.5.13",
 		"babel-plugin-react-compiler": "1.0.0",
 		"concurrently": "^9.1.0",
+		"lint-staged": "^16.2.7",
 		"mongodb": "^7.0.0",
 		"prisma": "^6.19.0",
+		"simple-git-hooks": "^2.13.1",
 		"tailwindcss": "^4",
 		"ts-morph": "^27.0.2",
 		"tsx": "^4.21.0",
 		"typescript": "^5"
+	},
+	"simple-git-hooks": {
+		"pre-commit": "pnpm generate && pnpm lint-staged"
+	},
+	"lint-staged": {
+		"src/**/*.{ts,tsx}": "biome check --write --no-errors-on-unmatched"
 	},
 	"pnpm": {
 		"overrides": {
