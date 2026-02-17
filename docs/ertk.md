@@ -197,11 +197,11 @@ tags: {
 }
 ```
 
-### Available tag types
+### Tag types
 
-`Tasks`, `Comments`, `Replies`, `Projects`, `Friends`, `FriendRequests`, `FriendshipStatus`, `Conversations`, `Conversation`, `Messages`, `Notifications`, `Invites`, `JoinRequests`, `XP`, `User`, `Users`
+Tag types are arbitrary strings — use whatever name makes sense for your domain. The codegen automatically discovers all tags used across endpoint files and registers them with RTK Query. No central list to update.
 
-To add a new tag type, update `TagType` in `src/lib/ertk/types.ts`.
+Existing tags in the codebase: `Tasks`, `Comments`, `Replies`, `Projects`, `Friends`, `FriendRequests`, `FriendshipStatus`, `Conversations`, `Conversation`, `Messages`, `Notifications`, `Invites`, `JoinRequests`, `XP`, `User`, `Users`.
 
 ## Optimistic Updates
 

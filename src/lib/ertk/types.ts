@@ -1,22 +1,6 @@
 import type { z } from "zod";
 
-export type TagType =
-	| "Tasks"
-	| "Comments"
-	| "Replies"
-	| "Projects"
-	| "Friends"
-	| "FriendRequests"
-	| "FriendshipStatus"
-	| "Conversations"
-	| "Conversation"
-	| "Messages"
-	| "Notifications"
-	| "Invites"
-	| "JoinRequests"
-	| "XP"
-	| "User"
-	| "Users";
+export type TagType = string;
 
 export type TagDescription = TagType | { type: TagType; id: string | number };
 
