@@ -16,7 +16,16 @@
       "Bash(ls:*)",
       "Bash(npx tsx:*)",
       "Bash(npx biome check:*)",
-      "Bash(pnpm generate:*)"
+      "Bash(pnpm generate:*)",
+      "Bash(pnpm install:*)",
+      "Bash(test:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(npm view:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(git diff:*)"
     ]
   }
 }

@@ -1,28 +1,24 @@
-import {
-	errorResponse,
-	handleRoute,
-	jsonResponse,
-} from "@pointwise/lib/api/route-handler";
 import { generateUniqueDisplayName } from "@pointwise/lib/api/users";
 import prisma from "@pointwise/lib/prisma";
 import { parseSignupBody } from "@pointwise/lib/validation/auth";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-	return handleRoute(req, async () => {
+	try {
 		const rawBody = await req.json().catch(() => ({}));
 		const parsed = parseSignupBody(rawBody);
 		if (!parsed.success) {
-			return errorResponse(parsed.error, parsed.status);
+			return Response.json({ error: parsed.error }, { status: parsed.status });
 		}
 
 		const { name, email, password } = parsed.data;
 
 		const existing = await prisma.user.findUnique({ where: { email } });
 		if (existing) {
-			return errorResponse("Email already in use", 409);
+			return Response.json({ error: "Email already in use" }, { status: 409 });
 		}
 
 		const passwordHash = await bcrypt.hash(password, 12);
@@ -33,6 +29,20 @@ export async function POST(req: Request) {
 			select: { id: true, email: true, name: true, displayName: true },
 		});
 
-		return jsonResponse({ user }, 201);
-	});
+		return Response.json({ user }, { status: 201 });
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === "P2002") {
+				return Response.json(
+					{ error: "Email already in use" },
+					{ status: 409 },
+				);
+			}
+		}
+		console.error("Signup error:", error);
+		return Response.json(
+			{ error: "An unexpected error occurred" },
+			{ status: 500 },
+		);
+	}
 }

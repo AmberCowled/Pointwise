@@ -2,12 +2,12 @@ import {
 	searchPublicProjects,
 	serializeProject,
 } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	SearchPublicProjectsRequest,
 	SearchPublicProjectsResponse,
 } from "@pointwise/lib/validation/projects-schema";
 import { SearchPublicProjectsRequestSchema } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<
 	SearchPublicProjectsResponse,

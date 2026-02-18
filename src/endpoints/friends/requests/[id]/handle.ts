@@ -3,9 +3,9 @@ import {
 	acceptFriendRequest,
 	declineFriendRequest,
 } from "@pointwise/lib/api/friends";
-import { endpoint } from "@pointwise/lib/ertk";
 import { sendNotification } from "@pointwise/lib/notifications/service";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import { endpoint } from "ertk";
 import { z } from "zod";
 
 const RequestActionSchema = z.object({ action: z.enum(["ACCEPT", "DECLINE"]) });

@@ -1,6 +1,6 @@
 import { leaveProject, serializeProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { LeaveProjectResponse } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.delete<LeaveProjectResponse, { projectId: string }>({
 	name: "leaveProject",

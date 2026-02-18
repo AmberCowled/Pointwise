@@ -2,7 +2,7 @@
 import deleteTaskEndpoint from "@pointwise/endpoints/tasks/[id]/delete";
 import getTaskEndpoint from "@pointwise/endpoints/tasks/[id]/get";
 import updateTaskEndpoint from "@pointwise/endpoints/tasks/[id]/update";
-import { createRouteHandler } from "@pointwise/lib/ertk/route-handler";
+import { createRouteHandler } from "@pointwise/lib/ertk-handler";
 
 export const DELETE = createRouteHandler(deleteTaskEndpoint);
 export const GET = createRouteHandler(getTaskEndpoint);

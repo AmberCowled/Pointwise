@@ -1,6 +1,6 @@
 import { deleteTask } from "@pointwise/lib/api/tasks";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { DeleteTaskResponse } from "@pointwise/lib/validation/tasks-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.delete<DeleteTaskResponse, { taskId: string }>({
 	name: "deleteTask",

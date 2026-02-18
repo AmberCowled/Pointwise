@@ -1,10 +1,10 @@
 import { serializeXP, updateXP } from "@pointwise/lib/api/xp";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	UpdateXPRequest,
 	UpdateXPResponse,
 } from "@pointwise/lib/validation/xp-schema";
 import { UpdateXPRequestSchema } from "@pointwise/lib/validation/xp-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.patch<UpdateXPResponse, UpdateXPRequest>({
 	name: "updateXP",

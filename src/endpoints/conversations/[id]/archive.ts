@@ -1,5 +1,5 @@
 import { archiveConversation } from "@pointwise/lib/api/conversations";
-import { endpoint } from "@pointwise/lib/ertk";
+import { endpoint } from "ertk";
 
 export default endpoint.patch<{ success: true }, string>({
 	name: "archiveConversation",

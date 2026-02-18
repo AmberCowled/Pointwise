@@ -1,6 +1,6 @@
 import { getXP, serializeXP } from "@pointwise/lib/api/xp";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { GetXPResponse } from "@pointwise/lib/validation/xp-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<GetXPResponse, void>({
 	name: "getXP",
