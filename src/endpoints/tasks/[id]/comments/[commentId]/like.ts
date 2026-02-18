@@ -1,6 +1,6 @@
 import { likeComment } from "@pointwise/lib/api/comments";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { CommentLikeResponse } from "@pointwise/lib/validation/comments-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<
 	CommentLikeResponse,

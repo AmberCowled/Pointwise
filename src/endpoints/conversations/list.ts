@@ -1,6 +1,6 @@
 import { getConversations } from "@pointwise/lib/api/conversations";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { ConversationListItem } from "@pointwise/lib/validation/conversation-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<ConversationListItem[], void>({
 	name: "getConversations",

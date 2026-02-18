@@ -1,10 +1,10 @@
 import { sendMessage } from "@pointwise/lib/api/messages";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	Message,
 	SendMessageInput,
 } from "@pointwise/lib/validation/message-schema";
 import { SendMessageSchema } from "@pointwise/lib/validation/message-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<
 	Message,
@@ -26,8 +26,8 @@ export default endpoint.post<
 	}),
 	handler: async ({ user, body, params }) => {
 		const message = await sendMessage(params.id, user.id, body, {
-			name: user.name,
-			image: user.image,
+			name: user.name as string | null,
+			image: user.image as string | null,
 		});
 		return message;
 	},

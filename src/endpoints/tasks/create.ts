@@ -1,10 +1,10 @@
 import { createTask, serializeTask } from "@pointwise/lib/api/tasks";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	CreateTaskRequest,
 	CreateTaskResponse,
 } from "@pointwise/lib/validation/tasks-schema";
 import { CreateTaskRequestSchema } from "@pointwise/lib/validation/tasks-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<CreateTaskResponse, CreateTaskRequest>({
 	name: "createTask",

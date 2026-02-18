@@ -1,10 +1,10 @@
 import { searchUsers } from "@pointwise/lib/api/users";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	SearchUsersRequest,
 	SearchUsersResponse,
 } from "@pointwise/lib/validation/users-schema";
 import { SearchUsersRequestSchema } from "@pointwise/lib/validation/users-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<SearchUsersResponse, SearchUsersRequest>({
 	name: "searchUsers",

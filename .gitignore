@@ -56,4 +56,4 @@ next-env.d.ts
 /src/generated/.ertk-manifest.json
 
 # claude
-.claude/settings.local.json
+.claude/

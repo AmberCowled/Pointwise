@@ -1,11 +1,11 @@
 import { inviteUsersToProject } from "@pointwise/lib/api/invites";
 import { serializeProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	InviteProjectRequest,
 	InviteProjectResponse,
 } from "@pointwise/lib/validation/projects-schema";
 import { InviteProjectRequestSchema } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<
 	InviteProjectResponse,

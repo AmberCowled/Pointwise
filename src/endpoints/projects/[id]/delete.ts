@@ -1,6 +1,6 @@
 import { deleteProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { DeleteProjectResponse } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.delete<DeleteProjectResponse, string>({
 	name: "deleteProject",

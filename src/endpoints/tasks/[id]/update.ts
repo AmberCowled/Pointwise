@@ -1,10 +1,10 @@
 import { serializeTask, updateTask } from "@pointwise/lib/api/tasks";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	UpdateTaskRequest,
 	UpdateTaskResponse,
 } from "@pointwise/lib/validation/tasks-schema";
 import { UpdateTaskRequestSchema } from "@pointwise/lib/validation/tasks-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.patch<
 	UpdateTaskResponse,

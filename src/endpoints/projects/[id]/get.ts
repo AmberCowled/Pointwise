@@ -1,6 +1,6 @@
 import { getProject, serializeProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { GetProjectResponse } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<GetProjectResponse, string>({
 	name: "getProject",

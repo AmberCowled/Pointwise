@@ -1,10 +1,10 @@
 import { getMessages } from "@pointwise/lib/api/messages";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	GetMessagesQuery,
 	MessagesResponse,
 } from "@pointwise/lib/validation/message-schema";
 import { GetMessagesQuerySchema } from "@pointwise/lib/validation/message-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<
 	MessagesResponse,

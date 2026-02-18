@@ -1,6 +1,6 @@
 import { getFriendshipStatus } from "@pointwise/lib/api/friends";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { FriendshipStatusResponse } from "@pointwise/lib/validation/friends-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<FriendshipStatusResponse, string>({
 	name: "getFriendshipStatus",

@@ -1,10 +1,10 @@
 import { createProject, serializeProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	CreateProjectRequest,
 	CreateProjectResponse,
 } from "@pointwise/lib/validation/projects-schema";
 import { CreateProjectRequestSchema } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<CreateProjectResponse, CreateProjectRequest>({
 	name: "createProject",

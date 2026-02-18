@@ -1,5 +1,5 @@
 import { getProjectJoinRequests } from "@pointwise/lib/api/joinRequests";
-import { endpoint } from "@pointwise/lib/ertk";
+import { endpoint } from "ertk";
 
 export default endpoint.get<
 	{

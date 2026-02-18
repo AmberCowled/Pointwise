@@ -1,8 +1,8 @@
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { sendFriendRequest } from "@pointwise/lib/api/friends";
-import { endpoint } from "@pointwise/lib/ertk";
 import { sendNotification } from "@pointwise/lib/notifications/service";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import { endpoint } from "ertk";
 import { z } from "zod";
 
 const SendRequestSchema = z.object({ receiverId: z.string() });
@@ -37,8 +37,8 @@ export default endpoint.post<{ status: string }, { receiverId: string }>({
 					NotificationType.FRIEND_REQUEST_ACCEPTED,
 					{
 						accepterId: user.id,
-						accepterName: user.name,
-						accepterImage: user.image,
+						accepterName: user.name as string | null,
+						accepterImage: user.image as string | null,
 					},
 				);
 			} catch (error) {

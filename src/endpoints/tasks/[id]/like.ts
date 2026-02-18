@@ -1,7 +1,7 @@
 import { likeTask } from "@pointwise/lib/api/taskLikes";
 import { getTask, serializeTask } from "@pointwise/lib/api/tasks";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { UpdateTaskResponse } from "@pointwise/lib/validation/tasks-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<
 	UpdateTaskResponse,

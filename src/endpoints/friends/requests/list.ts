@@ -1,6 +1,6 @@
 import { getPendingRequests } from "@pointwise/lib/api/friends";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { PendingRequestsResponse } from "@pointwise/lib/validation/friends-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<PendingRequestsResponse, void>({
 	name: "getPendingRequests",

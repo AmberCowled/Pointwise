@@ -1,5 +1,5 @@
 import { getReceivedInvites } from "@pointwise/lib/api/invites";
-import { endpoint } from "@pointwise/lib/ertk";
+import { endpoint } from "ertk";
 
 export default endpoint.get<
 	{

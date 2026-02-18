@@ -1,10 +1,10 @@
 import { getTask, serializeTask } from "@pointwise/lib/api/tasks";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	GetTaskRequest,
 	GetTaskResponse,
 } from "@pointwise/lib/validation/tasks-schema";
 import { GetTaskRequestSchema } from "@pointwise/lib/validation/tasks-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<GetTaskResponse, GetTaskRequest>({
 	name: "getTask",

@@ -1,5 +1,5 @@
-import { endpoint } from "@pointwise/lib/ertk";
 import prisma from "@pointwise/lib/prisma";
+import { endpoint } from "ertk";
 
 export default endpoint.patch<{ success: boolean }, void>({
 	name: "markAllRead",

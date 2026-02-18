@@ -1,9 +1,9 @@
 import { isDisplayNameAvailable } from "@pointwise/lib/api/users";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	CheckDisplayNameAvailability,
 	CheckDisplayNameResponse,
 } from "@pointwise/lib/validation/users-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<
 	CheckDisplayNameResponse,

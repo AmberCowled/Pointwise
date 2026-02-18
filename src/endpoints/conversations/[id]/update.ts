@@ -1,10 +1,10 @@
 import { updateConversation } from "@pointwise/lib/api/conversations";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	Conversation,
 	UpdateConversationInput,
 } from "@pointwise/lib/validation/conversation-schema";
 import { UpdateConversationSchema } from "@pointwise/lib/validation/conversation-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.patch<
 	Conversation,

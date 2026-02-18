@@ -2,7 +2,7 @@
 import deleteProjectEndpoint from "@pointwise/endpoints/projects/[id]/delete";
 import getProjectEndpoint from "@pointwise/endpoints/projects/[id]/get";
 import updateProjectEndpoint from "@pointwise/endpoints/projects/[id]/update";
-import { createRouteHandler } from "@pointwise/lib/ertk/route-handler";
+import { createRouteHandler } from "@pointwise/lib/ertk-handler";
 
 export const DELETE = createRouteHandler(deleteProjectEndpoint);
 export const GET = createRouteHandler(getProjectEndpoint);

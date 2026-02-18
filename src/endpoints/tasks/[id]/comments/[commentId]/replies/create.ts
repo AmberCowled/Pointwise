@@ -1,7 +1,7 @@
 import { createReply } from "@pointwise/lib/api/comments";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { CreateReplyResponse } from "@pointwise/lib/validation/comments-schema";
 import { CreateCommentRequestSchema } from "@pointwise/lib/validation/comments-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<
 	CreateReplyResponse,

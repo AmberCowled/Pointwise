@@ -1,7 +1,7 @@
 import { ApiError } from "@pointwise/lib/api/errors";
 import { getProjectInvites } from "@pointwise/lib/api/invites";
 import { getProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
+import { endpoint } from "ertk";
 
 export default endpoint.get<
 	{

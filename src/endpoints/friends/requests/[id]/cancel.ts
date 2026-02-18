@@ -1,6 +1,6 @@
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { declineFriendRequest } from "@pointwise/lib/api/friends";
-import { endpoint } from "@pointwise/lib/ertk";
+import { endpoint } from "ertk";
 
 export default endpoint.delete<{ success: boolean }, string>({
 	name: "cancelFriendRequest",

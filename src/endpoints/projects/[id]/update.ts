@@ -1,10 +1,10 @@
 import { serializeProject, updateProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type {
 	UpdateProjectRequest,
 	UpdateProjectResponse,
 } from "@pointwise/lib/validation/projects-schema";
 import { UpdateProjectRequestSchema } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.patch<
 	UpdateProjectResponse,

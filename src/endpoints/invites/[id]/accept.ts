@@ -1,7 +1,7 @@
 import { acceptInvite } from "@pointwise/lib/api/invites";
 import { serializeProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.post<{ success: boolean; project: Project }, string>({
 	name: "acceptInvite",

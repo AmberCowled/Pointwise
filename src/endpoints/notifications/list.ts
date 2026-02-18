@@ -1,6 +1,6 @@
-import { endpoint } from "@pointwise/lib/ertk";
 import prisma from "@pointwise/lib/prisma";
 import type { Notification } from "@pointwise/lib/validation/notification-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<Notification[], void>({
 	name: "getNotifications",

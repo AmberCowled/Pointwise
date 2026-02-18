@@ -1,7 +1,7 @@
 import { approveJoinRequest } from "@pointwise/lib/api/joinRequests";
 import { serializeProject } from "@pointwise/lib/api/projects";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { GetProjectResponse } from "@pointwise/lib/validation/projects-schema";
+import { endpoint } from "ertk";
 import { z } from "zod";
 
 const ApproveJoinRequestSchema = z.object({

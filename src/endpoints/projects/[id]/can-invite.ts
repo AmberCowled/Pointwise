@@ -1,7 +1,7 @@
 import { canInvite } from "@pointwise/lib/api/invites";
-import { endpoint } from "@pointwise/lib/ertk";
 import type { InviteResponse } from "@pointwise/lib/validation/invite-schema";
 import { InviteRequestSchema } from "@pointwise/lib/validation/invite-schema";
+import { endpoint } from "ertk";
 
 export default endpoint.get<
 	InviteResponse,
