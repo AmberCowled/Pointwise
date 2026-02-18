@@ -25,7 +25,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(npm view:*)",
       "Bash(pnpm ls:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(pnpm audit:*)"
     ]
   }
 }
