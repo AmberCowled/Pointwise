@@ -44,7 +44,7 @@ export default function UsersSearchResults({ query }: UsersSearchResultsProps) {
 						width="full"
 						direction="vertical"
 						gap="sm"
-						className="py-8 text-zinc-400 bg-zinc-900 rounded-sm border border-zinc-800"
+						className="py-8 text-zinc-400 bg-zinc-900/50 rounded-sm border border-zinc-700/50"
 					>
 						<IoSearchOutline className="size-10 mb-2" />
 						<span className="font-medium text-lg">No users found</span>

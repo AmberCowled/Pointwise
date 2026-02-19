@@ -42,7 +42,7 @@ export default function ProjectsSearchResults({
 						width="full"
 						direction="vertical"
 						gap="sm"
-						className="py-8 text-zinc-400 bg-zinc-900/50 border border-zinc-800"
+						className="py-8 text-zinc-400 bg-zinc-900/50 border border-zinc-700/50"
 					>
 						<IoSearchOutline className="size-10 mb-2" />
 						<span className="font-medium text-lg">No projects found</span>
