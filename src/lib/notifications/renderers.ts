@@ -4,6 +4,13 @@ import type {
 	NotificationData,
 } from "@pointwise/lib/validation/notification-schema";
 
+export interface NotificationAction {
+	label: string;
+	variant: "accept" | "reject";
+	/** Returns the arguments to pass to the mutation. */
+	getPayload: (data: Record<string, unknown>) => Record<string, unknown>;
+}
+
 export interface NotificationRenderer {
 	/** Human-readable message for the notification. */
 	getMessage(data: Record<string, unknown>): string;
@@ -14,6 +21,8 @@ export interface NotificationRenderer {
 	};
 	/** Optional link to navigate to when clicking the notification. */
 	getHref?(data: Record<string, unknown>): string;
+	/** If present, render action buttons instead of a link. */
+	getActions?(data: Record<string, unknown>): NotificationAction[];
 }
 
 export const NOTIFICATION_RENDERERS: Record<string, NotificationRenderer> = {
@@ -46,6 +55,21 @@ export const NOTIFICATION_RENDERERS: Record<string, NotificationRenderer> = {
 			const d = data as NotificationData<"PROJECT_INVITE_RECEIVED">;
 			return { name: d.inviterName ?? "User", image: d.inviterImage };
 		},
+		getActions(data) {
+			const d = data as NotificationData<"PROJECT_INVITE_RECEIVED">;
+			return [
+				{
+					label: "Accept",
+					variant: "accept",
+					getPayload: () => ({ inviteId: d.inviteId }),
+				},
+				{
+					label: "Reject",
+					variant: "reject",
+					getPayload: () => ({ inviteId: d.inviteId }),
+				},
+			];
+		},
 	},
 	PROJECT_INVITE_ACCEPTED: {
 		getMessage(data) {
@@ -70,9 +94,26 @@ export const NOTIFICATION_RENDERERS: Record<string, NotificationRenderer> = {
 			const d = data as NotificationData<"PROJECT_JOIN_REQUEST_RECEIVED">;
 			return { name: d.requesterName ?? "User", image: d.requesterImage };
 		},
-		getHref(data) {
+		getActions(data) {
 			const d = data as NotificationData<"PROJECT_JOIN_REQUEST_RECEIVED">;
-			return `/projects/${d.projectId}`;
+			return [
+				{
+					label: "Approve",
+					variant: "accept",
+					getPayload: () => ({
+						projectId: d.projectId,
+						userId: d.requesterId,
+					}),
+				},
+				{
+					label: "Reject",
+					variant: "reject",
+					getPayload: () => ({
+						projectId: d.projectId,
+						userId: d.requesterId,
+					}),
+				},
+			];
 		},
 	},
 	PROJECT_JOIN_REQUEST_APPROVED: {

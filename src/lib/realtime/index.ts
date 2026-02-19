@@ -4,11 +4,13 @@ export type {
 	UserNotificationChannel,
 	UseSubscribeConversationOptions,
 	UseSubscribeFriendUpdatesOptions,
+	UseSubscribeProjectUpdatesOptions,
 	UseSubscribeUserNotificationsOptions,
 } from "./hooks";
 export {
 	useSubscribeConversation,
 	useSubscribeFriendUpdates,
+	useSubscribeProjectUpdates,
 	useSubscribeUserNotifications,
 } from "./hooks";
 export {

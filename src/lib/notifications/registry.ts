@@ -39,6 +39,7 @@ export const NotificationRegistry = {
 	PROJECT_INVITE_RECEIVED: {
 		channel: "projects",
 		schema: z.object({
+			inviteId: z.string(),
 			projectId: z.string(),
 			projectName: z.string(),
 			inviterName: z.string().nullable(),

@@ -28,6 +28,8 @@ export const RealtimeEvents = {
 	COMMENT_CREATED: "comment:created",
 	COMMENT_EDITED: "comment:edited",
 	COMMENT_DELETED: "comment:deleted",
+	JOIN_REQUEST_REJECTED: "join-request:rejected",
+	INVITE_REJECTED: "invite:rejected",
 } as const;
 
 /**
