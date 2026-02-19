@@ -3,11 +3,16 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import {
+	api,
 	useGetNotificationsQuery,
 	useMarkAllReadMutation,
 } from "@pointwise/generated/api";
-import { invalidateTags } from "@pointwise/generated/invalidation";
 import {
+	FALLBACK_RENDERER,
+	NOTIFICATION_RENDERERS,
+} from "@pointwise/lib/notifications/renderers";
+import {
+	type NewNotificationPayload,
 	RealtimePreset,
 	useSubscribeUserNotifications,
 } from "@pointwise/lib/realtime";
@@ -23,17 +28,29 @@ export default function NotificationMenu() {
 	const { data: session } = useSession();
 	const userId = session?.user?.id;
 
-	const { data: notifications = [], isLoading } = useGetNotificationsQuery(
-		undefined,
+	const { data, isLoading } = useGetNotificationsQuery(
+		{},
 		{
 			skip: !userId,
 		},
 	);
+	const notifications = data?.notifications ?? [];
+
 	const [markAllRead] = useMarkAllReadMutation();
 
-	const handleNotification = useCallback(() => {
-		dispatch(invalidateTags(["Notifications"]));
-	}, [dispatch]);
+	// Optimistic real-time update: insert Ably payload into RTK Query cache
+	const handleNotification = useCallback(
+		(payload: NewNotificationPayload) => {
+			dispatch(
+				api.util.updateQueryData("getNotifications", {}, (draft) => {
+					if (!draft.notifications.some((n) => n.id === payload.id)) {
+						draft.notifications.unshift(payload);
+					}
+				}),
+			);
+		},
+		[dispatch],
+	);
 
 	useSubscribeUserNotifications(userId, {
 		preset: RealtimePreset.GENERAL_NOTIFICATIONS,
@@ -49,7 +66,8 @@ export default function NotificationMenu() {
 
 	const handleOpenMenu = () => {
 		if (unreadCount > 0) {
-			void markAllRead();
+			// Scoped: exclude NEW_MESSAGE so opening the bell doesn't mark message notifications as read
+			void markAllRead({ excludeTypes: ["NEW_MESSAGE"] });
 		}
 	};
 
@@ -72,42 +90,26 @@ export default function NotificationMenu() {
 					<Menu.Option label="No notifications yet" disabled />
 				) : (
 					notificationMenuItems.map((notification) => {
-						const isAccepted =
-							notification.type === NotificationType.FRIEND_REQUEST_ACCEPTED;
-						const isReceived =
-							notification.type === NotificationType.FRIEND_REQUEST_RECEIVED;
+						const renderer =
+							NOTIFICATION_RENDERERS[notification.type] ?? FALLBACK_RENDERER;
+						const notifData = notification.data as Record<string, unknown>;
+						const userInfo = renderer.getUser(notifData);
+						const message = renderer.getMessage(notifData);
+						const href = renderer.getHref?.(notifData);
 
-						const userName = isAccepted
-							? notification.data.accepterName
-							: isReceived
-								? notification.data.senderName
-								: "User";
-						const userImage = isAccepted
-							? notification.data.accepterImage
-							: isReceived
-								? notification.data.senderImage
-								: "";
-
-						return (
+						const content = (
 							<div
 								key={notification.id}
 								className="flex items-center gap-3 px-3 py-2 min-w-[300px]"
 							>
 								<ProfilePicture
-									profilePicture={userImage ?? ""}
-									displayName={userName ?? "User"}
+									profilePicture={userInfo.image ?? ""}
+									displayName={userInfo.name}
 									size="xs"
 								/>
 								<div className="flex-1 min-w-0">
 									<p className="text-sm text-zinc-100 wrap-break-word">
-										<span className="font-semibold text-zinc-50">
-											{userName}
-										</span>{" "}
-										{isAccepted
-											? "accepted your friend request."
-											: isReceived
-												? "sent you a friend request."
-												: "sent you a notification."}
+										{message}
 									</p>
 									<span className="text-[10px] text-zinc-500 uppercase tracking-wider">
 										{new Date(notification.createdAt).toLocaleTimeString([], {
@@ -121,6 +123,15 @@ export default function NotificationMenu() {
 								)}
 							</div>
 						);
+
+						if (href) {
+							return (
+								<a key={notification.id} href={href}>
+									{content}
+								</a>
+							);
+						}
+						return content;
 					})
 				)}
 			</Menu.Section>

@@ -316,6 +316,8 @@ export async function archiveConversation(
 
 /**
  * Mark all NEW_MESSAGE notifications for this conversation as read for the user.
+ * Uses MongoDB raw command to filter on the embedded `data.conversationId` field
+ * instead of loading all unread message notifications into memory.
  */
 export async function markConversationRead(
 	conversationId: string,
@@ -323,27 +325,21 @@ export async function markConversationRead(
 ): Promise<{ success: true }> {
 	await ensureParticipant(conversationId, userId);
 
-	const notifications = await prisma.notification.findMany({
-		where: {
-			userId,
-			type: NotificationType.NEW_MESSAGE,
-			read: false,
-		},
-		select: { id: true, data: true },
+	await prisma.$runCommandRaw({
+		update: "Notification",
+		updates: [
+			{
+				q: {
+					userId: { $oid: userId },
+					type: NotificationType.NEW_MESSAGE,
+					read: false,
+					"data.conversationId": conversationId,
+				},
+				u: { $set: { read: true } },
+				multi: true,
+			},
+		],
 	});
-	const data = notifications as {
-		id: string;
-		data: { conversationId?: string };
-	}[];
-	const ids = data
-		.filter((n) => n.data?.conversationId === conversationId)
-		.map((n) => n.id);
-	if (ids.length > 0) {
-		await prisma.notification.updateMany({
-			where: { id: { in: ids } },
-			data: { read: true },
-		});
-	}
 
 	return { success: true };
 }

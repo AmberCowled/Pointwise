@@ -268,22 +268,17 @@ model Project {
   @@index([visibility])
 }
 
-enum NotificationType {
-  FRIEND_REQUEST_ACCEPTED
-  FRIEND_REQUEST_RECEIVED
-  NEW_MESSAGE
-}
-
 model Notification {
-  id        String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String           @db.ObjectId
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      NotificationType
-  data      Json             // Flexible data for different notification types
-  read      Boolean          @default(false)
-  createdAt DateTime         @default(now())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  data      Json     // Flexible data for different notification types
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   @@index([userId])
+  @@index([userId, read])
   @@index([createdAt])
 }
 

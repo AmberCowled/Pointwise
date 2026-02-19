@@ -2,12 +2,15 @@
 
 import { getAblyClient } from "@pointwise/lib/ably/client";
 import { useEffect } from "react";
-import type { UserNotificationPreset } from "../config";
+import type {
+	UserNotificationChannel,
+	UserNotificationPreset,
+} from "../config";
 import { SUBSCRIPTION_PRESETS } from "../config";
 import { RealtimeChannels, RealtimeEvents } from "../registry";
 import type { NewNotificationPayload } from "../types";
 
-export type UserNotificationChannel = "friend-requests" | "messages";
+export type { UserNotificationChannel } from "../config";
 
 export interface UseSubscribeUserNotificationsOptions {
 	/** Preset to use for channel and event filtering. */
@@ -17,6 +20,16 @@ export interface UseSubscribeUserNotificationsOptions {
 	/** Called when a matching new-notification arrives. */
 	onEvent?: (payload: NewNotificationPayload) => void;
 }
+
+/** Map channel suffix → channel name builder. */
+const CHANNEL_NAME_BUILDERS: Record<
+	UserNotificationChannel,
+	(userId: string) => string
+> = {
+	"friend-requests": RealtimeChannels.user.friendRequests,
+	messages: RealtimeChannels.user.messages,
+	projects: RealtimeChannels.user.projects,
+};
 
 function shouldTrigger(
 	payload: NewNotificationPayload,
@@ -53,10 +66,10 @@ export function useSubscribeUserNotifications(
 			(presetConfig?.channel as UserNotificationChannel) ??
 			"friend-requests";
 
-		const channelName =
-			channel === "friend-requests"
-				? RealtimeChannels.user.friendRequests(userId)
-				: RealtimeChannels.user.messages(userId);
+		const buildChannelName =
+			CHANNEL_NAME_BUILDERS[channel] ??
+			CHANNEL_NAME_BUILDERS["friend-requests"];
+		const channelName = buildChannelName(userId);
 
 		let ablyChannel: import("ably").RealtimeChannel | null = null;
 		let isActive = true;

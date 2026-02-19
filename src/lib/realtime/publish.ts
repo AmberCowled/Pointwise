@@ -5,27 +5,43 @@
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import type { Notification } from "@pointwise/lib/validation/notification-schema";
 import {
-	NOTIFICATION_TYPE_TO_CHANNEL,
+	getChannelForNotificationType,
 	RealtimeChannels,
 	RealtimeEvents,
 } from "./registry";
 import type { CommentEventPayload, NewMessagePayload } from "./types";
 
+/** Map channel suffix → channel name builder. */
+const CHANNEL_BUILDERS: Record<string, (userId: string) => string> = {
+	"friend-requests": RealtimeChannels.user.friendRequests,
+	messages: RealtimeChannels.user.messages,
+	projects: RealtimeChannels.user.projects,
+};
+
 /**
  * Publish a notification to the recipient's Ably channel.
- * Channel is chosen by notification type (friend-requests vs messages).
+ * Channel is derived from the notification registry.
  */
 export async function publishNotification(
 	notification: Notification,
 ): Promise<void> {
-	const suffix = NOTIFICATION_TYPE_TO_CHANNEL[notification.type];
-	if (!suffix) return;
+	const suffix = getChannelForNotificationType(notification.type);
+	if (!suffix) {
+		console.warn(
+			`[realtime] No channel mapping for notification type "${notification.type}"`,
+		);
+		return;
+	}
 
-	const channelName =
-		suffix === "friend-requests"
-			? RealtimeChannels.user.friendRequests(notification.userId)
-			: RealtimeChannels.user.messages(notification.userId);
+	const buildChannel = CHANNEL_BUILDERS[suffix];
+	if (!buildChannel) {
+		console.warn(
+			`[realtime] Unknown channel suffix "${suffix}" for type "${notification.type}"`,
+		);
+		return;
+	}
 
+	const channelName = buildChannel(notification.userId);
 	await publishAblyEvent(channelName, RealtimeEvents.NEW_NOTIFICATION, {
 		...notification,
 		createdAt:

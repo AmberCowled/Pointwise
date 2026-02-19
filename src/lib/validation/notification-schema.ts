@@ -1,62 +1,61 @@
 import { z } from "zod";
+import {
+	NotificationRegistry,
+	notificationTypeValues,
+} from "../notifications/registry";
 
-const notificationTypeValues = [
-	"FRIEND_REQUEST_ACCEPTED",
-	"FRIEND_REQUEST_RECEIVED",
-	"NEW_MESSAGE",
-] as const;
+// Re-export everything consumers need from the registry
+export {
+	type NotificationData,
+	NotificationType,
+	notificationTypeValues,
+} from "../notifications/registry";
 
-export const NotificationTypeSchema = z.enum(notificationTypeValues);
+/** Individual data type exports (derived from registry). */
+export type FriendRequestAcceptedData =
+	NotificationData<"FRIEND_REQUEST_ACCEPTED">;
+export type FriendRequestReceivedData =
+	NotificationData<"FRIEND_REQUEST_RECEIVED">;
+export type NewMessageData = NotificationData<"NEW_MESSAGE">;
 
-/** Enum-like object for NotificationType (e.g. NotificationType.FRIEND_REQUEST_ACCEPTED). */
-export const NotificationType = {
-	FRIEND_REQUEST_ACCEPTED: "FRIEND_REQUEST_ACCEPTED",
-	FRIEND_REQUEST_RECEIVED: "FRIEND_REQUEST_RECEIVED",
-	NEW_MESSAGE: "NEW_MESSAGE",
-} as const satisfies Record<string, NotificationType>;
+/** Individual data schema exports (derived from registry). */
+export const FriendRequestAcceptedDataSchema =
+	NotificationRegistry.FRIEND_REQUEST_ACCEPTED.schema;
+export const FriendRequestReceivedDataSchema =
+	NotificationRegistry.FRIEND_REQUEST_RECEIVED.schema;
+export const NewMessageDataSchema = NotificationRegistry.NEW_MESSAGE.schema;
 
-export const FriendRequestAcceptedDataSchema = z.object({
-	accepterId: z.string(),
-	accepterName: z.string().nullable(),
-	accepterImage: z.string().nullable(),
-});
-
-export const FriendRequestReceivedDataSchema = z.object({
-	senderId: z.string(),
-	senderName: z.string().nullable(),
-	senderImage: z.string().nullable(),
-});
-
-export const NewMessageDataSchema = z.object({
-	conversationId: z.string(),
-	senderId: z.string(),
-	senderName: z.string().nullable(),
-	senderImage: z.string().nullable(),
-	messageSnippet: z.string(),
-	messageId: z.string(),
-});
-
+/** Union of all data schemas. */
 export const NotificationDataSchema = z.union([
 	FriendRequestAcceptedDataSchema,
 	FriendRequestReceivedDataSchema,
 	NewMessageDataSchema,
 ]);
 
+/** Zod schema for the notification type field (validated at app level, stored as String in DB). */
+export const NotificationTypeSchema = z
+	.string()
+	.refine(
+		(val): val is (typeof notificationTypeValues)[number] =>
+			notificationTypeValues.includes(val as never),
+		{ message: "Invalid notification type" },
+	);
+
+/** Full notification record shape. */
 export const NotificationSchema = z.object({
 	id: z.string(),
 	userId: z.string(),
-	type: NotificationTypeSchema,
-	data: z.any(), // We use any here because it's a JSON field, but we validate it with specific schemas when sending
+	type: z.string(),
+	data: z.any(),
 	read: z.boolean(),
 	createdAt: z.string().or(z.date()),
 });
 
 export type Notification = z.infer<typeof NotificationSchema>;
-export type NotificationType = z.infer<typeof NotificationTypeSchema>;
-export type FriendRequestAcceptedData = z.infer<
-	typeof FriendRequestAcceptedDataSchema
->;
-export type FriendRequestReceivedData = z.infer<
-	typeof FriendRequestReceivedDataSchema
->;
-export type NewMessageData = z.infer<typeof NewMessageDataSchema>;
+
+/** Paginated response shape for the notifications list endpoint. */
+export interface NotificationsResponse {
+	notifications: Notification[];
+	nextCursor: string | null;
+	hasMore: boolean;
+}
