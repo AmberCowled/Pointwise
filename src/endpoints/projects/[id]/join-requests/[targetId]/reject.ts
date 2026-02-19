@@ -1,5 +1,10 @@
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { rejectJoinRequest } from "@pointwise/lib/api/joinRequests";
 import prisma from "@pointwise/lib/prisma";
+import {
+	RealtimeChannels,
+	RealtimeEvents,
+} from "@pointwise/lib/realtime/registry";
 import { endpoint } from "ertk";
 
 export default endpoint.delete<
@@ -41,6 +46,17 @@ export default endpoint.delete<
 			}
 		} catch {
 			// Staleness cleanup failure should not break the reject action
+		}
+
+		// Notify the requester via lightweight Ably event so their cache updates
+		try {
+			await publishAblyEvent(
+				RealtimeChannels.user.projects(params.targetId),
+				RealtimeEvents.JOIN_REQUEST_REJECTED,
+				{ projectId: params.id },
+			);
+		} catch {
+			// Ably publish failure should not break the reject action
 		}
 
 		return { success: true };

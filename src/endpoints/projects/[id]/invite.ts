@@ -22,18 +22,24 @@ export default endpoint.post<
 		body: data,
 	}),
 	handler: async ({ user, body, params }) => {
-		const { project: prismaProject, invitedUsers } = await inviteUsersToProject(
-			params.id,
-			user.id,
-			body.invites,
-		);
+		const {
+			project: prismaProject,
+			invitedUsers,
+			createdInvites,
+		} = await inviteUsersToProject(params.id, user.id, body.invites);
 		const project = serializeProject(prismaProject, user.id);
+
+		// Build a lookup of userId → inviteId for notification payloads
+		const inviteIdByUser = new Map(
+			createdInvites.map((i) => [i.invitedUserId, i.id]),
+		);
 
 		// Send PROJECT_INVITE_RECEIVED notification to each invited user
 		try {
 			await Promise.allSettled(
 				invitedUsers.map((invited) =>
 					sendNotification(invited.userId, "PROJECT_INVITE_RECEIVED", {
+						inviteId: inviteIdByUser.get(invited.userId) ?? "",
 						projectId: params.id,
 						projectName: prismaProject.name,
 						inviterName: (user.name as string) ?? null,

@@ -44,6 +44,7 @@ export async function inviteUsersToProject(
 		_count: { tasks: number; projectInvites?: number };
 	};
 	invitedUsers: Array<{ userId: string; role: ProjectRole }>;
+	createdInvites: Array<{ id: string; invitedUserId: string }>;
 }> {
 	// 1. Get project
 	const project = await getProject(projectId, inviterId);
@@ -116,7 +117,16 @@ export async function inviteUsersToProject(
 		})),
 	});
 
-	// 8. Return updated project with new invite count + list of invited users
+	// 8. Query newly created invites to get their IDs
+	const createdInvites = await prisma.invite.findMany({
+		where: {
+			projectId,
+			invitedUserId: { in: validInvites.map((i) => i.userId) },
+		},
+		select: { id: true, invitedUserId: true },
+	});
+
+	// 9. Return updated project with new invite count + list of invited users
 	const updatedProject = await prisma.project.findUniqueOrThrow({
 		where: { id: projectId },
 		include: {
@@ -131,6 +141,7 @@ export async function inviteUsersToProject(
 			_count: { tasks: number; projectInvites?: number };
 		},
 		invitedUsers: validInvites,
+		createdInvites,
 	};
 }
 
