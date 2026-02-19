@@ -144,15 +144,21 @@ export async function sendMessage(
 		messageId: message.id,
 	};
 
-	for (const { userId: recipientId } of otherParticipants) {
-		try {
-			await sendNotification(
+	const results = await Promise.allSettled(
+		otherParticipants.map(({ userId: recipientId }) =>
+			sendNotification(
 				recipientId,
 				NotificationType.NEW_MESSAGE,
 				newMessageData,
+			),
+		),
+	);
+	for (const result of results) {
+		if (result.status === "rejected") {
+			console.warn(
+				"Failed to create/publish message notification",
+				result.reason,
 			);
-		} catch (err) {
-			console.warn("Failed to create/publish message notification", err);
 		}
 	}
 

@@ -1,4 +1,5 @@
 import { requestToJoin, serializeProject } from "@pointwise/lib/api/projects";
+import { sendNotifications } from "@pointwise/lib/notifications/service";
 import type { RequestToJoinProjectResponse } from "@pointwise/lib/validation/projects-schema";
 import { endpoint } from "ertk";
 
@@ -16,6 +17,24 @@ export default endpoint.post<
 	handler: async ({ user, params }) => {
 		const prismaProject = await requestToJoin(params.id, user.id);
 		const project = serializeProject(prismaProject, user.id);
+
+		// Send PROJECT_JOIN_REQUEST_RECEIVED notification to all admins
+		try {
+			await sendNotifications(
+				prismaProject.adminUserIds,
+				"PROJECT_JOIN_REQUEST_RECEIVED",
+				{
+					projectId: params.id,
+					projectName: prismaProject.name,
+					requesterId: user.id,
+					requesterName: (user.name as string) ?? null,
+					requesterImage: (user.image as string) ?? null,
+				},
+			);
+		} catch {
+			// Notification failure should not break the join request action
+		}
+
 		return { project };
 	},
 });

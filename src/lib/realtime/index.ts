@@ -12,7 +12,7 @@ export {
 	useSubscribeUserNotifications,
 } from "./hooks";
 export {
-	NOTIFICATION_TYPE_TO_CHANNEL,
+	getChannelForNotificationType,
 	RealtimeChannels,
 	RealtimeEvents,
 } from "./registry";

@@ -2,7 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
-import { useGetNotificationsQuery } from "@pointwise/generated/api";
+import { api, useGetNotificationsQuery } from "@pointwise/generated/api";
 import { invalidateTags } from "@pointwise/generated/invalidation";
 import {
 	type NewNotificationPayload,
@@ -23,20 +23,35 @@ export default function MessagesMenu() {
 	const { data: session } = useSession();
 	const userId = session?.user?.id;
 
-	const { data: notifications = [], isLoading: notificationsLoading } =
-		useGetNotificationsQuery(undefined, { skip: !userId });
+	const { data, isLoading: notificationsLoading } = useGetNotificationsQuery(
+		{},
+		{ skip: !userId },
+	);
+	const notifications = data?.notifications ?? [];
 
 	const handleNotification = useCallback(
 		(payload: NewNotificationPayload) => {
-			dispatch(invalidateTags(["Notifications"]));
+			// Optimistic: insert into notification cache
+			dispatch(
+				api.util.updateQueryData("getNotifications", {}, (draft) => {
+					if (!draft.notifications.some((n) => n.id === payload.id)) {
+						draft.notifications.unshift(payload);
+					}
+				}),
+			);
+			// Still invalidate conversations and messages (those need real refetch)
 			dispatch(invalidateTags(["Conversations"]));
-			const data = payload.data as { conversationId?: string } | undefined;
+			const payloadData = payload.data as
+				| { conversationId?: string }
+				| undefined;
 			if (
 				payload.type === "NEW_MESSAGE" &&
-				typeof data?.conversationId === "string"
+				typeof payloadData?.conversationId === "string"
 			) {
 				dispatch(
-					invalidateTags([{ type: "Messages", id: data.conversationId }]),
+					invalidateTags([
+						{ type: "Messages", id: payloadData.conversationId },
+					]),
 				);
 			}
 		},
@@ -58,8 +73,8 @@ export default function MessagesMenu() {
 			(typeof allMessageNotifications)[0]
 		>();
 		for (const n of allMessageNotifications) {
-			const data = n.data as { conversationId?: string };
-			const cid = data?.conversationId;
+			const nData = n.data as { conversationId?: string };
+			const cid = nData?.conversationId;
 			if (!cid) continue;
 			const existing = byConversation.get(cid);
 			const created = new Date(n.createdAt).getTime();
@@ -106,7 +121,7 @@ export default function MessagesMenu() {
 						)
 						.slice(0, 5)
 						.map((n) => {
-							const data = n.data as {
+							const nData = n.data as {
 								conversationId: string;
 								senderName?: string | null;
 								senderImage?: string | null;
@@ -115,20 +130,20 @@ export default function MessagesMenu() {
 							return (
 								<Link
 									key={n.id}
-									href={`/messages/${data.conversationId}`}
+									href={`/messages/${nData.conversationId}`}
 									className="flex w-full items-center gap-3 px-3 py-2 min-w-[280px] text-left hover:bg-white/5 rounded-lg transition-colors"
 								>
 									<ProfilePicture
-										profilePicture={data.senderImage ?? ""}
-										displayName={data.senderName ?? "User"}
+										profilePicture={nData.senderImage ?? ""}
+										displayName={nData.senderName ?? "User"}
 										size="xs"
 									/>
 									<div className="flex-1 min-w-0">
 										<span className="block font-medium truncate text-zinc-100">
-											{data.senderName ?? "User"}
+											{nData.senderName ?? "User"}
 										</span>
 										<span className="block text-xs text-zinc-500 truncate">
-											{data.messageSnippet ?? ""}
+											{nData.messageSnippet ?? ""}
 										</span>
 									</div>
 								</Link>

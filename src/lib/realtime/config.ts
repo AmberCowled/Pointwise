@@ -1,5 +1,11 @@
 import type { NotificationType } from "@pointwise/lib/validation/notification-schema";
 
+/** All user notification channel suffixes. */
+export type UserNotificationChannel =
+	| "friend-requests"
+	| "messages"
+	| "projects";
+
 /**
  * Subscription presets — single source of truth for "what event triggers what".
  * Developers choose a preset to subscribe to the correct channel and filter by NotificationType.
@@ -11,19 +17,21 @@ import type { NotificationType } from "@pointwise/lib/validation/notification-sc
 export type UserNotificationPreset =
 	| "friend-notifications"
 	| "general-notifications"
-	| "message-notifications";
+	| "message-notifications"
+	| "project-notifications";
 
 /** Enum-like object for preset identifiers (e.g. RealtimePreset.GENERAL_NOTIFICATIONS). */
 export const RealtimePreset = {
 	FRIEND_NOTIFICATIONS: "friend-notifications",
 	GENERAL_NOTIFICATIONS: "general-notifications",
 	MESSAGE_NOTIFICATIONS: "message-notifications",
+	PROJECT_NOTIFICATIONS: "project-notifications",
 } as const satisfies Record<string, UserNotificationPreset>;
 
 export const SUBSCRIPTION_PRESETS: Record<
 	UserNotificationPreset,
 	{
-		channel: "friend-requests" | "messages";
+		channel: UserNotificationChannel;
 		event: "new-notification";
 		/** Filter: only trigger onEvent for these NotificationTypes. Empty = all. */
 		notificationTypes?: NotificationType[];
@@ -48,5 +56,9 @@ export const SUBSCRIPTION_PRESETS: Record<
 		channel: "messages",
 		event: "new-notification",
 		notificationTypes: ["NEW_MESSAGE" as const],
+	},
+	"project-notifications": {
+		channel: "projects",
+		event: "new-notification",
 	},
 };

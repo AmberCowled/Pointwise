@@ -1,8 +1,11 @@
 import prisma from "@pointwise/lib/prisma";
 import { publishNotification } from "@pointwise/lib/realtime/publish";
-import type { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import type { Prisma } from "@prisma/client";
-import { type NotificationData, NotificationDataSchemas } from "./types";
+import {
+	type NotificationData,
+	NotificationDataSchemas,
+	type NotificationType,
+} from "./registry";
 
 const MESSAGE_SNIPPET_MAX_LENGTH = 80;
 

@@ -1,9 +1,12 @@
+import { NotificationChannelMap } from "@pointwise/lib/notifications/registry";
+
 /** Channel name builders — single source of truth for all Ably channels. */
 export const RealtimeChannels = {
 	/** User-scoped channels for notifications. */
 	user: {
 		friendRequests: (userId: string) => `user:${userId}:friend-requests`,
 		messages: (userId: string) => `user:${userId}:messages`,
+		projects: (userId: string) => `user:${userId}:projects`,
 	},
 	/** Entity-scoped channel for live conversation messages. */
 	conversation: (conversationId: string) => `conversation:${conversationId}`,
@@ -27,9 +30,12 @@ export const RealtimeEvents = {
 	COMMENT_DELETED: "comment:deleted",
 } as const;
 
-/** Maps NotificationType to user channel suffix (for publish logic). */
-export const NOTIFICATION_TYPE_TO_CHANNEL: Record<string, string> = {
-	FRIEND_REQUEST_ACCEPTED: "friend-requests",
-	FRIEND_REQUEST_RECEIVED: "friend-requests",
-	NEW_MESSAGE: "messages",
-};
+/**
+ * Get the Ably channel suffix for a notification type.
+ * Derived from the notification registry.
+ */
+export function getChannelForNotificationType(
+	type: string,
+): string | undefined {
+	return (NotificationChannelMap as Record<string, string>)[type];
+}

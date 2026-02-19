@@ -1,5 +1,6 @@
 import { inviteUsersToProject } from "@pointwise/lib/api/invites";
 import { serializeProject } from "@pointwise/lib/api/projects";
+import { sendNotification } from "@pointwise/lib/notifications/service";
 import type {
 	InviteProjectRequest,
 	InviteProjectResponse,
@@ -21,12 +22,30 @@ export default endpoint.post<
 		body: data,
 	}),
 	handler: async ({ user, body, params }) => {
-		const prismaProject = await inviteUsersToProject(
+		const { project: prismaProject, invitedUsers } = await inviteUsersToProject(
 			params.id,
 			user.id,
 			body.invites,
 		);
 		const project = serializeProject(prismaProject, user.id);
+
+		// Send PROJECT_INVITE_RECEIVED notification to each invited user
+		try {
+			await Promise.allSettled(
+				invitedUsers.map((invited) =>
+					sendNotification(invited.userId, "PROJECT_INVITE_RECEIVED", {
+						projectId: params.id,
+						projectName: prismaProject.name,
+						inviterName: (user.name as string) ?? null,
+						inviterImage: (user.image as string) ?? null,
+						role: invited.role,
+					}),
+				),
+			);
+		} catch {
+			// Notification failure should not break the invite action
+		}
+
 		return { project };
 	},
 });
