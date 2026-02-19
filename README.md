@@ -1,57 +1,81 @@
 # Pointwise
 
-> A gamified productivity dashboard built with Next.js, React, and TypeScript. Transform your task management into an engaging experience with XP, levels, and team collaboration.
+> A gamified productivity platform built with Next.js, React, and TypeScript. Manage projects, collaborate with teams, chat in real time, and earn XP for completing tasks.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://pointwise-sepia.vercel.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.x-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 
-## 🚀 Live Demo
+## Live Demo
 
 **Try it now:** [https://pointwise-sepia.vercel.app/](https://pointwise-sepia.vercel.app/)
 
-## ✨ Features
+## Features
 
 ### Project Management
 
-- **Create & Organize Projects** - Create projects with descriptions, visibility settings (Public/Private)
+- **Create & Organize Projects** - Projects with descriptions, goals, and visibility settings (Public/Private)
 - **Team Collaboration** - Role-based access control (Admin, User, Viewer) with granular permissions
-- **Project Invites** - Admins can invite users to projects with specific roles
-- **Join Requests** - Public projects allow users to request access
+- **Project Invites** - Admins can invite users with specific roles; invitees accept/reject inline from notifications
+- **Join Requests** - Public projects allow users to request access; admins approve/reject with role selection from notifications
 - **Leave Projects** - Users can leave projects (with validation to prevent orphaned projects)
-- **Project Analytics** - Track task completion and team productivity per project
 
 ### Task Management
 
-- **Create & Organize Tasks** - Add tasks with descriptions, categories, and due dates
+- **Create & Organize Tasks** - Tasks with descriptions, categories, and due dates
 - **Task Status Tracking** - Track tasks as pending or completed
-- **Date & Time Management** - Set start dates, due dates, and optional times
-- **Task Filtering** - Filter tasks by project, status, and date ranges
-- **Task XP Rewards** - Assign experience points to tasks upon completion
-- **AI XP Suggestions** - Choose "AI Suggested" or "Manual" when creating/editing tasks; AI evaluates task impact against the project goal and suggests XP
+- **Date & Time Management** - Start dates, due dates, and optional times
+- **Task Filtering** - Filter by project, status, and date ranges
+- **Task Likes** - Like tasks to show appreciation
+- **AI XP Suggestions** - Choose "AI Suggested" or "Manual" when creating/editing tasks; Google Gemini evaluates task impact against the project goal and suggests XP
+
+### Task Comments
+
+- **Threaded Discussions** - Comment on tasks with nested reply threads
+- **Edit & Delete** - Modify or remove your own comments and replies
+- **Comment Likes** - Like comments to surface useful discussion
+- **Real-Time Updates** - Comments, edits, and deletions sync instantly via Ably
+
+### Friends & Social
+
+- **Friend Requests** - Send, accept, decline, and cancel friend requests
+- **Friend List** - View and manage your friends
+- **Friendship Status** - See relationship status on user cards throughout the app
+- **Real-Time Sync** - Friend request events update across browsers instantly
+
+### Messaging
+
+- **Direct Messages** - 1-on-1 conversations with friends
+- **Group Conversations** - Add multiple users to conversations
+- **Real-Time Chat** - Messages delivered instantly via Ably WebSockets
+- **Read Tracking** - Unread message counts and per-conversation read state
+- **Conversation Management** - Archive, leave, and update conversations
+
+### Notification System
+
+- **Registry-Driven Architecture** - Adding a new notification type requires only 3 steps
+- **7 Notification Types** - Friend requests, messages, project invites, join requests, and more
+- **Inline Action Buttons** - Accept/reject invites and approve/reject join requests directly from notifications
+- **Real-Time Delivery** - Notifications arrive instantly via Ably and are optimistically inserted into the UI
+- **Scoped Read Tracking** - Opening the notification bell doesn't mark message notifications as read
+- **Cursor-Based Pagination** - Efficient loading for users with many notifications
 
 ### Gamification
 
 - **XP System** - Earn experience points for completing tasks
-- **Level Progression** - Level up as you complete more tasks
-- **Progress Tracking** - Visual progress bars and XP tracking
-
-### AI Features
-
-- **AI XP Suggestions** - Tasks can use "AI Suggested" mode; Google Gemini evaluates project goal, task name, and description to assign XP before create/update
+- **Level Progression** - Level up as you accumulate XP
+- **Progress Tracking** - Visual XP bar in the navbar
 
 ### User Experience
 
-- **Modern UI** - Beautiful dark theme with gradient accents and role-based color coding
-- **Responsive Design** - Works seamlessly on desktop and mobile
-- **Toast Notifications** - Instant feedback with success, error, and info notifications
+- **Dark Theme** - Modern dark UI with gradient accents and role-based color coding
+- **Responsive Design** - Works on desktop and mobile
+- **Search** - Search for public projects and users
 - **Authentication** - Sign in with email/password, Google, or GitHub OAuth
-- **Custom UI Components** - Comprehensive component library with reusable components
-- **Modal System** - Advanced modal system for project and task management
-- **Search Functionality** - Search for public projects
+- **Custom UI Components** - Comprehensive component library (buttons, cards, modals, menus, tabs, inputs, and more)
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -60,93 +84,81 @@
 - **TypeScript 5** - Type-safe development
 - **Tailwind CSS v4** - Utility-first styling
 - **Headless UI** - Accessible component primitives
-- **Redux Toolkit Query** - Data fetching and caching
-- **React Redux** - State management
+- **Redux Toolkit Query** - Data fetching, caching, and tag-based cache invalidation
+- **Ably** - Real-time WebSocket subscriptions for notifications, messages, comments, and friend events
 
 ### Backend
 
-- **Next.js API Routes** - Serverless API endpoints
+- **Next.js API Routes** - 61 serverless API endpoints
+- **[ERTK](https://npmjs.com/package/ertk)** - Code generation for RTK Query endpoints; defines endpoint, route handler, query, and cache tags in a single file
 - **Prisma** - Type-safe database ORM
 - **MongoDB** - NoSQL database
 - **NextAuth.js** - Authentication with credentials and OAuth
-- **bcrypt** - Secure password hashing
-- **Zod** - Schema validation
-- **Google Gemini** - Free LLM API for AI XP suggestions
+- **Zod** - Schema validation for all request/notification payloads
+- **Ably (server)** - REST client for publishing real-time events
+- **Google Gemini** - LLM API for AI XP suggestions
 
 ### Development Tools
 
 - **Biome** - Fast linter and formatter
-- **TypeScript** - Static type checking
+- **ERTK Codegen** - Auto-generates RTK Query API slice, Redux store, and cache invalidation helpers from endpoint definitions
+- **simple-git-hooks** - Pre-commit hooks for codegen and lint
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 pointwise/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── api/                # API routes
-│   │   │   ├── auth/          # Authentication endpoints (NextAuth, signup)
-│   │   │   ├── llm/           # AI XP suggestion endpoint
-│   │   │   ├── projects/      # Project management endpoints
-│   │   │   │   ├── [id]/      # Single project operations (GET, PATCH, DELETE)
-│   │   │   │   │   └── join-request/ # Join request endpoints
-│   │   │   │   └── public/    # Public project search
-│   │   │   ├── tasks/         # Task management endpoints
-│   │   │   │   └── [taskId]/  # Single task operations (PATCH, DELETE)
-│   │   │   └── user/          # User endpoints (XP management)
-│   │   ├── components/         # React components
-│   │   │   ├── auth/          # Authentication components
-│   │   │   ├── general/       # General components (BrandHeader, etc.)
-│   │   │   ├── providers/     # Context providers (Session, Notifications)
-│   │   │   └── ui/            # Reusable UI components
-│   │   │       ├── menu/      # Menu system
-│   │   │       ├── modal/     # Modal system
-│   │   │       └── ...        # Buttons, Cards, Inputs, etc.
-│   │   ├── dashboard/         # Dashboard pages and components
-│   │   │   ├── [id]/          # Individual project page
-│   │   │   ├── modals/        # Project and task modals
-│   │   │   ├── navbar/        # Navigation bar components
-│   │   │   ├── projectCard/   # Project card components (refactored)
-│   │   │   ├── projectsOverview/ # Projects overview page
-│   │   │   ├── search/        # Project search page
-│   │   │   ├── taskCard/      # Task card components
-│   │   │   └── tasksOverview/ # Tasks overview and filtering
-│   │   ├── layout.tsx         # Root layout
-│   │   ├── page.tsx           # Home/landing page
-│   │   └── globals.css        # Global styles
-│   ├── lib/                    # Utility libraries
-│   │   ├── api/               # API client and helpers
-│   │   ├── llm/               # Gemini client
-│   │   │   ├── route-handler.ts # Route handler utilities
-│   │   │   ├── projects.ts    # Project API functions
-│   │   │   ├── tasks.ts       # Task API functions
-│   │   │   └── ...           # Other API helpers
-│   │   ├── redux/             # Redux store and services
-│   │   │   ├── services/      # RTK Query API services
-│   │   │   └── store.ts       # Redux store configuration
-│   │   ├── validation/        # Zod validation schemas
-│   │   ├── auth.ts            # Authentication config
-│   │   ├── prisma.ts          # Prisma client instance
-│   │   └── categories.ts      # Task categories
-│   └── hooks/                  # Custom React hooks
-│       ├── useUserId.ts       # User ID hook with auth redirect
-│       ├── useSignin.ts       # Sign in hook
-│       └── useSignup.ts       # Sign up hook
+│   ├── app/                        # Next.js App Router
+│   │   ├── api/                    # Auto-generated route handlers (via ERTK)
+│   │   ├── components/             # Shared React components
+│   │   │   ├── auth/               # Auth forms (signin, signup)
+│   │   │   ├── providers/          # Context providers (Session, Redux, Ably)
+│   │   │   └── ui/                 # Reusable UI library (Button, Card, Modal, Menu, etc.)
+│   │   └── dashboard/              # Dashboard pages and features
+│   │       ├── [id]/               # Individual project page
+│   │       ├── navbar/             # Navbar, NotificationMenu, MessagesMenu, FriendRequestsMenu
+│   │       ├── modals/             # All modal dialogs (project, task, invite, message, join request)
+│   │       ├── projectCard/        # Project card components
+│   │       ├── taskCard/           # Task card with comments, likes, status
+│   │       │   └── comments/       # Comment list, input, replies, likes
+│   │       ├── search/             # Project and user search
+│   │       └── userCard/           # User profile cards with friend actions
+│   ├── endpoints/                  # ERTK endpoint definitions (single source of truth)
+│   │   ├── conversations/          # Messaging endpoints
+│   │   ├── friends/                # Friend system endpoints
+│   │   ├── invites/                # Invite accept/reject endpoints
+│   │   ├── notifications/          # Notification list, dismiss, delete endpoints
+│   │   ├── projects/               # Project CRUD, invite, join request endpoints
+│   │   ├── tasks/                  # Task CRUD, likes, comments endpoints
+│   │   └── user/                   # User profile and XP endpoints
+│   ├── generated/                  # Auto-generated by ERTK codegen
+│   │   ├── api.ts                  # RTK Query API slice (61 endpoints)
+│   │   ├── store.ts                # Redux store configuration
+│   │   └── invalidation.ts         # Cache invalidation helpers
+│   └── lib/                        # Shared libraries
+│       ├── ably/                   # Ably client (browser) and server (REST) setup
+│       ├── api/                    # Service functions (projects, tasks, friends, messages, etc.)
+│       ├── notifications/          # Notification registry, renderers, and send service
+│       ├── realtime/               # Real-time layer: channels, events, subscription hooks
+│       │   └── hooks/              # useSubscribeConversation, FriendUpdates, ProjectUpdates, etc.
+│       ├── redux/                  # Redux hooks
+│       └── validation/             # Zod schemas for all data types
 ├── prisma/
-│   └── schema.prisma          # Database schema (MongoDB)
-├── scripts/
-│   └── create-text-index.mjs  # MongoDB text index creation
-├── docs/                      # Documentation
-│   └── private/               # Private documentation
-└── public/                    # Static assets
+│   └── schema.prisma               # Database schema (MongoDB)
+├── docs/                           # Documentation
+│   └── notification-system.md      # Notification system developer guide
+└── scripts/
+    └── create-text-index.mjs       # MongoDB text index creation
 ```
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and pnpm (recommended) or npm/yarn
+- Node.js 18+ and pnpm
 - MongoDB database (local or cloud)
+- Ably API key (free tier available at [ably.com](https://ably.com))
 - Google/GitHub OAuth credentials (optional, for social auth)
 
 ### Installation
@@ -173,8 +185,10 @@ pointwise/
    NEXTAUTH_URL="http://localhost:3000"
    NEXTAUTH_SECRET="your-secret-key-here"
 
-   # Required for AI features (free key from https://aistudio.google.com/apikey)
-   # Used for AI XP suggestions and other LLM-powered features
+   # Real-time features (free key from https://ably.com)
+   ABLY_API_KEY="your-ably-api-key"
+
+   # AI features (free key from https://aistudio.google.com/apikey)
    GEMINI_API_KEY="your-gemini-api-key"
 
    # Optional: OAuth providers
@@ -197,74 +211,50 @@ pointwise/
    pnpm dev
    ```
 
+   This starts both the Next.js dev server and ERTK codegen in watch mode.
+
 6. **Open your browser**
 
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 📝 Available Scripts
+## Available Scripts
 
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
+- `pnpm dev` - Start dev server + ERTK codegen watcher
+- `pnpm generate` - Run ERTK codegen once
+- `pnpm build` - Generate + build for production
 - `pnpm start` - Start production server
-- `pnpm lint` - Run Biome linter
-- `pnpm format` - Format code with Biome
 - `pnpm check` - Run Biome check (lint + format)
-- `pnpm check:fix` - Run Biome check and fix issues
+- `pnpm check:fix` - Run Biome check and auto-fix
+- `pnpm typecheck` - Run TypeScript type checking
+- `pnpm audit` - Run security audit (high severity)
 - `pnpm db:push` - Push Prisma schema changes to database
 - `pnpm db:create-text-index` - Create MongoDB text indexes for search
 
-## 🎨 UI Component Library
+## Architecture Highlights
 
-Pointwise includes a comprehensive UI component library:
+- **ERTK Codegen** - Each endpoint is defined once in `src/endpoints/` with its handler, query, request schema, and cache tags. ERTK generates the RTK Query API slice, route handlers, Redux store, and invalidation helpers automatically.
+- **Registry-Driven Notifications** - The notification registry is the single source of truth for types, Zod schemas, and Ably channel routing. Adding a new notification type is 3 steps: add to registry, call `sendNotification()`, add a renderer.
+- **Declarative Action Buttons** - Notification renderers can define `getActions()` to render inline Accept/Reject buttons. The UI handles mutation dispatch, optimistic removal, and cache invalidation automatically.
+- **Real-Time Layer** - Ably channels are organized per user (`user:{id}:friend-requests`, `user:{id}:messages`, `user:{id}:projects`) and per entity (`conversation:{id}`, `task:{id}:comments`). Subscription hooks handle connect/disconnect lifecycle.
+- **Optimistic Updates** - Real-time events are inserted directly into RTK Query cache before server confirmation. Lightweight Ably events (not tied to notifications) handle cross-user cache invalidation for actions like rejections.
+- **Type Safety End-to-End** - Prisma-generated types, Zod validation on all inputs and notification payloads, TypeScript strict mode, and generated RTK Query types.
+- **Role-Based Access Control** - Admin, User, and Viewer roles with permission checks in service functions and UI components.
 
-### Core Components
+## Deployment
 
-- **Buttons** - Multiple variants (primary, secondary, ghost, danger), sizes, and states (loading, disabled)
-- **Cards** - Flexible container components with title, label, and action support
-- **Container & Grid** - Layout components with responsive spacing
-- **Input Components** - Input, InputArea, InputSelect with validation support
-- **Modals** - Modal system for dialogs and forms
-- **Menus** - Dropdown menu system with sections, options, and icons
-- **Tabs** - Accessible tab navigation
-- **Notifications** - Toast notification system with variants (success, error, info)
-- **Spinners & Skeletons** - Loading states for better UX
-- **Progress Bars** - Visual progress indicators
-- **Tags** - Badge/tag components with variants
-- **Date & Time Pickers** - Date and time selection components
-- **And more...**
-
-## 🏗️ Architecture Highlights
-
-- **Server Components** - Leveraging Next.js App Router for optimal performance
-- **Type Safety** - End-to-end TypeScript with Prisma-generated types and Zod validation
-- **Component Composition** - Reusable, composable UI components with clear separation of concerns
-- **Redux Toolkit Query** - Efficient data fetching, caching, and automatic cache invalidation
-- **Custom Hooks** - Encapsulated business logic (useUserId, useSignin, useSignup)
-- **API Routes** - RESTful endpoints with type-safe route handlers and error handling
-- **Authentication** - Secure auth with NextAuth.js supporting credentials, Google, and GitHub OAuth
-- **Project-Based Architecture** - Tasks organized within projects for better collaboration
-- **Role-Based Access Control** - Admin, User, and Viewer roles with granular permissions
-- **Invite System** - Project invites with role assignment and join request workflow
-
-## 🚢 Deployment
-
-The project is configured for easy deployment on Vercel:
+The project is configured for deployment on Vercel:
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `GEMINI_API_KEY`, and OAuth credentials (optional).
-4. Deploy!
+3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `ABLY_API_KEY`, `GEMINI_API_KEY`, and OAuth credentials (optional)
+4. Deploy
 
 The live demo is hosted at: [https://pointwise-sepia.vercel.app/](https://pointwise-sepia.vercel.app/)
 
-## 📄 License
+## License
 
-© 2025 Amber Cowled. All rights reserved.
-
-## 🙏 Acknowledgments
-
-Built with modern web technologies and best practices. Special thanks to the open-source community for the amazing tools and libraries that made this project possible.
+© 2026 Amber Cowled. All rights reserved.
 
 ---
 
-**Made with ❤️ using Next.js, React, and TypeScript**
+**Made with Next.js, React, and TypeScript**
