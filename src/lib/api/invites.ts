@@ -39,9 +39,12 @@ export async function inviteUsersToProject(
 	projectId: string,
 	inviterId: string,
 	invites: Array<{ userId: string; role: ProjectRole }>,
-): Promise<
-	PrismaProject & { _count: { tasks: number; projectInvites?: number } }
-> {
+): Promise<{
+	project: PrismaProject & {
+		_count: { tasks: number; projectInvites?: number };
+	};
+	invitedUsers: Array<{ userId: string; role: ProjectRole }>;
+}> {
 	// 1. Get project
 	const project = await getProject(projectId, inviterId);
 
@@ -113,7 +116,7 @@ export async function inviteUsersToProject(
 		})),
 	});
 
-	// 8. Return updated project with new invite count
+	// 8. Return updated project with new invite count + list of invited users
 	const updatedProject = await prisma.project.findUniqueOrThrow({
 		where: { id: projectId },
 		include: {
@@ -123,8 +126,11 @@ export async function inviteUsersToProject(
 		},
 	});
 
-	return updatedProject as PrismaProject & {
-		_count: { tasks: number; projectInvites?: number };
+	return {
+		project: updatedProject as PrismaProject & {
+			_count: { tasks: number; projectInvites?: number };
+		},
+		invitedUsers: validInvites,
 	};
 }
 
@@ -169,9 +175,12 @@ export async function getReceivedInvites(userId: string): Promise<
 export async function acceptInvite(
 	inviteId: string,
 	userId: string,
-): Promise<
-	PrismaProject & { _count: { tasks: number; projectInvites?: number } }
-> {
+): Promise<{
+	project: PrismaProject & {
+		_count: { tasks: number; projectInvites?: number };
+	};
+	invite: { inviterId: string; inviteRole: string; projectName: string };
+}> {
 	// 1. Get the invite and verify it belongs to the user
 	const invite = await prisma.invite.findUniqueOrThrow({
 		where: { id: inviteId },
@@ -233,8 +242,15 @@ export async function acceptInvite(
 		return updated;
 	});
 
-	return updatedProject as PrismaProject & {
-		_count: { tasks: number; projectInvites?: number };
+	return {
+		project: updatedProject as PrismaProject & {
+			_count: { tasks: number; projectInvites?: number };
+		},
+		invite: {
+			inviterId: invite.inviterId,
+			inviteRole: invite.inviteRole,
+			projectName: invite.project.name,
+		},
 	};
 }
 

@@ -98,7 +98,7 @@ Notifications are published to user-scoped Ably channels based on the `channel` 
 |---------------|-------------|-------------------|
 | `friend-requests` | `user:{userId}:friend-requests` | `FRIEND_REQUEST_ACCEPTED`, `FRIEND_REQUEST_RECEIVED` |
 | `messages` | `user:{userId}:messages` | `NEW_MESSAGE` |
-| `projects` | `user:{userId}:projects` | (future project notification types) |
+| `projects` | `user:{userId}:projects` | `PROJECT_INVITE_RECEIVED`, `PROJECT_INVITE_ACCEPTED`, `PROJECT_JOIN_REQUEST_RECEIVED`, `PROJECT_JOIN_REQUEST_APPROVED` |
 
 The `publishNotification()` function in `src/lib/realtime/publish.ts` resolves channels automatically from the registry.
 

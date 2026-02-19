@@ -36,6 +36,44 @@ export const NotificationRegistry = {
 			messageId: z.string(),
 		}),
 	},
+	PROJECT_INVITE_RECEIVED: {
+		channel: "projects",
+		schema: z.object({
+			projectId: z.string(),
+			projectName: z.string(),
+			inviterName: z.string().nullable(),
+			inviterImage: z.string().nullable(),
+			role: z.string(),
+		}),
+	},
+	PROJECT_INVITE_ACCEPTED: {
+		channel: "projects",
+		schema: z.object({
+			projectId: z.string(),
+			projectName: z.string(),
+			accepterName: z.string().nullable(),
+			accepterImage: z.string().nullable(),
+			role: z.string(),
+		}),
+	},
+	PROJECT_JOIN_REQUEST_RECEIVED: {
+		channel: "projects",
+		schema: z.object({
+			projectId: z.string(),
+			projectName: z.string(),
+			requesterId: z.string(),
+			requesterName: z.string().nullable(),
+			requesterImage: z.string().nullable(),
+		}),
+	},
+	PROJECT_JOIN_REQUEST_APPROVED: {
+		channel: "projects",
+		schema: z.object({
+			projectId: z.string(),
+			projectName: z.string(),
+			role: z.string(),
+		}),
+	},
 } as const;
 
 /** All valid notification type strings, derived from the registry. */

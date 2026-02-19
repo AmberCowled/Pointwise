@@ -57,6 +57,11 @@ export default function NotificationMenu() {
 		onEvent: handleNotification,
 	});
 
+	useSubscribeUserNotifications(userId, {
+		preset: RealtimePreset.PROJECT_NOTIFICATIONS,
+		onEvent: handleNotification,
+	});
+
 	// Exclude NEW_MESSAGE; those are shown only in MessagesMenu
 	const notificationMenuItems = notifications.filter(
 		(n) => n.type !== NotificationType.NEW_MESSAGE,

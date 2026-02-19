@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+	type NotificationData,
 	NotificationRegistry,
 	notificationTypeValues,
 } from "../notifications/registry";
@@ -24,12 +25,24 @@ export const FriendRequestAcceptedDataSchema =
 export const FriendRequestReceivedDataSchema =
 	NotificationRegistry.FRIEND_REQUEST_RECEIVED.schema;
 export const NewMessageDataSchema = NotificationRegistry.NEW_MESSAGE.schema;
+export const ProjectInviteReceivedDataSchema =
+	NotificationRegistry.PROJECT_INVITE_RECEIVED.schema;
+export const ProjectInviteAcceptedDataSchema =
+	NotificationRegistry.PROJECT_INVITE_ACCEPTED.schema;
+export const ProjectJoinRequestReceivedDataSchema =
+	NotificationRegistry.PROJECT_JOIN_REQUEST_RECEIVED.schema;
+export const ProjectJoinRequestApprovedDataSchema =
+	NotificationRegistry.PROJECT_JOIN_REQUEST_APPROVED.schema;
 
 /** Union of all data schemas. */
 export const NotificationDataSchema = z.union([
 	FriendRequestAcceptedDataSchema,
 	FriendRequestReceivedDataSchema,
 	NewMessageDataSchema,
+	ProjectInviteReceivedDataSchema,
+	ProjectInviteAcceptedDataSchema,
+	ProjectJoinRequestReceivedDataSchema,
+	ProjectJoinRequestApprovedDataSchema,
 ]);
 
 /** Zod schema for the notification type field (validated at app level, stored as String in DB). */
