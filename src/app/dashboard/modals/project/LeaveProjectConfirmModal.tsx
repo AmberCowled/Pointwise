@@ -4,6 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useLeaveProjectMutation } from "@pointwise/generated/api";
 import { getErrorMessage } from "@pointwise/lib/api/errors";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
@@ -50,7 +51,7 @@ export default function LeaveProjectConfirmModal({
 						<p className="text-rose-400 text-sm font-medium mb-2">
 							You will lose access to this project
 						</p>
-						<p className="text-zinc-400 text-sm">
+						<p className={`${StyleTheme.Text.Secondary} text-sm`}>
 							Leaving is reversible only by requesting to join again.
 							<br />
 							Are you sure you want to leave?

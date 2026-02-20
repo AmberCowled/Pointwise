@@ -3,6 +3,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useCallback, useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
 
@@ -65,7 +66,9 @@ export default function ProfilePictureCropperModal({
 				</div>
 
 				{/* Zoom Slider Overlay */}
-				<div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 px-4 py-3 bg-zinc-900/80 backdrop-blur-md rounded-full border border-white/10 z-10">
+				<div
+					className={`absolute bottom-8 left-1/2 -translate-x-1/2 w-64 px-4 py-3 bg-zinc-900/80 backdrop-blur-md rounded-full border ${StyleTheme.Divider.Subtle} z-10`}
+				>
 					<input
 						type="range"
 						value={zoom}
@@ -82,7 +85,7 @@ export default function ProfilePictureCropperModal({
 				<Container width="full" gap="none">
 					<Button
 						variant="secondary"
-						className="flex-1 min-h-[60px] rounded-none border-none border-t border-r border-white/10 m-0"
+						className="flex-1 min-h-[60px] rounded-none border-none border-t border-r m-0"
 						onClick={() => {
 							onCancel();
 							Modal.Manager.close(modalId);
@@ -92,7 +95,7 @@ export default function ProfilePictureCropperModal({
 					</Button>
 					<Button
 						variant="primary"
-						className="flex-1 min-h-[60px] rounded-none border-none border-t border-white/10 m-0"
+						className={`flex-1 min-h-[60px] rounded-none border-none border-t ${StyleTheme.Divider.Subtle} m-0`}
 						onClick={handleApply}
 					>
 						Apply Crop

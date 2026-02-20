@@ -37,7 +37,7 @@ export interface ButtonProps
 const baseStyle =
 	"relative inline-flex items-center justify-center overflow-hidden rounded-lg py-2.5 text-sm font-medium text-zinc-100 transition focus:outline-none";
 
-const notificationStyle = `relative rounded-full p-2 ${StyleTheme.Text.Secondary} transition-colors ${StyleTheme.Hover.Subtle} hover:text-zinc-200`;
+const notificationStyle = `relative rounded-full p-2 ${StyleTheme.Text.Secondary} transition-colors ${StyleTheme.Hover.Subtle} ${StyleTheme.Hover.TextBrighten}`;
 
 const variantStyles: Record<ButtonVariant, string> = {
 	primary: `${StyleTheme.GalaxyGradient} ${StyleTheme.Shadow.ButtonPrimary}`,

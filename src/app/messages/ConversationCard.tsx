@@ -88,7 +88,7 @@ export default function ConversationCard({
 							text={lastMessagePreview}
 							lines={1}
 							size="sm"
-							className="text-xs text-zinc-300"
+							className={`text-xs ${StyleTheme.Text.Tertiary}`}
 						/>
 					)}
 				</Container>

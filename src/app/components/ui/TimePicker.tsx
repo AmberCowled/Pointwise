@@ -507,7 +507,7 @@ function TimePicker({
 									"transform -translate-x-1/2 -translate-y-1/2",
 									isSelected
 										? "bg-indigo-500/20 text-white"
-										: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+										: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 									"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 								)}
 								style={{
@@ -528,7 +528,7 @@ function TimePicker({
 							"absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2",
 							"w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center",
 							"text-xs sm:text-sm font-semibold transition-all",
-							"bg-zinc-800/50 text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+							`${StyleTheme.Container.BackgroundMuted} ${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 							"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 						)}
 					>
@@ -567,7 +567,7 @@ function TimePicker({
 									"transform -translate-x-1/2 -translate-y-1/2",
 									isSelected
 										? "bg-indigo-500/20 text-white"
-										: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+										: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 									"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 								)}
 								style={{
@@ -710,7 +710,7 @@ function TimePicker({
 																"min-h-12",
 																mode === "hour"
 																	? "bg-indigo-500/20 text-white"
-																	: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+																	: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 																"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 															)}
 														>
@@ -733,7 +733,7 @@ function TimePicker({
 																"min-h-12",
 																mode === "minute"
 																	? "bg-indigo-500/20 text-white"
-																	: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+																	: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 																selectedHour === null &&
 																	"opacity-50 cursor-not-allowed",
 																"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",

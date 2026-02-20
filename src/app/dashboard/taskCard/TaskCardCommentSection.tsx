@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useGetCommentsQuery } from "@pointwise/generated/api";
 import { invalidateTags } from "@pointwise/generated/invalidation";
 import { useSubscribeTaskComments } from "@pointwise/lib/realtime/hooks";
@@ -61,7 +62,7 @@ export default function TaskCardCommentSection({
 			direction="vertical"
 			width="full"
 			gap="sm"
-			className="py-3 border-t border-zinc-700/50 items-stretch"
+			className={`py-3 border-t ${StyleTheme.Container.Border.Subtle} items-stretch`}
 		>
 			{isLoading ? (
 				<p className="text-sm text-zinc-500 text-center py-2">

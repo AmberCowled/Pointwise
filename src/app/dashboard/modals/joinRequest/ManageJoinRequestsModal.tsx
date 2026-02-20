@@ -6,6 +6,7 @@ import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import Page from "@pointwise/app/components/ui/Page";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	useApproveJoinRequestMutation,
 	useGetProjectJoinRequestsQuery,
@@ -120,7 +121,9 @@ export default function ManageJoinRequestsModal({
 							width="full"
 							className="items-center justify-center py-12"
 						>
-							<p className="text-zinc-400 text-sm">No pending join requests</p>
+							<p className={`${StyleTheme.Text.Secondary} text-sm`}>
+								No pending join requests
+							</p>
 						</Container>
 					)}
 				</Page>
@@ -128,7 +131,7 @@ export default function ManageJoinRequestsModal({
 			<Modal.Footer align="center" className="p-0!">
 				<Button
 					variant="secondary"
-					className="w-full min-h-[60px] rounded-none border-none border-t border-white/10 m-0"
+					className="w-full min-h-[60px] rounded-none border-none border-t m-0"
 				>
 					Close
 				</Button>

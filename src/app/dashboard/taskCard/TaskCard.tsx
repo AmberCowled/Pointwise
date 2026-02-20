@@ -33,7 +33,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 				direction="vertical"
 				width="full"
 				gap="none"
-				className={`${StyleTheme.Container.BackgroundSubtle} px-4 py-2 rounded-lg border border-zinc-700/50 ${StyleTheme.Hover.BorderLift} items-start`}
+				className={`${StyleTheme.Container.BackgroundSubtle} px-4 py-2 rounded-lg border ${StyleTheme.Container.Border.Subtle} ${StyleTheme.Hover.BorderLift} items-start`}
 			>
 				<TaskHeader task={task} open={open} onChange={setOpen} />
 				{task.description && (
@@ -44,7 +44,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 					direction="vertical"
 					width="full"
 					gap="sm"
-					className="py-2 border-b border-zinc-700/50"
+					className={`py-2 border-b ${StyleTheme.Container.Border.Subtle}`}
 				>
 					<Container width="full" gap="sm">
 						<TaskStatus status={task.status ?? "PENDING"} />

@@ -124,7 +124,7 @@ export function PromptModalComponent({
 					{options.label && (
 						<label
 							htmlFor={`prompt-input-${id}`}
-							className="block text-sm font-medium text-zinc-300"
+							className={`block text-sm font-medium ${StyleTheme.Text.Tertiary}`}
 						>
 							{options.label}
 						</label>

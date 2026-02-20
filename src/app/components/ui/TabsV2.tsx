@@ -115,7 +115,7 @@ export function TabsV2({
 							isDisabled && "opacity-50 cursor-not-allowed",
 							!isDisabled &&
 								!isActive &&
-								`${StyleTheme.Text.Secondary} hover:text-zinc-200 bg-zinc-900/20 backdrop-blur-sm border-b border-zinc-700/30 hover:bg-zinc-900/30 ${StyleTheme.Accent.FocusRingSecondary}`,
+								`${StyleTheme.Text.Secondary} ${StyleTheme.Hover.TextBrighten} bg-zinc-900/20 backdrop-blur-sm border-b border-zinc-700/30 hover:bg-zinc-900/30 ${StyleTheme.Accent.FocusRingSecondary}`,
 							!isDisabled &&
 								isActive &&
 								`${StyleTheme.Text.PrimaryBright} ${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Accent.FocusRingSecondary}`,

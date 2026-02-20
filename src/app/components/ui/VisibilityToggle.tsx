@@ -1,5 +1,7 @@
 "use client";
 
+import { StyleTheme } from "./StyleTheme";
+
 function EyeIcon({ className }: { className?: string }) {
 	return (
 		<svg
@@ -58,7 +60,7 @@ export function VisibilityToggle({
 	return (
 		<button
 			type="button"
-			className={`absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 transition ${className ?? ""}`}
+			className={`absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 ${StyleTheme.Hover.TextBrighten} transition ${className ?? ""}`}
 			onClick={onToggle}
 			aria-label={visible ? "Hide password" : "Show password"}
 			tabIndex={-1}

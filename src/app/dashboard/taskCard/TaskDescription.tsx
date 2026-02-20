@@ -1,4 +1,5 @@
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
 import clsx from "clsx";
 import Image from "next/image";
@@ -70,22 +71,28 @@ export default function TaskDescription({
 }: TaskDescriptionProps) {
 	const markdownComponents: Components = {
 		p: ({ children }) => (
-			<p className="mb-4 last:mb-0 text-zinc-200 leading-relaxed wrap-break-words">
+			<p
+				className={`mb-4 last:mb-0 ${StyleTheme.Text.Body} leading-relaxed wrap-break-words`}
+			>
 				{children}
 			</p>
 		),
 		ul: ({ children }) => (
-			<ul className="list-disc pl-5 mb-4 space-y-1 text-zinc-200">
+			<ul className={`list-disc pl-5 mb-4 space-y-1 ${StyleTheme.Text.Body}`}>
 				{children}
 			</ul>
 		),
 		ol: ({ children }) => (
-			<ol className="list-decimal pl-5 mb-4 space-y-1 text-zinc-200">
+			<ol
+				className={`list-decimal pl-5 mb-4 space-y-1 ${StyleTheme.Text.Body}`}
+			>
 				{children}
 			</ol>
 		),
 		li: ({ children }) => (
-			<li className="text-zinc-200 marker:text-zinc-500">{children}</li>
+			<li className={`${StyleTheme.Text.Body} marker:text-zinc-500`}>
+				{children}
+			</li>
 		),
 		// Custom checkbox handling for task lists
 		input: ({ type, checked }) => {
@@ -122,7 +129,9 @@ export default function TaskDescription({
 			}
 
 			return (
-				<code className="bg-zinc-800/80 px-1.5 py-0.5 rounded text-[0.85em] font-mono text-indigo-300 border border-zinc-700/50">
+				<code
+					className={`bg-zinc-800/80 px-1.5 py-0.5 rounded text-[0.85em] font-mono text-indigo-300 border ${StyleTheme.Container.Border.Subtle}`}
+				>
 					{children}
 				</code>
 			);
@@ -131,9 +140,13 @@ export default function TaskDescription({
 		strong: ({ children }) => (
 			<strong className="font-bold text-zinc-100">{children}</strong>
 		),
-		em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
+		em: ({ children }) => (
+			<em className={`italic ${StyleTheme.Text.Tertiary}`}>{children}</em>
+		),
 		h1: ({ children }) => (
-			<h1 className="text-xl font-bold mb-4 mt-6 first:mt-0 text-white border-b border-zinc-800 pb-2">
+			<h1
+				className={`text-xl font-bold mb-4 mt-6 first:mt-0 text-white border-b ${StyleTheme.Container.Border.Dark} pb-2`}
+			>
 				{children}
 			</h1>
 		),
@@ -143,7 +156,7 @@ export default function TaskDescription({
 			</h2>
 		),
 		h3: ({ children }) => (
-			<h3 className="text-base font-bold mb-2 mt-4 text-zinc-200">
+			<h3 className={`text-base font-bold mb-2 mt-4 ${StyleTheme.Text.Body}`}>
 				{children}
 			</h3>
 		),
@@ -181,7 +194,9 @@ export default function TaskDescription({
 							<Icon className="w-4 h-4" />
 							<span>{config.label}</span>
 						</div>
-						<div className="text-zinc-300 text-sm italic">{children}</div>
+						<div className={`${StyleTheme.Text.Tertiary} text-sm italic`}>
+							{children}
+						</div>
 					</div>
 				);
 			}
@@ -221,14 +236,16 @@ export default function TaskDescription({
 						height={0}
 						sizes="100vw"
 						style={{ width: "100%", height: "auto" }}
-						className="rounded-lg border border-zinc-700/50 shadow-lg shadow-black/20"
+						className={`rounded-lg border ${StyleTheme.Container.Border.Subtle} shadow-lg shadow-black/20`}
 						unoptimized
 					/>
 				</span>
 			);
 		},
 		table: ({ children }) => (
-			<div className="my-6 overflow-x-auto rounded-lg border border-zinc-800">
+			<div
+				className={`my-6 overflow-x-auto rounded-lg border ${StyleTheme.Container.Border.Dark}`}
+			>
 				<table className="min-w-full divide-y divide-zinc-800 bg-zinc-900/20 text-sm">
 					{children}
 				</table>
@@ -243,11 +260,15 @@ export default function TaskDescription({
 			</th>
 		),
 		td: ({ children }) => (
-			<td className="px-4 py-2 text-zinc-300 border-t border-zinc-800/50">
+			<td
+				className={`px-4 py-2 ${StyleTheme.Text.Tertiary} border-t border-zinc-800/50`}
+			>
 				{children}
 			</td>
 		),
-		hr: () => <hr className="my-8 border-t-2 border-zinc-800" />,
+		hr: () => (
+			<hr className={`my-8 border-t-2 ${StyleTheme.Container.Border.Dark}`} />
+		),
 	};
 
 	if (!description?.trim()) {

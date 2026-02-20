@@ -34,7 +34,7 @@ export function AutoRedirectNotice({
 	return (
 		<div className="mt-2 flex flex-col items-center gap-4">
 			<div
-				className={`inline-flex items-center gap-3 rounded-full border ${StyleTheme.Container.Border.Primary} bg-zinc-900/80 px-4 py-2 text-xs text-zinc-300`}
+				className={`inline-flex items-center gap-3 rounded-full border ${StyleTheme.Container.Border.Primary} bg-zinc-900/80 px-4 py-2 text-xs ${StyleTheme.Text.Tertiary}`}
 			>
 				<Spinner
 					size="sm"

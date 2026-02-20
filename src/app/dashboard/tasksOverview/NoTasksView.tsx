@@ -31,10 +31,14 @@ export default function NoTasksView({
 			>
 				<IoClipboard className="w-8 h-8 text-zinc-600" aria-hidden="true" />
 			</div>
-			<h3 className="text-lg font-semibold text-zinc-100 mb-2">No tasks yet</h3>
+			<h3 className={`text-lg font-semibold ${StyleTheme.Text.Primary} mb-2`}>
+				No tasks yet
+			</h3>
 			{hasWriteAccess ? (
 				<>
-					<p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto">
+					<p
+						className={`text-sm ${StyleTheme.Text.Secondary} mb-6 max-w-md mx-auto`}
+					>
 						Create your first task to start organizing your tasks and
 						collaborating with your team.
 					</p>
@@ -48,7 +52,9 @@ export default function NoTasksView({
 					</Button>
 				</>
 			) : (
-				<p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto">
+				<p
+					className={`text-sm ${StyleTheme.Text.Secondary} mb-6 max-w-md mx-auto`}
+				>
 					No tasks found. Request user or admin role to create a task.
 				</p>
 			)}

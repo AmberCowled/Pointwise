@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@pointwise/app/components/ui/Button";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	useCreateCommentMutation,
 	useCreateReplyMutation,
@@ -60,7 +61,7 @@ export default function CommentInput({
 				onKeyDown={handleKeyDown}
 				placeholder={placeholder}
 				rows={1}
-				className="flex-1 resize-none rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-2 text-[16px] text-zinc-200 placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+				className={`flex-1 resize-none rounded-lg border ${StyleTheme.Container.Border.Subtle} ${StyleTheme.Container.BackgroundMuted} px-3 py-2 text-[16px] ${StyleTheme.Text.Body} placeholder-zinc-500 focus:border-zinc-500 focus:outline-none`}
 			/>
 			<Button
 				type="submit"

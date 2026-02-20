@@ -244,12 +244,18 @@ export default function Card({
 							className="items-start text-left"
 						>
 							{label && (
-								<p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+								<p
+									className={`text-xs uppercase tracking-[0.3em] ${StyleTheme.Text.Muted}`}
+								>
 									{label}
 								</p>
 							)}
 							{title && (
-								<h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
+								<h2
+									className={`text-xl font-semibold ${StyleTheme.Text.Primary}`}
+								>
+									{title}
+								</h2>
 							)}
 						</Container>
 						{shouldShowActions && (
@@ -279,7 +285,9 @@ export default function Card({
 				>
 					<Spinner size="lg" variant="primary" />
 					{loadingMessage && (
-						<p className="text-sm text-zinc-400">{loadingMessage}</p>
+						<p className={`text-sm ${StyleTheme.Text.Secondary}`}>
+							{loadingMessage}
+						</p>
 					)}
 				</Container>
 			) : (

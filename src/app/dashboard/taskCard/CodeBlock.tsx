@@ -1,5 +1,6 @@
 "use client";
 
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useState } from "react";
 import { IoCheckmarkOutline, IoCopyOutline } from "react-icons/io5";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -24,13 +25,17 @@ export default function CodeBlock({ language, value }: CodeBlockProps) {
 	};
 
 	return (
-		<div className="relative group my-4 rounded-lg border border-zinc-700/50 max-w-full">
-			<div className="flex items-center justify-between px-4 py-1.5 bg-zinc-800/80 border-b border-zinc-700/50 text-xs text-zinc-400">
+		<div
+			className={`relative group my-4 rounded-lg border ${StyleTheme.Container.Border.Subtle} max-w-full`}
+		>
+			<div
+				className={`flex items-center justify-between px-4 py-1.5 bg-zinc-800/80 border-b ${StyleTheme.Container.Border.Subtle} text-xs text-zinc-400`}
+			>
 				<span>{language || "text"}</span>
 				<button
 					type="button"
 					onClick={handleCopy}
-					className="flex items-center gap-1 hover:text-zinc-200 transition-colors"
+					className={`flex items-center gap-1 ${StyleTheme.Hover.TextBrighten} transition-colors`}
 					title="Copy to clipboard"
 				>
 					{copied ? (

@@ -109,8 +109,8 @@ const basePageButtonStyle =
 
 // Variant styles for page buttons
 const variantPageButtonStyles: Record<PaginationVariant, string> = {
-	primary: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} text-zinc-200 ${StyleTheme.Interactive.HoverPrimary}`,
-	secondary: `${StyleTheme.Container.Border.Primary} bg-zinc-900/80 text-zinc-200 ${StyleTheme.Interactive.HoverSecondary}`,
+	primary: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} ${StyleTheme.Text.Body} ${StyleTheme.Interactive.HoverPrimary}`,
+	secondary: `${StyleTheme.Container.Border.Primary} bg-zinc-900/80 ${StyleTheme.Text.Body} ${StyleTheme.Interactive.HoverSecondary}`,
 };
 
 const variantActivePageStyles: Record<PaginationVariant, string> = {
@@ -494,7 +494,9 @@ export function Pagination({
 								{startItem}–{endItem}
 							</span>{" "}
 							<span className="text-zinc-500">of</span>{" "}
-							<span className="text-zinc-300">{validatedTotalItems}</span>
+							<span className={StyleTheme.Text.Tertiary}>
+								{validatedTotalItems}
+							</span>
 						</div>
 					) : (
 						// Invisible placeholder to maintain centered navigation on desktop
@@ -502,7 +504,7 @@ export function Pagination({
 							<div className={clsx(sizeTextStyles[size], "text-zinc-500")}>
 								<span className="text-zinc-400">0–0</span>{" "}
 								<span className="text-zinc-500">of</span>{" "}
-								<span className="text-zinc-300">0</span>
+								<span className={StyleTheme.Text.Tertiary}>0</span>
 							</div>
 						</div>
 					)}

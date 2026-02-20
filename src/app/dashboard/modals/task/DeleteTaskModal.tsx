@@ -1,6 +1,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useDeleteTaskMutation } from "@pointwise/generated/api";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 
@@ -25,7 +26,7 @@ export default function DeleteTaskModal({ task }: { task: Task }) {
 						<p className="text-rose-400 text-sm font-medium mb-2">
 							This action cannot be undone
 						</p>
-						<p className="text-zinc-400 text-sm">
+						<p className={`${StyleTheme.Text.Secondary} text-sm`}>
 							This will permanently delete the task and all associated content.
 						</p>
 					</div>

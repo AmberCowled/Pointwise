@@ -69,7 +69,9 @@ export default function AuthPage() {
 							{isLoading ? (
 								<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
 									<Spinner size="lg" variant="primary" type="circular" />
-									<p className="text-sm font-medium text-zinc-300">
+									<p
+										className={`text-sm font-medium ${StyleTheme.Text.Tertiary}`}
+									>
 										{isSocialLoading
 											? "Logging In..."
 											: tab === "signin"
@@ -95,14 +97,14 @@ export default function AuthPage() {
 					className="text-center"
 					gap="sm"
 				>
-					<p className="text-sm text-zinc-200 leading-relaxed">
+					<p className={`text-sm ${StyleTheme.Text.Body} leading-relaxed`}>
 						Gamify your work. Track your tasks. Level up your productivity.
 					</p>
 
 					<Container
 						direction="vertical"
 						width="full"
-						className="text-xs text-zinc-300"
+						className={`text-xs ${StyleTheme.Text.Tertiary}`}
 					>
 						© {COPYRIGHT_YEAR} Amber Cowled. All rights reserved.
 					</Container>

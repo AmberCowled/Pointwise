@@ -2,6 +2,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Input from "@pointwise/app/components/ui/Input";
 import Modal from "@pointwise/app/components/ui/modal";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useDeleteProjectMutation } from "@pointwise/generated/api";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useState } from "react";
@@ -38,12 +39,14 @@ export default function DeleteProjectModal({ project }: { project: Project }) {
 						<p className="text-rose-400 text-sm font-medium mb-2">
 							This action cannot be undone
 						</p>
-						<p className="text-zinc-400 text-sm">
+						<p className={`${StyleTheme.Text.Secondary} text-sm`}>
 							This will permanently delete the project and all associated tasks.
 							All members will lose access to this project.
 						</p>
 					</div>
-					<span className="text-sm font-medium text-zinc-300 pl-4 pt-2">
+					<span
+						className={`text-sm font-medium ${StyleTheme.Text.Tertiary} pl-4 pt-2`}
+					>
 						Enter the project name to delete: {project.name}
 					</span>
 					<Input

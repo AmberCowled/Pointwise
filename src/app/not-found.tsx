@@ -5,7 +5,6 @@ import BrandHeader from "./components/general/BrandHeader";
 import BackgroundGlow from "./components/ui/BackgroundGlow";
 import { Card } from "./components/ui/Card";
 import { StyleTheme } from "./components/ui/StyleTheme";
-
 export default async function NotFound() {
 	const session = await getServerSession(authOptions);
 	const isSignedIn = Boolean(session);
@@ -31,9 +30,7 @@ export default async function NotFound() {
 			<div className="relative z-10 w-full max-w-2xl space-y-10">
 				<BrandHeader />
 
-				<Card
-					className={`space-y-9 ${StyleTheme.Container.Border.Primary} bg-zinc-950/80 p-8 text-center shadow-xl shadow-black/40 sm:p-12`}
-				>
+				<Card className="space-y-9 bg-zinc-950/80 p-8 text-center shadow-xl sm:p-12">
 					<p
 						className={`text-xs font-semibold uppercase tracking-[0.3em] ${StyleTheme.Text.Muted}`}
 					>

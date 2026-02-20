@@ -50,10 +50,13 @@ export const StyleTheme = {
 		BackgroundDanger: "bg-rose-500/25 backdrop-blur",
 		BackgroundDangerSubtle: "bg-rose-500/10",
 		BackgroundEmpty: "bg-zinc-800/50",
+		BackgroundMuted: "bg-zinc-800/50",
 
 		Border: {
 			Primary: "border-white/10",
 			Secondary: "border-white/5",
+			Subtle: "border-zinc-700/50",
+			Dark: "border-zinc-800",
 			Danger: "border-rose-400/40",
 			DangerStrong: "border-rose-400/60",
 		},
@@ -71,6 +74,8 @@ export const StyleTheme = {
 	Text: {
 		Primary: "text-zinc-100",
 		PrimaryBright: "text-white",
+		Body: "text-zinc-200",
+		Tertiary: "text-zinc-300",
 		Secondary: "text-zinc-400",
 		Muted: "text-zinc-500",
 		Placeholder: "placeholder:text-zinc-500",
@@ -101,6 +106,7 @@ export const StyleTheme = {
 	// ── Hover ────────────────────────────────────────────────────────
 	Hover: {
 		Subtle: "hover:bg-white/5",
+		TextBrighten: "hover:text-zinc-200",
 		BorderLift: "hover:border-white/20",
 		BorderLiftSecondary: "hover:border-white/15",
 		DangerBg: "hover:bg-rose-500/20",

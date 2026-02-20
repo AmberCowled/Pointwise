@@ -1,4 +1,5 @@
 import Container from "../ui/Container";
+import { StyleTheme } from "../ui/StyleTheme";
 import type { AuthTab } from "./types";
 
 type Props = {
@@ -22,7 +23,7 @@ export default function WelcomeBlock({ tab }: Props) {
 	return (
 		<Container direction="vertical" gap="none">
 			<h1 className="text-3xl text-zinc-100 font-bold">{title}</h1>
-			<p className="text-zinc-200 text-sm">{subtitle}</p>
+			<p className={`${StyleTheme.Text.Body} text-sm`}>{subtitle}</p>
 		</Container>
 	);
 }

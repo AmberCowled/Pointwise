@@ -1,4 +1,5 @@
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { TabsV2 } from "@pointwise/app/components/ui/TabsV2";
 import { useState } from "react";
 import ProjectsSearchResults from "./ProjectsSearchResults";
@@ -14,7 +15,11 @@ export default function SearchOverview({ query }: { query: string }) {
 
 	return (
 		<Container direction="vertical" gap="sm" className="pt-3">
-			<Container width="full" gap="none" className="bg-zinc-900/50">
+			<Container
+				width="full"
+				gap="none"
+				className={`${StyleTheme.Container.BackgroundSubtle}`}
+			>
 				<TabsV2
 					items={TABS}
 					value={activeTab}

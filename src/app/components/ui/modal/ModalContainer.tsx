@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { Spinner } from "../Spinner";
+import { StyleTheme } from "../StyleTheme";
 import { ModalContextProvider, type ModalContextValue } from "./ModalContext";
 import { ModalManager, type ModalRef } from "./ModalManager";
 import { ModalOverlay } from "./ModalOverlay";
@@ -364,7 +365,9 @@ export function ModalContainer({
 									<div className="flex flex-col items-center gap-3">
 										<Spinner size={loadingSpinnerSize} variant="primary" />
 										{loadingMessage && (
-											<p className="text-sm text-zinc-300">{loadingMessage}</p>
+											<p className={`text-sm ${StyleTheme.Text.Tertiary}`}>
+												{loadingMessage}
+											</p>
 										)}
 									</div>
 								</div>
@@ -397,7 +400,9 @@ export function ModalContainer({
 									<div className="flex flex-col items-center gap-3">
 										<Spinner size={loadingSpinnerSize} variant="primary" />
 										{loadingMessage && (
-											<p className="text-sm text-zinc-300">{loadingMessage}</p>
+											<p className={`text-sm ${StyleTheme.Text.Tertiary}`}>
+												{loadingMessage}
+											</p>
 										)}
 									</div>
 								</div>

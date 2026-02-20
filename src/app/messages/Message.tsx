@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
 import type { Message as MessageType } from "@pointwise/lib/validation/message-schema";
 
@@ -34,7 +35,9 @@ export default function Message({ message, currentUserId }: MessageProps) {
 					isOwn ? "bg-indigo-600/50 text-white" : "bg-zinc-700/50 text-zinc-100"
 				}`}
 			>
-				<span className="block text-xs font-medium text-zinc-300">
+				<span
+					className={`block text-xs font-medium ${StyleTheme.Text.Tertiary}`}
+				>
 					{displayName} –{" "}
 					{new Date(message.createdAt).toLocaleTimeString([], {
 						hour: "2-digit",

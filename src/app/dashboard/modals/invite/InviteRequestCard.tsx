@@ -2,6 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { toTitleCase } from "@pointwise/lib/text";
 import type { SearchableUser } from "@pointwise/lib/validation/users-schema";
 import { useState } from "react";
@@ -51,16 +52,24 @@ export default function InviteRequestCard({
 					width="full"
 					className="items-start"
 				>
-					<span className="text-sm font-medium text-zinc-100 truncate">
+					<span
+						className={`text-sm font-medium ${StyleTheme.Text.Primary} truncate`}
+					>
 						{userName}
 					</span>
-					<span className="text-xs font-extralight text-zinc-400">
+					<span
+						className={`text-xs font-extralight ${StyleTheme.Text.Secondary}`}
+					>
 						Inviting to {projectName}
 					</span>
 				</Container>
 			</Container>
 
-			<Container width="full" gap="none" className="px-2 py-2 bg-zinc-900/50">
+			<Container
+				width="full"
+				gap="none"
+				className={`px-2 py-2 ${StyleTheme.Container.BackgroundSubtle}`}
+			>
 				<Container
 					direction="vertical"
 					width="full"
@@ -68,7 +77,9 @@ export default function InviteRequestCard({
 					className="items-start"
 				>
 					<Container width="full">
-						<span className="text-xs font-extralight text-zinc-400 truncate">
+						<span
+							className={`text-xs font-extralight ${StyleTheme.Text.Secondary} truncate`}
+						>
 							Select Role:
 						</span>
 					</Container>

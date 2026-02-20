@@ -2,6 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { formatRelativeTime } from "@pointwise/lib/api/date-time";
 import { useState } from "react";
 import { IoCheckmark, IoClose, IoPersonCircle } from "react-icons/io5";
@@ -43,18 +44,22 @@ export default function JoinRequestCard({
 				direction="horizontal"
 				className="p-3 border-b border-zinc-700/80"
 			>
-				<IoPersonCircle className="size-10 text-zinc-200 shrink-0" />
+				<IoPersonCircle
+					className={`size-10 ${StyleTheme.Text.Body} shrink-0`}
+				/>
 				<Container
 					direction="vertical"
 					gap="none"
 					width="full"
 					className="items-start"
 				>
-					<span className="text-sm font-medium text-zinc-100 truncate">
+					<span
+						className={`text-sm font-medium ${StyleTheme.Text.Primary} truncate`}
+					>
 						{userName}
 					</span>
 					<span
-						className="text-xs font-extralight text-zinc-400"
+						className={`text-xs font-extralight ${StyleTheme.Text.Secondary}`}
 						title={new Date(request.requestedAt).toLocaleString()}
 					>
 						Requested {formatRelativeTime(request.requestedAt)}
@@ -62,7 +67,11 @@ export default function JoinRequestCard({
 				</Container>
 			</Container>
 
-			<Container width="full" gap="none" className="px-3 py-2 bg-zinc-900/50">
+			<Container
+				width="full"
+				gap="none"
+				className={`px-3 py-2 ${StyleTheme.Container.BackgroundSubtle}`}
+			>
 				<Container
 					direction="vertical"
 					width="full"
@@ -70,7 +79,9 @@ export default function JoinRequestCard({
 					className="items-start"
 				>
 					<Container width="full">
-						<span className="text-xs font-extralight text-zinc-400 truncate">
+						<span
+							className={`text-xs font-extralight ${StyleTheme.Text.Secondary} truncate`}
+						>
 							Select Role:
 						</span>
 					</Container>
@@ -89,7 +100,9 @@ export default function JoinRequestCard({
 					className="items-end"
 				>
 					<Container width="auto" className="text-center">
-						<span className="text-xs font-extralight text-zinc-400">
+						<span
+							className={`text-xs font-extralight ${StyleTheme.Text.Secondary}`}
+						>
 							Deny / Approve
 						</span>
 					</Container>

@@ -26,10 +26,12 @@ export default function NoMessagesView({
 			>
 				<IoChatbubbles className="w-8 h-8 text-zinc-600" aria-hidden="true" />
 			</div>
-			<h3 className="text-lg font-semibold text-zinc-100 mb-2">
+			<h3 className={`text-lg font-semibold ${StyleTheme.Text.Primary} mb-2`}>
 				No messages yet
 			</h3>
-			<p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto">
+			<p
+				className={`text-sm ${StyleTheme.Text.Secondary} mb-6 max-w-md mx-auto`}
+			>
 				Message a friend or start a new conversation to get started.
 			</p>
 			<Button

@@ -175,7 +175,7 @@ export default function Conversation() {
 					>
 						<Link
 							href="/messages"
-							className="flex items-center gap-1 text-sm text-zinc-300 transition-colors hover:text-zinc-100"
+							className={`flex items-center gap-1 text-sm ${StyleTheme.Text.Tertiary} transition-colors hover:text-zinc-100`}
 						>
 							<IoChevronBack className="h-5 w-5 shrink-0" aria-hidden />
 							<span>Messages Overview</span>

@@ -22,7 +22,7 @@ const variantBorderStyles: Record<DividerVariant, string> = {
 
 const variantLabelStyles: Record<DividerVariant, string> = {
 	subtle: `${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Secondary}`,
-	prominent: `${StyleTheme.Container.BackgroundSubtle} text-zinc-300`,
+	prominent: `${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Tertiary}`,
 };
 
 const spacingStyles: Record<

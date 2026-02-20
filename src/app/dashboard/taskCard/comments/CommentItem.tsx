@@ -2,6 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	useDeleteCommentMutation,
 	useEditCommentMutation,
@@ -116,7 +117,9 @@ export default function CommentItem({
 				)}
 				<div className="flex-1 min-w-0">
 					<Container width="auto" gap="sm" className="items-baseline">
-						<span className="text-sm font-medium text-zinc-200 truncate">
+						<span
+							className={`text-sm font-medium ${StyleTheme.Text.Body} truncate`}
+						>
 							{comment.author.displayName}
 						</span>
 						<span className="text-xs text-zinc-500 shrink-0">{timeAgo}</span>
@@ -137,7 +140,7 @@ export default function CommentItem({
 								onChange={(e) => setEditContent(e.target.value)}
 								onKeyDown={handleEditKeyDown}
 								rows={2}
-								className="w-full resize-none rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-2 text-[16px] text-zinc-200 focus:border-zinc-500 focus:outline-none"
+								className={`w-full resize-none rounded-lg border ${StyleTheme.Container.Border.Subtle} ${StyleTheme.Container.BackgroundMuted} px-3 py-2 text-[16px] ${StyleTheme.Text.Body} focus:border-zinc-500 focus:outline-none`}
 							/>
 							<Container width="auto" gap="xs">
 								<Button
@@ -161,7 +164,9 @@ export default function CommentItem({
 							</Container>
 						</Container>
 					) : (
-						<p className="text-sm text-zinc-300 whitespace-pre-wrap break-words">
+						<p
+							className={`text-sm ${StyleTheme.Text.Tertiary} whitespace-pre-wrap break-words`}
+						>
 							{comment.content}
 						</p>
 					)}

@@ -103,8 +103,8 @@ const activeTabStyles: Record<TabsVariant, string> = {
 };
 
 const inactiveTabStyles: Record<TabsVariant, string> = {
-	primary: `${StyleTheme.Text.Secondary} hover:text-zinc-200`,
-	secondary: `${StyleTheme.Text.Muted} hover:text-zinc-300`,
+	primary: `${StyleTheme.Text.Secondary} ${StyleTheme.Hover.TextBrighten}`,
+	secondary: `${StyleTheme.Text.Muted} ${StyleTheme.Hover.TextBrighten}`,
 	filter: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Text.Secondary} hover:border-indigo-400/60 hover:text-white`,
 };
 

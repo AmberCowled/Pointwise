@@ -5,6 +5,7 @@ import type React from "react";
 import { useId, useState } from "react";
 import { IoAdd, IoRemove } from "react-icons/io5";
 import Container from "./Container";
+import { StyleTheme } from "./StyleTheme";
 
 /**
  * Custom props for the Collapsible component
@@ -118,7 +119,7 @@ export default function Collapsible({
 				onClick={handleToggle}
 				aria-expanded={!isCollapsed}
 				aria-controls={contentId}
-				className="group flex w-full items-center gap-2 px-1 py-2.5 text-left text-sm font-medium text-zinc-100 transition-colors hover:text-zinc-200 focus:outline-none rounded-t-lg"
+				className={`group flex w-full items-center gap-2 px-1 py-2.5 text-left text-sm font-medium text-zinc-100 transition-colors ${StyleTheme.Hover.TextBrighten} focus:outline-none rounded-t-lg`}
 			>
 				<span>{label}</span>
 				{isCollapsed ? (

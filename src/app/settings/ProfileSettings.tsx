@@ -384,9 +384,11 @@ export default function ProfileSettings() {
 
 			<Container
 				width="full"
-				className="items-center border-b border-zinc-800 pb-2"
+				className={`items-center border-b ${StyleTheme.Container.Border.Dark} pb-2`}
 			>
-				<span className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
+				<span
+					className={`text-xs font-semibold uppercase tracking-[0.3em] ${StyleTheme.Text.Secondary}`}
+				>
 					Public Profile
 				</span>
 				<label className="relative inline-flex cursor-pointer">

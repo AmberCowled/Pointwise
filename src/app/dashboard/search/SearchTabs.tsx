@@ -1,4 +1,5 @@
 import { Card } from "@pointwise/app/components/ui/Card";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import clsx from "clsx";
 import { useState } from "react";
 import { IoFolder, IoPeopleCircle } from "react-icons/io5";
@@ -15,7 +16,7 @@ export default function SearchTabs({ onChange }: SearchTabsProps) {
 			<Card
 				flex="grow"
 				className={clsx(
-					"py-5 rounded-none border text-sm font-bold text-zinc-300 hover:text-zinc-200 hover:bg-zinc-800/50 hover:border-zinc-700/80 hover:cursor-pointer hover:border-l-2",
+					`py-5 rounded-none border text-sm font-bold ${StyleTheme.Text.Tertiary} ${StyleTheme.Hover.TextBrighten} hover:bg-zinc-800/50 hover:border-zinc-700/80 hover:cursor-pointer hover:border-l-2`,
 					activeTab === "projects" &&
 						"border-b-blue-500 hover:border-b-blue-500",
 				)}
@@ -31,7 +32,7 @@ export default function SearchTabs({ onChange }: SearchTabsProps) {
 			<Card
 				flex="grow"
 				className={clsx(
-					"py-5 rounded-none border text-sm font-bold text-zinc-300 hover:text-zinc-200 hover:bg-zinc-800/50 hover:border-zinc-700/80 hover:cursor-pointer hover:border-l-2",
+					`py-5 rounded-none border text-sm font-bold ${StyleTheme.Text.Tertiary} ${StyleTheme.Hover.TextBrighten} hover:bg-zinc-800/50 hover:border-zinc-700/80 hover:cursor-pointer hover:border-l-2`,
 					activeTab === "users" && "border-b-blue-500 hover:border-b-blue-500",
 				)}
 				onClick={() => {

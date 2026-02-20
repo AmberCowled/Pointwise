@@ -1,5 +1,6 @@
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import InviteModal from "@pointwise/app/dashboard/modals/invite/InviteModal";
 import {
 	useCancelFriendRequestMutation,
@@ -177,9 +178,12 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 				direction="vertical"
 				width="full"
 				gap="none"
-				className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-2 pb-0"
+				className={`bg-zinc-900/50 border ${StyleTheme.Container.Border.Dark} rounded-sm p-2 pb-0`}
 			>
-				<Container width="full" className="border-b border-zinc-700/50 pb-2">
+				<Container
+					width="full"
+					className={`border-b ${StyleTheme.Container.Border.Subtle} pb-2`}
+				>
 					<Container width="auto">
 						<ProfilePicture
 							profilePicture={profilePicture}

@@ -9,10 +9,10 @@ export default function NoFilteredTasksView() {
 			>
 				<IoClipboard className="w-8 h-8 text-zinc-600" aria-hidden="true" />
 			</div>
-			<h3 className="text-lg font-semibold text-zinc-100 mb-2">
+			<h3 className={`text-lg font-semibold ${StyleTheme.Text.Primary} mb-2`}>
 				No filtered tasks
 			</h3>
-			<p className="text-sm text-zinc-400 max-w-md mx-auto">
+			<p className={`text-sm ${StyleTheme.Text.Secondary} max-w-md mx-auto`}>
 				Try changing your filters to see your tasks.
 			</p>
 		</div>
