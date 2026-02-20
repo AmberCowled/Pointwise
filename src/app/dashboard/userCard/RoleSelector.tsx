@@ -1,5 +1,6 @@
 "use client";
 
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import clsx from "clsx";
 import { useState } from "react";
 
@@ -49,7 +50,7 @@ export default function RoleSelector({
 							"text-xs font-medium px-0.5 py-0.5 min-w-10 rounded-sm transition-colors",
 							selectedRole === role
 								? roleStyles[role]
-								: "bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:border-zinc-600/50",
+								: `${StyleTheme.Container.BackgroundMuted} text-zinc-400 border ${StyleTheme.Container.Border.Subtle} hover:border-zinc-600/50`,
 							disabled && "opacity-50 cursor-not-allowed",
 							!disabled && "cursor-pointer",
 						)}

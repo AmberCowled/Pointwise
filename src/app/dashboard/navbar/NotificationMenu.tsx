@@ -2,6 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	api,
 	useAcceptInviteMutation,
@@ -252,7 +253,7 @@ export default function NotificationMenu() {
 															| "VIEWER",
 													}))
 												}
-												className="h-7 rounded bg-zinc-800 px-1.5 text-xs text-zinc-300 border border-zinc-700 focus:outline-none focus:border-indigo-500"
+												className={`h-7 rounded bg-zinc-800 px-1.5 text-xs ${StyleTheme.Text.Tertiary} border border-zinc-700 focus:outline-none focus:border-indigo-500`}
 											>
 												<option value="ADMIN">Admin</option>
 												<option value="USER">User</option>

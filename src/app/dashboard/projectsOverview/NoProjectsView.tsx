@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@pointwise/app/components/ui/Button";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { IoFolder } from "react-icons/io5";
 
 export interface NoProjectsViewProps {
@@ -18,13 +19,17 @@ export interface NoProjectsViewProps {
 export default function NoProjectsView({ onCreateClick }: NoProjectsViewProps) {
 	return (
 		<div className="text-center py-12">
-			<div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800/50 flex items-center justify-center">
+			<div
+				className={`w-16 h-16 mx-auto mb-4 rounded-full ${StyleTheme.Container.BackgroundEmpty} flex items-center justify-center`}
+			>
 				<IoFolder className="w-8 h-8 text-zinc-600" aria-hidden="true" />
 			</div>
-			<h3 className="text-lg font-semibold text-zinc-100 mb-2">
+			<h3 className={`text-lg font-semibold ${StyleTheme.Text.Primary} mb-2`}>
 				No projects yet
 			</h3>
-			<p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto">
+			<p
+				className={`text-sm ${StyleTheme.Text.Secondary} mb-6 max-w-md mx-auto`}
+			>
 				Create your first project to start organizing your tasks and
 				collaborating with your team.
 			</p>

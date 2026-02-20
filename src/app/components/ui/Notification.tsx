@@ -10,6 +10,7 @@ import {
 	IoInformationCircle,
 	IoWarning,
 } from "react-icons/io5";
+import { StyleTheme } from "./StyleTheme";
 
 export type NotificationVariant = "success" | "error" | "warning" | "info";
 export type NotificationSize = "xs" | "sm" | "md" | "lg" | "xl";
@@ -79,12 +80,10 @@ const baseStyle =
 	"relative flex items-center gap-3 rounded-2xl border shadow-lg backdrop-blur-sm transition-all duration-300 ease-out";
 
 const variantStyles: Record<NotificationVariant, string> = {
-	success:
-		"border-emerald-400/40 bg-emerald-500/10 text-emerald-100 shadow-emerald-500/20",
-	error: "border-rose-400/40 bg-rose-500/10 text-rose-100 shadow-rose-500/20",
-	warning:
-		"border-amber-400/40 bg-amber-500/10 text-amber-100 shadow-amber-500/20",
-	info: "border-indigo-400/40 bg-indigo-500/10 text-indigo-100 shadow-indigo-500/20",
+	success: `${StyleTheme.Status.Success.border} ${StyleTheme.Status.Success.bg} ${StyleTheme.Status.Success.textContent} ${StyleTheme.Status.Success.shadow}`,
+	error: `${StyleTheme.Status.Error.border} ${StyleTheme.Status.Error.bg} ${StyleTheme.Status.Error.textContent} ${StyleTheme.Status.Error.shadow}`,
+	warning: `${StyleTheme.Status.Warning.border} ${StyleTheme.Status.Warning.bg} ${StyleTheme.Status.Warning.textContent} ${StyleTheme.Status.Warning.shadow}`,
+	info: `${StyleTheme.Status.Info.border} ${StyleTheme.Status.Info.bg} ${StyleTheme.Status.Info.textContent} ${StyleTheme.Status.Info.shadow}`,
 };
 
 const sizeStyles: Record<NotificationSize, string> = {

@@ -1,5 +1,6 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 import TaskCardCategory from "./TaskCardCategory";
@@ -21,7 +22,7 @@ export default function TaskHeader({ task, open, onChange }: TaskHeaderProps) {
 			direction="vertical"
 			width="full"
 			gap="none"
-			className="pb-2 border-b border-zinc-700/50"
+			className={`pb-2 border-b ${StyleTheme.Container.Border.Subtle}`}
 		>
 			{/* Title and expand button */}
 			<Container

@@ -1,5 +1,6 @@
 "use client";
 
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
 import { IoFolder } from "react-icons/io5";
 
@@ -15,7 +16,7 @@ export default function ProjectCardTitle({ title }: ProjectCardTitleProps) {
 				text={title}
 				lines={1}
 				size="md"
-				className="font-bold text-zinc-200 text-lg"
+				className={`font-bold ${StyleTheme.Text.Body} text-lg`}
 			/>
 		</>
 	);

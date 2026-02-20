@@ -8,6 +8,7 @@ import { Checkbox } from "../ui/Checkbox";
 import Grid from "../ui/Grid";
 import { Input } from "../ui/Input";
 import { useNotifications } from "../ui/NotificationProvider";
+import { StyleTheme } from "../ui/StyleTheme";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 import type { AuthTab } from "./types";
 import {
@@ -113,7 +114,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 						flex="grow"
 						onChange={setFirstName}
 						disabled={isLoading}
-						className="bg-zinc-900/50"
+						className={`${StyleTheme.Container.BackgroundSubtle}`}
 					/>
 					<Input
 						id={"lastName"}
@@ -126,7 +127,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 						flex="grow"
 						onChange={setLastName}
 						disabled={isLoading}
-						className="bg-zinc-900/50"
+						className={`${StyleTheme.Container.BackgroundSubtle}`}
 					/>
 				</Grid>
 			)}
@@ -145,7 +146,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 				error={emailError}
 				required
 				disabled={isLoading}
-				className="bg-zinc-900/50"
+				className={`${StyleTheme.Container.BackgroundSubtle}`}
 			/>
 
 			<div className="space-y-2">
@@ -162,7 +163,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 					autoComplete={tab === "signin" ? "current-password" : "new-password"}
 					showPasswordToggle
 					error={passwordError}
-					className="bg-zinc-900/50"
+					className={`${StyleTheme.Container.BackgroundSubtle}`}
 					description={
 						tab === "signup"
 							? passwordStrengthText
@@ -185,7 +186,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 						size="sm"
 						onChange={setRemember}
 						disabled={isLoading}
-						className="bg-zinc-900/50"
+						className={`${StyleTheme.Container.BackgroundSubtle}`}
 					/>
 					<button
 						type="button"
@@ -193,7 +194,7 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 							e.preventDefault();
 							// TODO: Implement forgot password functionality
 						}}
-						className="text-xs text-zinc-400 hover:text-zinc-200 transition focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 rounded px-1"
+						className={`text-xs ${StyleTheme.Text.Secondary} ${StyleTheme.Hover.TextBrighten} transition focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 rounded px-1`}
 						aria-label="Reset your password"
 					>
 						Forgot password?

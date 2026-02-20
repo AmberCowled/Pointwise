@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type React from "react";
 import { Skeleton, type SkeletonVariant } from "./Skeleton";
 import { SkeletonText } from "./SkeletonText";
+import { StyleTheme } from "./StyleTheme";
 
 export interface SkeletonCardProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -62,7 +63,7 @@ export function SkeletonCard({
 		<div
 			aria-hidden="true"
 			className={clsx(
-				"rounded-2xl border border-white/10 bg-white/5 p-4 space-y-4",
+				`rounded-2xl border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} p-4 space-y-4`,
 				className,
 			)}
 			{...props}
@@ -107,7 +108,9 @@ export function SkeletonCard({
 			/>
 
 			{showFooter && (
-				<div className="flex items-center justify-between pt-2 border-t border-white/10">
+				<div
+					className={`flex items-center justify-between pt-2 border-t ${StyleTheme.Divider.Subtle}`}
+				>
 					<Skeleton
 						width="80px"
 						height="1.5rem"

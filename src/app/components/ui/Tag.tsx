@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import type React from "react";
 import type { IconType } from "react-icons";
+import { StyleTheme } from "./StyleTheme";
 
 export type TagVariant =
 	| "primary"
@@ -27,12 +28,12 @@ const baseStyle =
 	"inline-flex items-center font-semibold uppercase tracking-wider rounded-full";
 
 const variantStyles: Record<TagVariant, string> = {
-	primary: "bg-indigo-500/10 text-indigo-200",
-	secondary: "bg-white/10 text-zinc-300",
-	danger: "bg-rose-500/10 text-rose-200",
-	success: "bg-emerald-500/10 text-emerald-200",
-	warning: "bg-amber-500/10 text-amber-200",
-	info: "bg-cyan-500/10 text-cyan-200",
+	primary: StyleTheme.Tag.Primary,
+	secondary: StyleTheme.Tag.Secondary,
+	danger: `${StyleTheme.Status.Error.bg} ${StyleTheme.Status.Error.text}`,
+	success: `${StyleTheme.Status.Success.bg} ${StyleTheme.Status.Success.text}`,
+	warning: `${StyleTheme.Status.Warning.bg} ${StyleTheme.Status.Warning.text}`,
+	info: StyleTheme.Tag.Info,
 };
 
 const sizeStyles: Record<TagSize, string> = {

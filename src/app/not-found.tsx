@@ -4,7 +4,7 @@ import { AutoRedirectNotice } from "./components/general/AutoRedirectNotice";
 import BrandHeader from "./components/general/BrandHeader";
 import BackgroundGlow from "./components/ui/BackgroundGlow";
 import { Card } from "./components/ui/Card";
-
+import { StyleTheme } from "./components/ui/StyleTheme";
 export default async function NotFound() {
 	const session = await getServerSession(authOptions);
 	const isSignedIn = Boolean(session);
@@ -30,8 +30,10 @@ export default async function NotFound() {
 			<div className="relative z-10 w-full max-w-2xl space-y-10">
 				<BrandHeader />
 
-				<Card className="space-y-9 border-white/10 bg-zinc-950/80 p-8 text-center shadow-xl shadow-black/40 sm:p-12">
-					<p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+				<Card className="space-y-9 bg-zinc-950/80 p-8 text-center shadow-xl sm:p-12">
+					<p
+						className={`text-xs font-semibold uppercase tracking-[0.3em] ${StyleTheme.Text.Muted}`}
+					>
 						404 • Page not found
 					</p>
 
@@ -39,7 +41,9 @@ export default async function NotFound() {
 						{title}
 					</h1>
 
-					<p className="mx-auto max-w-lg text-sm leading-relaxed text-zinc-400 sm:text-[0.95rem] mt-2 sm:mt-3">
+					<p
+						className={`mx-auto max-w-lg text-sm leading-relaxed ${StyleTheme.Text.Secondary} sm:text-[0.95rem] mt-2 sm:mt-3`}
+					>
 						{description}
 					</p>
 

@@ -4,6 +4,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import Grid from "@pointwise/app/components/ui/Grid";
 import Input from "@pointwise/app/components/ui/Input";
 import InputSelect from "@pointwise/app/components/ui/InputSelect";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	CORE_TASK_CATEGORIES,
 	CUSTOM_CATEGORY_LABEL,
@@ -83,7 +84,7 @@ export default function TaskFilters({
 			label="Filters"
 			width="full"
 			defaultCollapsed={true}
-			className="rounded-lg border border-white/10 hover:border-white/20 bg-zinc-900/50 px-2"
+			className={`rounded-lg border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Hover.BorderLift} ${StyleTheme.Container.BackgroundSubtle} px-2`}
 		>
 			<Grid
 				columns={{ default: 1, sm: 3 }}
@@ -102,7 +103,7 @@ export default function TaskFilters({
 						onSelect={(value) =>
 							setSelectedStatus(value as TaskFiltersRequest["status"])
 						}
-						className="max-h-10 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100"
+						className={`max-h-10 ${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Secondary} hover:text-zinc-100`}
 					/>
 				</Container>
 
@@ -118,7 +119,7 @@ export default function TaskFilters({
 						onSelect={(value) =>
 							setSelectedDate(value as TaskFiltersRequest["date"])
 						}
-						className="max-h-10 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100"
+						className={`max-h-10 ${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Secondary} hover:text-zinc-100`}
 					/>
 				</Container>
 			</Grid>
@@ -140,7 +141,7 @@ export default function TaskFilters({
 							.concat(CORE_TASK_CATEGORIES)
 							.concat(CUSTOM_CATEGORY_LABEL)}
 						onSelect={setSelectedCategory}
-						className="max-h-10 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100"
+						className={`max-h-10 ${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Secondary} hover:text-zinc-100`}
 					/>
 				</Container>
 
@@ -154,7 +155,7 @@ export default function TaskFilters({
 							flex="grow"
 							placeholder="All"
 							onChange={setCustomCategory}
-							className="max-h-10 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100"
+							className={`max-h-10 ${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Secondary} hover:text-zinc-100`}
 						/>
 					</Container>
 				)}

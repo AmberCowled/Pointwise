@@ -5,6 +5,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	useGetProjectInvitesQuery,
 	useRejectInviteMutation,
@@ -88,7 +89,9 @@ export default function ManageProjectInvitesModal({
 						width="full"
 						className="items-center justify-center py-12"
 					>
-						<p className="text-zinc-400 text-sm">No pending invites</p>
+						<p className={`${StyleTheme.Text.Secondary} text-sm`}>
+							No pending invites
+						</p>
 					</Container>
 				)}
 			</Modal.Body>

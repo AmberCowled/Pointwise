@@ -5,6 +5,7 @@ import type React from "react";
 import { forwardRef, useId, useState } from "react";
 
 import { InputHeader } from "./InputHeader";
+import { StyleTheme } from "./StyleTheme";
 
 export type CheckboxVariants = "primary" | "secondary" | "danger";
 export type CheckboxSizes = "xs" | "sm" | "md" | "lg" | "xl";
@@ -46,24 +47,21 @@ const baseStyle =
 	"appearance-none cursor-pointer border transition focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed";
 
 const variantStyles: Record<CheckboxVariants, string> = {
-	primary:
-		"border-white/10 bg-white/5 checked:bg-indigo-500 checked:border-indigo-500",
-	secondary:
-		"border-white/10 bg-zinc-900 checked:bg-fuchsia-500/20 checked:border-fuchsia-500/50",
-	danger:
-		"border-rose-400/60 bg-rose-500/10 checked:bg-rose-500 checked:border-rose-500",
+	primary: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} ${StyleTheme.Interactive.CheckedPrimary}`,
+	secondary: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInputSecondary} ${StyleTheme.Interactive.CheckedSecondary}`,
+	danger: `${StyleTheme.Container.Border.DangerStrong} ${StyleTheme.Container.BackgroundDangerSubtle} ${StyleTheme.Interactive.CheckedDanger}`,
 };
 
 const variantFocusStyles: Record<CheckboxVariants, string> = {
-	primary: "focus:border-indigo-400/60 focus:ring-indigo-500/40",
-	secondary: "focus:border-fuchsia-500/50 focus:ring-fuchsia-500/30",
-	danger: "focus:border-rose-500/80 focus:ring-rose-500/40",
+	primary: `${StyleTheme.Accent.FocusBorderPrimary} focus:ring-indigo-500/40`,
+	secondary: `${StyleTheme.Accent.FocusBorderSecondary} focus:ring-fuchsia-500/30`,
+	danger: `${StyleTheme.Accent.FocusBorderDanger} focus:ring-rose-500/40`,
 };
 
 const variantHoverStyles: Record<CheckboxVariants, string> = {
-	primary: "hover:border-white/20",
-	secondary: "hover:border-white/15",
-	danger: "hover:border-rose-400/70",
+	primary: StyleTheme.Hover.BorderLift,
+	secondary: StyleTheme.Hover.BorderLiftSecondary,
+	danger: StyleTheme.Hover.DangerBorder,
 };
 
 const sizeStyles: Record<CheckboxSizes, string> = {
@@ -81,10 +79,9 @@ const variantDisabledStyles: Record<CheckboxVariants, string> = {
 };
 
 const variantErrorStyles: Record<CheckboxVariants, string> = {
-	primary: "border-rose-400/60 focus:border-rose-400/80 focus:ring-rose-500/40",
-	secondary:
-		"border-rose-400/60 focus:border-rose-400/80 focus:ring-rose-500/40",
-	danger: "border-rose-500/80 focus:border-rose-500/90 focus:ring-rose-500/50",
+	primary: `${StyleTheme.ErrorBorder.Primary} ${StyleTheme.Accent.FocusRingDanger}`,
+	secondary: `${StyleTheme.ErrorBorder.Secondary} ${StyleTheme.Accent.FocusRingDanger}`,
+	danger: `${StyleTheme.ErrorBorder.Danger} focus:ring-rose-500/50`,
 };
 
 // Checkmark icon styles based on size

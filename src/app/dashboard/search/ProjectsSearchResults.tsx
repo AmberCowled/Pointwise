@@ -1,6 +1,7 @@
 import { Card } from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import ProjectCard from "@pointwise/app/dashboard/projectCard/ProjectCard";
 import { useSearchPublicProjectsQuery } from "@pointwise/generated/api";
 import { IoSearchOutline } from "react-icons/io5";
@@ -42,7 +43,7 @@ export default function ProjectsSearchResults({
 						width="full"
 						direction="vertical"
 						gap="sm"
-						className="py-8 text-zinc-400 bg-zinc-900/50 border border-zinc-700/50"
+						className={`py-8 ${StyleTheme.Text.Secondary} ${StyleTheme.Container.BackgroundSubtle} border ${StyleTheme.Container.Border.Subtle}`}
 					>
 						<IoSearchOutline className="size-10 mb-2" />
 						<span className="font-medium text-lg">No projects found</span>

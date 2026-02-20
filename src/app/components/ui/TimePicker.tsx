@@ -13,6 +13,7 @@ import { IoClose, IoTime } from "react-icons/io5";
 
 import { Button } from "./Button";
 import { InputHeader } from "./InputHeader";
+import { StyleTheme } from "./StyleTheme";
 
 type TimePickerVariants = "primary" | "secondary" | "danger";
 type TimePickerSizes = "xs" | "sm" | "md" | "lg" | "xl";
@@ -89,25 +90,24 @@ export interface TimePickerProps {
 	className?: string;
 }
 
-const baseButtonStyle =
-	"relative w-full text-left text-zinc-100 shadow-inner shadow-white/5 transition focus:outline-none disabled:cursor-not-allowed";
+const baseButtonStyle = `relative w-full text-left ${StyleTheme.Text.Primary} ${StyleTheme.Shadow.Inner} transition focus:outline-none disabled:cursor-not-allowed`;
 
 const variantStyles: Record<TimePickerVariants, string> = {
-	primary: "rounded-2xl border-white/10 bg-white/5",
-	secondary: "rounded-lg border-white/10 bg-zinc-900",
-	danger: "rounded-2xl border-rose-400/60 bg-rose-500/10",
+	primary: `rounded-2xl ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput}`,
+	secondary: `rounded-lg ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInputSecondary}`,
+	danger: `rounded-2xl ${StyleTheme.Container.Border.DangerStrong} ${StyleTheme.Container.BackgroundDangerSubtle}`,
 };
 
 const variantFocusStyles: Record<TimePickerVariants, string> = {
-	primary: "focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/40",
-	secondary: "focus:border-fuchsia-500/50",
-	danger: "focus:border-rose-500/80 focus:ring-2 focus:ring-rose-500/40",
+	primary: `${StyleTheme.Accent.FocusBorderPrimary} ${StyleTheme.Accent.FocusRingPrimary}`,
+	secondary: StyleTheme.Accent.FocusBorderSecondary,
+	danger: `${StyleTheme.Accent.FocusBorderDanger} ${StyleTheme.Accent.FocusRingDanger}`,
 };
 
 const variantHoverStyles: Record<TimePickerVariants, string> = {
-	primary: "hover:border-white/20",
-	secondary: "hover:border-white/15",
-	danger: "hover:border-rose-400/70",
+	primary: StyleTheme.Hover.BorderLift,
+	secondary: StyleTheme.Hover.BorderLiftSecondary,
+	danger: StyleTheme.Hover.DangerBorder,
 };
 
 const sizeStyles: Record<TimePickerSizes, string> = {
@@ -120,11 +120,10 @@ const sizeStyles: Record<TimePickerSizes, string> = {
 
 const disabledStyle = "opacity-50";
 
-const defaultErrorStyle = "border-rose-400/60 focus:border-rose-400/80";
 const variantErrorStyles: Record<TimePickerVariants, string> = {
-	primary: defaultErrorStyle,
-	secondary: defaultErrorStyle,
-	danger: "border-rose-500/80 focus:border-rose-500/90",
+	primary: StyleTheme.ErrorBorder.Primary,
+	secondary: StyleTheme.ErrorBorder.Secondary,
+	danger: StyleTheme.ErrorBorder.Danger,
 };
 
 const flexClasses: Record<TimePickerFlex, string> = {
@@ -139,13 +138,12 @@ const innerWidthClasses: Record<TimePickerFlex, string> = {
 	grow: "w-full",
 };
 
-const clockBaseStyle =
-	"absolute z-[100] mt-2 border bg-zinc-900 p-2 sm:p-3 text-sm shadow-lg focus:outline-none overflow-hidden max-w-[calc(100vw-32px)]";
+const clockBaseStyle = `absolute z-[100] mt-2 border ${StyleTheme.Dropdown.Background} p-2 sm:p-3 text-sm shadow-lg focus:outline-none overflow-hidden max-w-[calc(100vw-32px)]`;
 
 const clockVariantStyles: Record<TimePickerVariants, string> = {
-	primary: "rounded-2xl border-white/10 shadow-indigo-500/20",
-	secondary: "rounded-lg border-white/10 shadow-fuchsia-500/20",
-	danger: "rounded-2xl border-rose-400/40 shadow-rose-500/20",
+	primary: `rounded-2xl ${StyleTheme.Container.Border.Primary} ${StyleTheme.Status.Info.shadow}`,
+	secondary: `rounded-lg ${StyleTheme.Container.Border.Primary} shadow-fuchsia-500/20`,
+	danger: `rounded-2xl ${StyleTheme.Container.Border.Danger} ${StyleTheme.Status.Error.shadow}`,
 };
 
 /**
@@ -509,7 +507,7 @@ function TimePicker({
 									"transform -translate-x-1/2 -translate-y-1/2",
 									isSelected
 										? "bg-indigo-500/20 text-white"
-										: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+										: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 									"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 								)}
 								style={{
@@ -530,7 +528,7 @@ function TimePicker({
 							"absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2",
 							"w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center",
 							"text-xs sm:text-sm font-semibold transition-all",
-							"bg-zinc-800/50 text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+							`${StyleTheme.Container.BackgroundMuted} ${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 							"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 						)}
 					>
@@ -569,7 +567,7 @@ function TimePicker({
 									"transform -translate-x-1/2 -translate-y-1/2",
 									isSelected
 										? "bg-indigo-500/20 text-white"
-										: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+										: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 									"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 								)}
 								style={{
@@ -712,7 +710,7 @@ function TimePicker({
 																"min-h-12",
 																mode === "hour"
 																	? "bg-indigo-500/20 text-white"
-																	: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+																	: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 																"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
 															)}
 														>
@@ -735,7 +733,7 @@ function TimePicker({
 																"min-h-12",
 																mode === "minute"
 																	? "bg-indigo-500/20 text-white"
-																	: "text-zinc-300 hover:bg-indigo-500/10 hover:text-white",
+																	: `${StyleTheme.Text.Tertiary} hover:bg-indigo-500/10 hover:text-white`,
 																selectedHour === null &&
 																	"opacity-50 cursor-not-allowed",
 																"focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
@@ -782,7 +780,9 @@ function TimePicker({
 												<div className="py-0">{renderClockFace()}</div>
 
 												{/* Cancel and OK buttons at bottom */}
-												<div className="flex items-center justify-end gap-2 pt-1 border-t border-white/10">
+												<div
+													className={`flex items-center justify-end gap-2 pt-1 border-t ${StyleTheme.Divider.Subtle}`}
+												>
 													<Button
 														variant="secondary"
 														size="sm"

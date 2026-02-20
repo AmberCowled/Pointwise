@@ -2,6 +2,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useUpdateTaskMutation } from "@pointwise/generated/api";
 import { invalidateTags } from "@pointwise/generated/invalidation";
 import { utcNow } from "@pointwise/lib/api/date-time";
@@ -58,7 +59,7 @@ export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
 					variant="ghost"
 					size="sm"
 					icon={IoEllipsisHorizontal}
-					className="text-zinc-400 hover:text-white"
+					className={`${StyleTheme.Text.Secondary} hover:text-white`}
 				/>
 			}
 		>

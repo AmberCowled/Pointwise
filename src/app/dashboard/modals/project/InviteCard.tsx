@@ -3,6 +3,7 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Card from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { Tag } from "@pointwise/app/components/ui/Tag";
 import { formatRelativeTime } from "@pointwise/lib/api/date-time";
 import { IoClose, IoPerson } from "react-icons/io5";
@@ -69,14 +70,18 @@ export default function InviteCard({
 						gap="sm"
 						className="items-center flex-wrap"
 					>
-						<IoPerson className="size-5 text-zinc-400 shrink-0" />
+						<IoPerson
+							className={`size-5 ${StyleTheme.Text.Secondary} shrink-0`}
+						/>
 						<Container
 							direction="vertical"
 							width="auto"
 							gap="xs"
 							className="min-w-0 flex-1"
 						>
-							<span className="text-sm font-medium text-zinc-100 truncate">
+							<span
+								className={`text-sm font-medium ${StyleTheme.Text.Primary} truncate`}
+							>
 								{invitedUserName}
 							</span>
 						</Container>
@@ -88,7 +93,7 @@ export default function InviteCard({
 						direction="horizontal"
 						width="full"
 						gap="xs"
-						className="items-center text-xs text-zinc-500"
+						className={`items-center text-xs ${StyleTheme.Text.Muted}`}
 					>
 						<span>Invited by {inviterName}</span>
 						<span>•</span>

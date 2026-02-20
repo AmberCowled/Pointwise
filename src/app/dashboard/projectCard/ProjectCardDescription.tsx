@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 
@@ -18,7 +19,7 @@ export default function ProjectCardDescription({
 				placeholder="No description"
 				lines={2}
 				size="sm"
-				className="text-zinc-300 pt-2 pb-1"
+				className={`${StyleTheme.Text.Tertiary} pt-2 pb-1`}
 			/>
 		</Container>
 	);

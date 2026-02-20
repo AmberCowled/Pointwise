@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { StyleTheme } from "./StyleTheme";
 
 interface CosmicBackgroundProps {
 	/**
@@ -33,11 +34,11 @@ export default function CosmicBackground({
 				className={clsx("absolute inset-0", animate && "animate-cosmic-drift")}
 				style={{
 					backgroundImage: `
-						radial-gradient(circle at 50% 40%, rgba(124,58,237,0.45), transparent 70%),
-						radial-gradient(circle at 20% 30%, rgba(124,58,237,0.32), transparent 65%),
-						radial-gradient(circle at 80% 20%, rgba(59,130,246,0.3), transparent 60%),
-						radial-gradient(circle at 60% 80%, rgba(236,72,153,0.26), transparent 70%),
-						radial-gradient(circle at 40% 60%, rgba(67,56,202,0.22), transparent 75%)
+						radial-gradient(circle at 50% 40%, ${StyleTheme.Cosmic.NebulaColors.violet}, transparent 70%),
+						radial-gradient(circle at 20% 30%, ${StyleTheme.Cosmic.NebulaColors.violetSecondary}, transparent 65%),
+						radial-gradient(circle at 80% 20%, ${StyleTheme.Cosmic.NebulaColors.blue}, transparent 60%),
+						radial-gradient(circle at 60% 80%, ${StyleTheme.Cosmic.NebulaColors.pink}, transparent 70%),
+						radial-gradient(circle at 40% 60%, ${StyleTheme.Cosmic.NebulaColors.deepPurple}, transparent 75%)
 					`,
 				}}
 			/>
@@ -161,14 +162,14 @@ export default function CosmicBackground({
 				)}
 				style={{
 					backgroundImage: `
-						radial-gradient(ellipse 400px 200px at 20% 30%, rgba(200,180,255,0.45), transparent 60%),
-						radial-gradient(ellipse 350px 180px at 70% 50%, rgba(180,200,255,0.4), transparent 55%),
-						radial-gradient(ellipse 300px 150px at 45% 75%, rgba(255,180,220,0.38), transparent 50%),
-						radial-gradient(ellipse 450px 220px at 85% 20%, rgba(190,170,255,0.5), transparent 65%),
-						radial-gradient(ellipse 280px 140px at 15% 80%, rgba(255,190,230,0.42), transparent 58%),
-						radial-gradient(ellipse 380px 190px at 60% 40%, rgba(200,185,255,0.46), transparent 62%),
-						radial-gradient(ellipse 320px 160px at 35% 65%, rgba(185,195,255,0.4), transparent 57%),
-						radial-gradient(ellipse 420px 210px at 90% 70%, rgba(195,180,255,0.48), transparent 63%)
+						radial-gradient(ellipse 400px 200px at 20% 30%, ${StyleTheme.Cosmic.CloudColors.lightPurple}, transparent 60%),
+						radial-gradient(ellipse 350px 180px at 70% 50%, ${StyleTheme.Cosmic.CloudColors.lightBlue}, transparent 55%),
+						radial-gradient(ellipse 300px 150px at 45% 75%, ${StyleTheme.Cosmic.CloudColors.lightPink}, transparent 50%),
+						radial-gradient(ellipse 450px 220px at 85% 20%, ${StyleTheme.Cosmic.CloudColors.softPurple}, transparent 65%),
+						radial-gradient(ellipse 280px 140px at 15% 80%, ${StyleTheme.Cosmic.CloudColors.softPink}, transparent 58%),
+						radial-gradient(ellipse 380px 190px at 60% 40%, ${StyleTheme.Cosmic.CloudColors.midPurple}, transparent 62%),
+						radial-gradient(ellipse 320px 160px at 35% 65%, ${StyleTheme.Cosmic.CloudColors.midBlue}, transparent 57%),
+						radial-gradient(ellipse 420px 210px at 90% 70%, ${StyleTheme.Cosmic.CloudColors.deepPurple}, transparent 63%)
 					`,
 					filter: "blur(60px)",
 					mixBlendMode: "overlay",

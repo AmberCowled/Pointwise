@@ -7,6 +7,7 @@ import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import Page from "../ui/Page";
 import { Spinner } from "../ui/Spinner";
+import { StyleTheme } from "../ui/StyleTheme";
 import { TabsV2 } from "../ui/TabsV2";
 import AuthForm from "./AuthForm";
 import SocialAuthButtons from "./SocialAuthButtons";
@@ -55,7 +56,7 @@ export default function AuthPage() {
 					<Container
 						direction="vertical"
 						width="full"
-						className="bg-zinc-900/50 p-10 rounded-xl"
+						className={`${StyleTheme.Container.BackgroundSubtle} p-10 rounded-xl`}
 					>
 						<Container width="full" gap="none">
 							<TabsV2
@@ -68,7 +69,9 @@ export default function AuthPage() {
 							{isLoading ? (
 								<div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
 									<Spinner size="lg" variant="primary" type="circular" />
-									<p className="text-sm font-medium text-zinc-300">
+									<p
+										className={`text-sm font-medium ${StyleTheme.Text.Tertiary}`}
+									>
 										{isSocialLoading
 											? "Logging In..."
 											: tab === "signin"
@@ -94,14 +97,14 @@ export default function AuthPage() {
 					className="text-center"
 					gap="sm"
 				>
-					<p className="text-sm text-zinc-200 leading-relaxed">
+					<p className={`text-sm ${StyleTheme.Text.Body} leading-relaxed`}>
 						Gamify your work. Track your tasks. Level up your productivity.
 					</p>
 
 					<Container
 						direction="vertical"
 						width="full"
-						className="text-xs text-zinc-300"
+						className={`text-xs ${StyleTheme.Text.Tertiary}`}
 					>
 						© {COPYRIGHT_YEAR} Amber Cowled. All rights reserved.
 					</Container>

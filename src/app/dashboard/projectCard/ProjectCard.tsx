@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
 import DeleteProjectModal from "../modals/project/DeleteProjectModal";
@@ -32,7 +33,7 @@ export default function ProjectCard({
 				width="full"
 				direction="vertical"
 				gap="none"
-				className="bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-zinc-600 cursor-pointer px-4 py-2"
+				className={`${StyleTheme.Container.BackgroundSubtle} rounded-lg border ${StyleTheme.Container.Border.Dark} hover:border-zinc-600 cursor-pointer px-4 py-2`}
 				onClick={() => {
 					if (overrideOnClick) {
 						overrideOnClick();

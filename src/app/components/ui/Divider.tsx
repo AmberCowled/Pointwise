@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
+import { StyleTheme } from "./StyleTheme";
 
 export type DividerOrientation = "horizontal" | "vertical";
 export type DividerVariant = "subtle" | "prominent";
@@ -15,13 +16,13 @@ export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantBorderStyles: Record<DividerVariant, string> = {
-	subtle: "border-white/10",
-	prominent: "border-white/20",
+	subtle: StyleTheme.Divider.Subtle,
+	prominent: StyleTheme.Divider.Prominent,
 };
 
 const variantLabelStyles: Record<DividerVariant, string> = {
-	subtle: "bg-zinc-900/50 text-zinc-400",
-	prominent: "bg-zinc-900/50 text-zinc-300",
+	subtle: `${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Secondary}`,
+	prominent: `${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Text.Tertiary}`,
 };
 
 const spacingStyles: Record<

@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useGetRepliesQuery } from "@pointwise/generated/api";
 import CommentInput from "./CommentInput";
 import CommentItem from "./CommentItem";
@@ -27,7 +28,7 @@ export default function CommentReplySection({
 			direction="vertical"
 			width="auto"
 			gap="sm"
-			className="ml-6 mt-2 border-l-2 border-zinc-700/50 pl-4 items-stretch min-w-0 overflow-hidden w-[calc(100%-1.5rem)]"
+			className={`ml-6 mt-2 border-l-2 ${StyleTheme.Container.Border.Subtle} pl-4 items-stretch min-w-0 overflow-hidden w-[calc(100%-1.5rem)]`}
 		>
 			{isLoading && <p className="text-xs text-zinc-500">Loading replies...</p>}
 			{data?.replies.map((reply) => (

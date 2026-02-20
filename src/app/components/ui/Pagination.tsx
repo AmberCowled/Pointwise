@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "./Button";
 import InputSelect from "./InputSelect";
+import { StyleTheme } from "./StyleTheme";
 
 export type PaginationVariant = "primary" | "secondary";
 export type PaginationSize = "xs" | "sm" | "md" | "lg" | "xl";
@@ -108,17 +109,13 @@ const basePageButtonStyle =
 
 // Variant styles for page buttons
 const variantPageButtonStyles: Record<PaginationVariant, string> = {
-	primary:
-		"border-white/10 bg-white/5 text-zinc-200 hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white",
-	secondary:
-		"border-white/10 bg-zinc-900/80 text-zinc-200 hover:border-fuchsia-500/50 hover:bg-fuchsia-500/10 hover:text-white",
+	primary: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} ${StyleTheme.Text.Body} ${StyleTheme.Interactive.HoverPrimary}`,
+	secondary: `${StyleTheme.Container.Border.Primary} bg-zinc-900/80 ${StyleTheme.Text.Body} ${StyleTheme.Interactive.HoverSecondary}`,
 };
 
 const variantActivePageStyles: Record<PaginationVariant, string> = {
-	primary:
-		"border-indigo-400/60 bg-indigo-500/20 text-white shadow-lg shadow-indigo-500/20",
-	secondary:
-		"border-fuchsia-500/60 bg-fuchsia-500/20 text-white shadow-lg shadow-fuchsia-500/20",
+	primary: StyleTheme.Interactive.ActivePagePrimary,
+	secondary: StyleTheme.Interactive.ActivePageSecondary,
 };
 
 // Size styles for text and spacing
@@ -497,7 +494,9 @@ export function Pagination({
 								{startItem}–{endItem}
 							</span>{" "}
 							<span className="text-zinc-500">of</span>{" "}
-							<span className="text-zinc-300">{validatedTotalItems}</span>
+							<span className={StyleTheme.Text.Tertiary}>
+								{validatedTotalItems}
+							</span>
 						</div>
 					) : (
 						// Invisible placeholder to maintain centered navigation on desktop
@@ -505,7 +504,7 @@ export function Pagination({
 							<div className={clsx(sizeTextStyles[size], "text-zinc-500")}>
 								<span className="text-zinc-400">0–0</span>{" "}
 								<span className="text-zinc-500">of</span>{" "}
-								<span className="text-zinc-300">0</span>
+								<span className={StyleTheme.Text.Tertiary}>0</span>
 							</div>
 						</div>
 					)}

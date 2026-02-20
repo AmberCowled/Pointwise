@@ -2,6 +2,7 @@ import { Card } from "@pointwise/app/components/ui/Card";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Grid from "@pointwise/app/components/ui/Grid";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useSearchUsersQuery } from "@pointwise/generated/api";
 import { IoSearchOutline } from "react-icons/io5";
 import UserCard from "../userCard/UserCard";
@@ -44,7 +45,7 @@ export default function UsersSearchResults({ query }: UsersSearchResultsProps) {
 						width="full"
 						direction="vertical"
 						gap="sm"
-						className="py-8 text-zinc-400 bg-zinc-900/50 rounded-sm border border-zinc-700/50"
+						className={`py-8 ${StyleTheme.Text.Secondary} ${StyleTheme.Container.BackgroundSubtle} rounded-sm border ${StyleTheme.Container.Border.Subtle}`}
 					>
 						<IoSearchOutline className="size-10 mb-2" />
 						<span className="font-medium text-lg">No users found</span>

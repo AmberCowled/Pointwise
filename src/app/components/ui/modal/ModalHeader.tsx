@@ -5,6 +5,7 @@ import clsx from "clsx";
 import type { PropsWithChildren, ReactNode } from "react";
 import { useId } from "react";
 
+import { StyleTheme } from "../StyleTheme";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { useModalContext } from "./ModalContext";
 
@@ -107,7 +108,7 @@ export function ModalHeader({
 	return (
 		<header
 			className={clsx(
-				"flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-6 py-4",
+				`flex flex-wrap items-center justify-between gap-4 border-b ${StyleTheme.Divider.Subtle} px-6 py-4`,
 				className,
 			)}
 			{...props}
@@ -117,7 +118,7 @@ export function ModalHeader({
 					<DialogTitle
 						id={titleId}
 						className={clsx(
-							"font-semibold text-zinc-100",
+							`font-semibold ${StyleTheme.Text.Primary}`,
 							titleSizeStyles[size],
 							icon && "flex items-center gap-2",
 						)}
@@ -132,7 +133,7 @@ export function ModalHeader({
 					</DialogTitle>
 				) : null}
 				{subtitle ? (
-					<p className={clsx("text-zinc-500", subtitleSizeStyles[size])}>
+					<p className={clsx(StyleTheme.Text.Muted, subtitleSizeStyles[size])}>
 						{subtitle}
 					</p>
 				) : null}

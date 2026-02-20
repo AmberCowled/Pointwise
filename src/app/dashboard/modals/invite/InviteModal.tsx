@@ -4,6 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import Page from "@pointwise/app/components/ui/Page";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	useCanInviteQuery,
 	useGetProjectsQuery,
@@ -171,7 +172,9 @@ export default function InviteModal({ inviteUser }: InviteModalProps) {
 									width="full"
 									className="items-center justify-center py-12"
 								>
-									<p className="text-zinc-400 text-sm">No projects available</p>
+									<p className={`${StyleTheme.Text.Secondary} text-sm`}>
+										No projects available
+									</p>
 								</Container>
 							)}
 						</Container>
@@ -181,7 +184,9 @@ export default function InviteModal({ inviteUser }: InviteModalProps) {
 							width="full"
 							className="items-center justify-center py-12"
 						>
-							<p className="text-zinc-400 text-sm">No projects available</p>
+							<p className={`${StyleTheme.Text.Secondary} text-sm`}>
+								No projects available
+							</p>
 						</Container>
 					)}
 				</Page>
@@ -189,7 +194,7 @@ export default function InviteModal({ inviteUser }: InviteModalProps) {
 			<Modal.Footer align="center" className="p-0!">
 				<Button
 					variant="secondary"
-					className="w-full min-h-[60px] rounded-none border-none border-t border-white/10 m-0"
+					className="w-full min-h-[60px] rounded-none border-none border-t m-0"
 				>
 					Close
 				</Button>

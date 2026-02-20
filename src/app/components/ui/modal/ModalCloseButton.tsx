@@ -3,6 +3,7 @@
 import clsx from "clsx";
 
 import { XIcon } from "../icons/XIcon";
+import { StyleTheme } from "../StyleTheme";
 import { useModalContext } from "./ModalContext";
 
 /**
@@ -47,12 +48,9 @@ const sizeStyles: Record<CloseButtonSize, string> = {
 };
 
 const variantStyles: Record<CloseButtonVariant, string> = {
-	primary:
-		"border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 hover:text-indigo-200 hover:border-indigo-400/60",
-	secondary:
-		"border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-100",
-	ghost:
-		"border-transparent bg-transparent text-zinc-400 hover:bg-white/5 hover:text-zinc-100",
+	primary: `${StyleTheme.Status.Info.border} ${StyleTheme.Status.Info.bg} text-indigo-300 hover:bg-indigo-500/20 hover:text-indigo-200 hover:border-indigo-400/60`,
+	secondary: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} ${StyleTheme.Text.Secondary} hover:bg-white/10 hover:text-zinc-100`,
+	ghost: `border-transparent bg-transparent ${StyleTheme.Text.Secondary} ${StyleTheme.Hover.Subtle} hover:text-zinc-100`,
 };
 
 /**
@@ -83,7 +81,7 @@ export function ModalCloseButton({
 			type="button"
 			onClick={handleClose}
 			className={clsx(
-				"inline-flex items-center justify-center rounded-lg border transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
+				`inline-flex items-center justify-center rounded-lg border transition focus:outline-none ${StyleTheme.Accent.FocusRingPrimary}`,
 				sizeStyles[size],
 				variantStyles[variant],
 				className,

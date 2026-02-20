@@ -2,6 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { TextPreview } from "@pointwise/app/components/ui/TextPreview";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
 import { useArchiveConversationMutation } from "@pointwise/generated/api";
@@ -64,7 +65,7 @@ export default function ConversationCard({
 			direction="horizontal"
 			gap="sm"
 			width="full"
-			className="rounded-lg border border-white/10 bg-zinc-900/50 transition-colors hover:border-zinc-600 pr-2"
+			className={`rounded-lg border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundSubtle} transition-colors hover:border-zinc-600 pr-2`}
 		>
 			<Link
 				href={`/messages/${conversation.id}`}
@@ -77,7 +78,9 @@ export default function ConversationCard({
 					width="auto"
 					className="items-start text-left"
 				>
-					<span className="block w-full truncate font-medium text-zinc-100">
+					<span
+						className={`block w-full truncate font-medium ${StyleTheme.Text.Primary}`}
+					>
 						{title}
 					</span>
 					{lastMessagePreview && (
@@ -85,7 +88,7 @@ export default function ConversationCard({
 							text={lastMessagePreview}
 							lines={1}
 							size="sm"
-							className="text-xs text-zinc-300"
+							className={`text-xs ${StyleTheme.Text.Tertiary}`}
 						/>
 					)}
 				</Container>

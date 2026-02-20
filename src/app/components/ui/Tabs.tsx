@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
+import { StyleTheme } from "./StyleTheme";
 
 export type TabsVariant = "primary" | "secondary" | "filter";
 export type TabsSize = "sm" | "md" | "lg";
@@ -96,17 +97,15 @@ const filterTabSizeStyles: Record<TabsSize, string> = {
 };
 
 const activeTabStyles: Record<TabsVariant, string> = {
-	primary: "bg-zinc-950 text-white",
-	secondary: "bg-zinc-800 text-white",
-	filter:
-		"border-indigo-400/80 bg-indigo-500/20 text-white shadow-inner shadow-indigo-500/30",
+	primary: `${StyleTheme.Container.BackgroundSolid} ${StyleTheme.Text.PrimaryBright}`,
+	secondary: `bg-zinc-800 ${StyleTheme.Text.PrimaryBright}`,
+	filter: `border-indigo-400/80 bg-indigo-500/20 ${StyleTheme.Text.PrimaryBright} ${StyleTheme.Shadow.Inner}`,
 };
 
 const inactiveTabStyles: Record<TabsVariant, string> = {
-	primary: "text-zinc-400 hover:text-zinc-200",
-	secondary: "text-zinc-500 hover:text-zinc-300",
-	filter:
-		"border-white/10 text-zinc-400 hover:border-indigo-400/60 hover:text-white",
+	primary: `${StyleTheme.Text.Secondary} ${StyleTheme.Hover.TextBrighten}`,
+	secondary: `${StyleTheme.Text.Muted} ${StyleTheme.Hover.TextBrighten}`,
+	filter: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Text.Secondary} hover:border-indigo-400/60 hover:text-white`,
 };
 
 export function Tabs({

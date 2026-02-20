@@ -6,6 +6,7 @@ import { Children, cloneElement, isValidElement, useState } from "react";
 import type { IconType } from "react-icons";
 import Grid from "./Grid";
 import { InputHeader } from "./InputHeader";
+import { StyleTheme } from "./StyleTheme";
 
 type SelectorSize = "xs" | "sm" | "md" | "lg" | "xl";
 type SelectorFlex = "shrink" | "default" | "grow";
@@ -89,7 +90,7 @@ export function SelectorOption({
 			{description && (
 				<span
 					className={clsx(
-						"mt-1 text-zinc-500",
+						`mt-1 ${StyleTheme.Text.Muted}`,
 						size === "xs" ? "text-[10px]" : "text-xs",
 					)}
 				>
@@ -171,9 +172,8 @@ const innerWidthClasses: Record<SelectorFlex, string> = {
 	grow: "w-full",
 };
 
-const selectedStyles = "bg-indigo-500/10 border-indigo-500/50 text-indigo-400";
-const unselectedStyles =
-	"bg-zinc-800/50 border-white/10 text-zinc-400 hover:border-white/20";
+const selectedStyles = StyleTheme.Interactive.Selected;
+const unselectedStyles = `${StyleTheme.Container.BackgroundEmpty} ${StyleTheme.Container.Border.Primary} ${StyleTheme.Text.Secondary} ${StyleTheme.Hover.BorderLift}`;
 const disabledStyles = "opacity-50 cursor-not-allowed";
 
 // Define component type with static Option property
@@ -274,7 +274,6 @@ const Selector = (({
 				sizeStyle.padding,
 				isSelected ? selectedStyles : unselectedStyles,
 				optionDisabled && disabledStyles,
-				!optionDisabled && !isSelected && "hover:border-white/20",
 				!optionDisabled && "cursor-pointer",
 				child.props.className,
 			),

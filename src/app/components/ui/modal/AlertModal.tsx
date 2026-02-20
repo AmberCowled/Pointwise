@@ -2,6 +2,7 @@
 
 import type { ComponentType } from "react";
 import { Button } from "../Button";
+import { StyleTheme } from "../StyleTheme";
 import Modal from "./Modal";
 import { ModalRenderQueue } from "./modalRenderQueue";
 
@@ -75,7 +76,7 @@ export function AlertModalComponent({
 		<Modal id={id} size={options.size || "md"}>
 			<Modal.Header title={options.title || "Alert"} showCloseButton />
 			<Modal.Body>
-				<p className="text-zinc-300">{options.message}</p>
+				<p className={StyleTheme.Text.Tertiary}>{options.message}</p>
 			</Modal.Body>
 			<Modal.Footer align="end">
 				<Button

@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useState } from "react";
@@ -32,7 +33,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 				direction="vertical"
 				width="full"
 				gap="none"
-				className={`bg-zinc-900/50 px-4 py-2 rounded-lg border border-zinc-700/50 hover:border-white/20 items-start`}
+				className={`${StyleTheme.Container.BackgroundSubtle} px-4 py-2 rounded-lg border ${StyleTheme.Container.Border.Subtle} ${StyleTheme.Hover.BorderLift} items-start`}
 			>
 				<TaskHeader task={task} open={open} onChange={setOpen} />
 				{task.description && (
@@ -43,7 +44,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 					direction="vertical"
 					width="full"
 					gap="sm"
-					className="py-2 border-b border-zinc-700/50"
+					className={`py-2 border-b ${StyleTheme.Container.Border.Subtle}`}
 				>
 					<Container width="full" gap="sm">
 						<TaskStatus status={task.status ?? "PENDING"} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuSeparator } from "@headlessui/react";
+import { StyleTheme } from "../StyleTheme";
 
 /**
  * MenuDivider - Visual separator between menu items or sections
@@ -22,5 +23,7 @@ import { MenuSeparator } from "@headlessui/react";
  * ```
  */
 export function MenuDivider() {
-	return <MenuSeparator className="my-1 border-t border-white/10" />;
+	return (
+		<MenuSeparator className={`my-1 border-t ${StyleTheme.Divider.Subtle}`} />
+	);
 }

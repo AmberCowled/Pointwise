@@ -76,7 +76,7 @@ export default function InviteAsRoleModal({
 			<Modal.Footer align="center" className="p-0!">
 				<Button
 					variant="secondary"
-					className="w-full min-h-[60px] rounded-none border-none border-t border-white/10 m-0"
+					className="w-full min-h-[60px] rounded-none border-none border-t m-0"
 				>
 					Cancel
 				</Button>
