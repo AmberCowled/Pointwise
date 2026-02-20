@@ -7,6 +7,9 @@
 
 /* @theme is a Tailwind CSS v4 directive - valid but not recognized by CSS linters */
 @theme inline {
+	--color-brand-primary: #3B0270;
+	--color-brand-secondary: #6F00FF;
+	--color-brand-tertiary: #3A2BFF;
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--font-sans: var(--font-geist-sans);

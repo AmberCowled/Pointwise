@@ -20,9 +20,9 @@ const brandColors = {
 // Consumed by composite tokens below; not exported directly.
 
 const palette = {
-	brandFrom: `from-[${brandColors.primary}]`,
-	brandVia: `via-[${brandColors.secondary}]`,
-	brandTo: `to-[${brandColors.tertiary}]`,
+	brandFrom: "from-brand-primary",
+	brandVia: "via-brand-secondary",
+	brandTo: "to-brand-tertiary",
 
 	disabledFrom: "from-zinc-600",
 	disabledVia: "via-zinc-500",
@@ -38,7 +38,8 @@ export const StyleTheme = {
 	GalaxyGradientDisabled: `bg-gradient-to-r ${palette.disabledFrom} ${palette.disabledVia} ${palette.disabledTo}`,
 
 	// Linear variant used by BackgroundGlow (combined with a direction class)
-	GalaxyGlow: `${palette.brandFrom}/30 ${palette.brandVia}/20 ${palette.brandTo}/20`,
+	GalaxyGlow:
+		"from-brand-primary/30 via-brand-secondary/20 to-brand-tertiary/20",
 
 	// ── Container / Card ─────────────────────────────────────────────
 	Container: {
@@ -85,7 +86,7 @@ export const StyleTheme = {
 	// ── Shadows ──────────────────────────────────────────────────────
 	Shadow: {
 		Card: "shadow-2xl shadow-black/40",
-		ButtonPrimary: `shadow-lg shadow-[${brandColors.secondary}]/20`,
+		ButtonPrimary: "shadow-lg shadow-brand-secondary/20",
 		ButtonDisabled: "shadow-zinc-700/20",
 		Focus:
 			"shadow-[0_0_0_3px_rgba(255,255,255,0.35),0_10px_25px_-10px_rgba(0,0,0,0.6)]",
@@ -95,11 +96,11 @@ export const StyleTheme = {
 	// ── Accent / Focus ───────────────────────────────────────────────
 	Accent: {
 		FocusRingPrimary: "focus:ring-2 focus:ring-indigo-500/40",
-		FocusRingSecondary: "focus:ring-2 focus:ring-[#6F00FF]/40",
+		FocusRingSecondary: "focus:ring-2 focus:ring-brand-secondary/40",
 		FocusRingDanger: "focus:ring-2 focus:ring-rose-500/40",
 
 		FocusBorderPrimary: "focus:border-indigo-400/60",
-		FocusBorderSecondary: "focus:border-[#6F00FF]/50",
+		FocusBorderSecondary: "focus:border-brand-secondary/50",
 		FocusBorderDanger: "focus:border-rose-500/80",
 	},
 
@@ -161,19 +162,22 @@ export const StyleTheme = {
 	// ── Interactive (selected states, pagination) ────────────────────
 	Interactive: {
 		SelectedPrimary: "bg-indigo-500/20 text-white",
-		SelectedSecondary: `bg-[${brandColors.secondary}]/20 text-white`,
+		SelectedSecondary: "bg-brand-secondary/20 text-white",
 
 		HoverPrimary:
 			"hover:border-indigo-400/60 hover:bg-indigo-500/10 hover:text-white",
-		HoverSecondary: `hover:border-[${brandColors.secondary}]/50 hover:bg-[${brandColors.secondary}]/10 hover:text-white`,
+		HoverSecondary:
+			"hover:border-brand-secondary/50 hover:bg-brand-secondary/10 hover:text-white",
 
 		ActivePagePrimary:
 			"border-indigo-400/60 bg-indigo-500/20 text-white shadow-lg shadow-indigo-500/20",
-		ActivePageSecondary: `border-[${brandColors.secondary}]/60 bg-[${brandColors.secondary}]/20 text-white shadow-lg shadow-[${brandColors.secondary}]/20`,
+		ActivePageSecondary:
+			"border-brand-secondary/60 bg-brand-secondary/20 text-white shadow-lg shadow-brand-secondary/20",
 
 		// Checkbox checked states
 		CheckedPrimary: "checked:bg-indigo-500 checked:border-indigo-500",
-		CheckedSecondary: `checked:bg-[${brandColors.secondary}]/20 checked:border-[${brandColors.secondary}]/50`,
+		CheckedSecondary:
+			"checked:bg-brand-secondary/20 checked:border-brand-secondary/50",
 		CheckedDanger: "checked:bg-rose-500 checked:border-rose-500",
 
 		// Selector
