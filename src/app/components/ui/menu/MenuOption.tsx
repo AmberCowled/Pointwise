@@ -3,6 +3,7 @@
 import { MenuItem as HeadlessMenuItem } from "@headlessui/react";
 import clsx from "clsx";
 import type { ReactNode } from "react";
+import { StyleTheme } from "../StyleTheme";
 import { getLinkProps, isButtonProps, isLinkProps } from "./utils";
 
 type MenuOptionVariants = "primary" | "secondary" | "danger";
@@ -52,9 +53,9 @@ const baseItemStyle =
 	"flex items-center justify-start gap-3 rounded-xl px-3 py-2 text-sm font-medium text-left transition cursor-pointer w-full";
 
 const variantStyles: Record<MenuOptionVariants, string> = {
-	primary: "text-zinc-100 hover:bg-white/10 focus:bg-white/10",
-	secondary: "text-zinc-100 hover:bg-zinc-800 focus:bg-zinc-800",
-	danger: "text-rose-300 hover:bg-rose-500/20 focus:bg-rose-500/20",
+	primary: `${StyleTheme.Text.Primary} hover:bg-white/10 focus:bg-white/10`,
+	secondary: `${StyleTheme.Text.Primary} hover:bg-zinc-800 focus:bg-zinc-800`,
+	danger: `text-rose-300 ${StyleTheme.Hover.DangerBg} focus:bg-rose-500/20`,
 };
 
 const sizeStyles: Record<MenuOptionSizes, string> = {
@@ -115,7 +116,7 @@ export function MenuOption({
 			<div className="flex-1 min-w-0">
 				{label && <span className="block font-medium">{label}</span>}
 				{description && (
-					<span className="block text-xs text-zinc-500 mt-0.5">
+					<span className={`block text-xs ${StyleTheme.Text.Muted} mt-0.5`}>
 						{description}
 					</span>
 				)}

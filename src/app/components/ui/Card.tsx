@@ -4,6 +4,7 @@ import clsx from "clsx";
 import React from "react";
 import Container from "./Container";
 import { Spinner } from "./Spinner";
+import { StyleTheme } from "./StyleTheme";
 
 export type CardVariants = "primary" | "secondary" | "danger";
 export type CardSizes = "xs" | "sm" | "md" | "lg" | "xl";
@@ -92,13 +93,12 @@ export interface CardCustomProps {
 export type CardProps = CardCustomProps &
 	Omit<React.HTMLAttributes<HTMLDivElement>, "onClick" | "className">;
 
-const baseStyle = "bg-zinc-900/60 backdrop-blur";
+const baseStyle = StyleTheme.Container.Background;
 
 const variantStyles: Record<CardVariants, string> = {
-	primary: "rounded-2xl border border-white/10 shadow-2xl shadow-black/40",
-	secondary: "rounded-3xl border border-white/5",
-	danger:
-		"rounded-2xl border border-rose-400/40 bg-rose-500/25 backdrop-blur text-zinc-100",
+	primary: `rounded-2xl border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.Shadow}`,
+	secondary: `rounded-3xl border ${StyleTheme.Container.Border.Secondary}`,
+	danger: `rounded-2xl border ${StyleTheme.Container.Border.Danger} ${StyleTheme.Container.BackgroundDanger} ${StyleTheme.Text.Primary}`,
 };
 
 const sizeStyles: Record<CardSizes, string> = {

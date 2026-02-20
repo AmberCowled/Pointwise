@@ -3,6 +3,7 @@
 import BorderGlow from "@pointwise/app/components/ui/BorderGlow";
 import clsx from "clsx";
 import type React from "react";
+import { StyleTheme } from "./StyleTheme";
 export type TabsV2Size = "sm" | "md" | "lg";
 
 export interface TabItemV2 {
@@ -114,10 +115,10 @@ export function TabsV2({
 							isDisabled && "opacity-50 cursor-not-allowed",
 							!isDisabled &&
 								!isActive &&
-								"text-zinc-400 hover:text-zinc-200 bg-zinc-900/20 backdrop-blur-sm border-b border-zinc-700/30 hover:bg-zinc-900/30 focus:ring-2 focus:ring-fuchsia-500/40",
+								`${StyleTheme.Text.Secondary} hover:text-zinc-200 bg-zinc-900/20 backdrop-blur-sm border-b border-zinc-700/30 hover:bg-zinc-900/30 ${StyleTheme.Accent.FocusRingSecondary}`,
 							!isDisabled &&
 								isActive &&
-								"text-white bg-zinc-900/50 focus:ring-2 focus:ring-fuchsia-500/40",
+								`${StyleTheme.Text.PrimaryBright} ${StyleTheme.Container.BackgroundSubtle} ${StyleTheme.Accent.FocusRingSecondary}`,
 						)}
 					>
 						<BorderGlow

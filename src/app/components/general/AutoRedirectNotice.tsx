@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 import { Button } from "../ui/Button";
 import { Spinner } from "../ui/Spinner";
+import { StyleTheme } from "../ui/StyleTheme";
 
 type AutoRedirectNoticeProps = {
 	target: string;
@@ -32,7 +33,9 @@ export function AutoRedirectNotice({
 
 	return (
 		<div className="mt-2 flex flex-col items-center gap-4">
-			<div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-zinc-900/80 px-4 py-2 text-xs text-zinc-300">
+			<div
+				className={`inline-flex items-center gap-3 rounded-full border ${StyleTheme.Container.Border.Primary} bg-zinc-900/80 px-4 py-2 text-xs text-zinc-300`}
+			>
 				<Spinner
 					size="sm"
 					variant="primary"
@@ -42,7 +45,7 @@ export function AutoRedirectNotice({
 				<span>{description}</span>
 			</div>
 
-			<div className="text-[11px] text-zinc-500">
+			<div className={`text-[11px] ${StyleTheme.Text.Muted}`}>
 				Not redirected? Use the button below.
 			</div>
 

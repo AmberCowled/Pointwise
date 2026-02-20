@@ -1,3 +1,4 @@
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { serializeXP } from "@pointwise/lib/api/xp";
 import { IoStar } from "react-icons/io5";
 
@@ -21,7 +22,7 @@ export default function UserLevelStats({ xp }: UserLevelStatsProps) {
 			</span>
 			<div className="flex-1 h-1 bg-zinc-700/50 rounded-full mx-1">
 				<div
-					className="h-full rounded-full bg-linear-to-r from-indigo-500 via-fuchsia-500 to-rose-500"
+					className={`h-full rounded-full bg-linear-to-r ${StyleTheme.GalaxyGradientStops}`}
 					style={{ width: `${progress}%` }}
 				/>
 			</div>

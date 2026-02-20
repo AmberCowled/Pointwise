@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
+import { StyleTheme } from "./StyleTheme";
 
 export type SkeletonVariant = "primary" | "secondary";
 
@@ -34,8 +35,8 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<SkeletonVariant, string> = {
-	primary: "bg-white/10",
-	secondary: "bg-white/5",
+	primary: StyleTheme.Skeleton.Primary,
+	secondary: StyleTheme.Skeleton.Secondary,
 };
 
 /**

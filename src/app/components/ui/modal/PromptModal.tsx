@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../Button";
+import { StyleTheme } from "../StyleTheme";
 import Modal from "./Modal";
 import { ModalRenderQueue } from "./modalRenderQueue";
 
@@ -135,7 +136,7 @@ export function PromptModalComponent({
 						value={value}
 						onChange={(e) => setValue(e.target.value)}
 						placeholder={options.placeholder}
-						className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-zinc-100 placeholder-zinc-500 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+						className={`w-full rounded-lg border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} px-4 py-2 ${StyleTheme.Text.Primary} ${StyleTheme.Text.Placeholder} focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
 						onKeyDown={(e) => {
 							if (e.key === "Enter") {
 								handleConfirm();

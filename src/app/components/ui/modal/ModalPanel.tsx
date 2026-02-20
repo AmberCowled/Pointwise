@@ -5,6 +5,7 @@ import clsx from "clsx";
 import type { PropsWithChildren } from "react";
 import { Fragment } from "react";
 
+import { StyleTheme } from "../StyleTheme";
 import type { ModalAnimation } from "./ModalContainer";
 
 interface ModalPanelProps extends PropsWithChildren {
@@ -112,7 +113,7 @@ export function ModalPanel({
 			>
 				<DialogPanel
 					className={clsx(
-						"relative flex h-dvh w-full max-w-full flex-col bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40",
+						`relative flex h-dvh w-full max-w-full flex-col ${StyleTheme.Container.BackgroundSolid} ${StyleTheme.Text.Primary} ${StyleTheme.Container.Shadow}`,
 						className,
 					)}
 					style={
@@ -144,7 +145,7 @@ export function ModalPanel({
 		>
 			<DialogPanel
 				className={clsx(
-					"relative w-full transform overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/40 transition-all",
+					`relative w-full transform overflow-hidden rounded-2xl border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundSolid} ${StyleTheme.Text.Primary} ${StyleTheme.Container.Shadow} transition-all`,
 					sizeClassName,
 					className,
 				)}

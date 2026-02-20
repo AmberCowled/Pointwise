@@ -2,6 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useGetXPQuery } from "@pointwise/generated/api";
 import clsx from "clsx";
 import { IoRefresh } from "react-icons/io5";
@@ -16,12 +17,16 @@ export default function XPBar() {
 	const progressBarStyles = clsx("h-1.5 w-full rounded-full transition-all", {
 		"animate-pulse bg-zinc-700": isCurrentlyLoading,
 		"bg-rose-500/10 border border-rose-400/20": isError && !isCurrentlyLoading,
-		"bg-linear-to-r from-indigo-500 via-fuchsia-500 to-rose-500":
+		[`bg-linear-to-r ${StyleTheme.GalaxyGradientStops}`]:
 			!isError && !isCurrentlyLoading,
 	});
 
 	return (
-		<Container width="full" className="bg-white/10 rounded-full h-1.5" gap="xs">
+		<Container
+			width="full"
+			className={`${StyleTheme.Skeleton.Primary} rounded-full h-1.5`}
+			gap="xs"
+		>
 			<div
 				className={progressBarStyles}
 				style={{ width: `${progressPercent}%` }}

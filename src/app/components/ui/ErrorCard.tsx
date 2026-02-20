@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { IoWarning } from "react-icons/io5";
 import { Button } from "./Button";
 import Card from "./Card";
+import { StyleTheme } from "./StyleTheme";
 
 export interface ErrorCardProps {
 	/**
@@ -49,7 +50,7 @@ export function ErrorCard({
 					variant="secondary"
 					size="sm"
 					onClick={onRetry}
-					className="bg-white/10 hover:bg-white/20 text-white border-white/20 shrink-0"
+					className={`${StyleTheme.Skeleton.Primary} hover:bg-white/20 ${StyleTheme.Text.PrimaryBright} ${StyleTheme.Divider.Prominent} shrink-0`}
 				>
 					Retry
 				</Button>

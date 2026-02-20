@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@pointwise/app/components/ui/Button";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { IoChatbubbles } from "react-icons/io5";
 
 export interface NoMessagesViewProps {
@@ -20,7 +21,9 @@ export default function NoMessagesView({
 }: NoMessagesViewProps) {
 	return (
 		<div className="text-center py-12">
-			<div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800/50 flex items-center justify-center">
+			<div
+				className={`w-16 h-16 mx-auto mb-4 rounded-full ${StyleTheme.Container.BackgroundEmpty} flex items-center justify-center`}
+			>
 				<IoChatbubbles className="w-8 h-8 text-zinc-600" aria-hidden="true" />
 			</div>
 			<h3 className="text-lg font-semibold text-zinc-100 mb-2">

@@ -2,6 +2,7 @@
 
 import BrandHeader from "@pointwise/app/components/general/BrandHeader";
 import Container from "@pointwise/app/components/ui/Container";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useRouter } from "next/navigation";
 import FriendRequestsMenu from "./FriendRequestsMenu";
 import LVStat from "./LVStat";
@@ -19,7 +20,7 @@ export default function Navbar() {
 			direction="vertical"
 			gap="sm"
 			width="full"
-			className="border-b border-white/10 bg-zinc-900/50 z-1"
+			className={`border-b ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundSubtle} z-1`}
 		>
 			<Container className="pt-2" gap="sm">
 				<BrandHeader size="small" showText={false} showEyebrow={true} />

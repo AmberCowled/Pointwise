@@ -13,6 +13,7 @@ import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { IoChevronDown } from "react-icons/io5";
 
 import { InputHeader } from "./InputHeader";
+import { StyleTheme } from "./StyleTheme";
 
 type InputSelectVariants = "primary" | "secondary" | "danger";
 type InputSelectSizes = "xs" | "sm" | "md" | "lg" | "xl";
@@ -94,25 +95,24 @@ export interface InputSelectProps {
 	className?: string;
 }
 
-const baseButtonStyle =
-	"relative w-full text-left text-zinc-100 shadow-inner shadow-white/5 transition focus:outline-none disabled:cursor-not-allowed";
+const baseButtonStyle = `relative w-full text-left ${StyleTheme.Text.Primary} ${StyleTheme.Shadow.Inner} transition focus:outline-none disabled:cursor-not-allowed`;
 
 const variantStyles: Record<InputSelectVariants, string> = {
-	primary: "rounded-2xl border-white/10 bg-white/5",
-	secondary: "rounded-lg border-white/10 bg-zinc-900",
-	danger: "rounded-2xl border-rose-400/60 bg-rose-500/10",
+	primary: `rounded-2xl ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput}`,
+	secondary: `rounded-lg ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInputSecondary}`,
+	danger: `rounded-2xl ${StyleTheme.Container.Border.DangerStrong} ${StyleTheme.Container.BackgroundDangerSubtle}`,
 };
 
 const variantFocusStyles: Record<InputSelectVariants, string> = {
-	primary: "focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/40",
-	secondary: "focus:border-fuchsia-500/50",
-	danger: "focus:border-rose-500/80 focus:ring-2 focus:ring-rose-500/40",
+	primary: `${StyleTheme.Accent.FocusBorderPrimary} ${StyleTheme.Accent.FocusRingPrimary}`,
+	secondary: StyleTheme.Accent.FocusBorderSecondary,
+	danger: `${StyleTheme.Accent.FocusBorderDanger} ${StyleTheme.Accent.FocusRingDanger}`,
 };
 
 const variantHoverStyles: Record<InputSelectVariants, string> = {
-	primary: "hover:border-white/20",
-	secondary: "hover:border-white/15",
-	danger: "hover:border-rose-400/70",
+	primary: StyleTheme.Hover.BorderLift,
+	secondary: StyleTheme.Hover.BorderLiftSecondary,
+	danger: StyleTheme.Hover.DangerBorder,
 };
 
 const sizeStyles: Record<InputSelectSizes, string> = {
@@ -125,20 +125,18 @@ const sizeStyles: Record<InputSelectSizes, string> = {
 
 const disabledStyle = "opacity-50";
 
-const defaultErrorStyle = "border-rose-400/60 focus:border-rose-400/80";
 const variantErrorStyles: Record<InputSelectVariants, string> = {
-	primary: defaultErrorStyle,
-	secondary: defaultErrorStyle,
-	danger: "border-rose-500/80 focus:border-rose-500/90",
+	primary: StyleTheme.ErrorBorder.Primary,
+	secondary: StyleTheme.ErrorBorder.Secondary,
+	danger: StyleTheme.ErrorBorder.Danger,
 };
 
-const listBaseStyle =
-	"absolute z-[100] mt-2 max-h-60 w-full overflow-auto border bg-zinc-900 p-2 text-sm shadow-lg focus:outline-none";
+const listBaseStyle = `absolute z-[100] mt-2 max-h-60 w-full overflow-auto border ${StyleTheme.Dropdown.Background} p-2 text-sm shadow-lg focus:outline-none`;
 
 const listVariantStyles: Record<InputSelectVariants, string> = {
-	primary: "rounded-2xl border-white/10 shadow-indigo-500/20",
-	secondary: "rounded-lg border-white/10 shadow-fuchsia-500/20",
-	danger: "rounded-2xl border-rose-400/40 shadow-rose-500/20",
+	primary: `rounded-2xl ${StyleTheme.Container.Border.Primary} ${StyleTheme.Status.Info.shadow}`,
+	secondary: `rounded-lg ${StyleTheme.Container.Border.Primary} shadow-fuchsia-500/20`,
+	danger: `rounded-2xl ${StyleTheme.Container.Border.Danger} ${StyleTheme.Status.Error.shadow}`,
 };
 
 const flexClasses: Record<InputFlex, string> = {
@@ -321,8 +319,8 @@ function InputSelect({
 										className={({ focus, selected, disabled: isDisabled }) =>
 											clsx(
 												"cursor-pointer rounded-xl px-3 py-2 transition text-zinc-100",
-												selected && "bg-indigo-500/20 text-white",
-												focus && !selected && "bg-indigo-500/10 text-white",
+												selected && StyleTheme.Dropdown.OptionSelected,
+												focus && !selected && StyleTheme.Dropdown.OptionHover,
 												isDisabled && "cursor-not-allowed opacity-50",
 											)
 										}

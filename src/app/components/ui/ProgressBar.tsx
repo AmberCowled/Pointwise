@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
+import { StyleTheme } from "./StyleTheme";
 
 export interface ProgressBarProps
 	extends Omit<React.HTMLAttributes<HTMLDivElement>, "value" | "maxValue"> {
@@ -37,7 +38,7 @@ export function ProgressBar({
 			aria-valuemin={0}
 			aria-valuemax={maxValue}
 			className={clsx(
-				"w-full rounded-full bg-white/10",
+				`w-full rounded-full ${StyleTheme.Skeleton.Primary}`,
 				heightClass ? heightClass : "h-1",
 				className,
 			)}

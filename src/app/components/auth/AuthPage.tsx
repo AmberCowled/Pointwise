@@ -7,6 +7,7 @@ import Container from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import Page from "../ui/Page";
 import { Spinner } from "../ui/Spinner";
+import { StyleTheme } from "../ui/StyleTheme";
 import { TabsV2 } from "../ui/TabsV2";
 import AuthForm from "./AuthForm";
 import SocialAuthButtons from "./SocialAuthButtons";
@@ -55,7 +56,7 @@ export default function AuthPage() {
 					<Container
 						direction="vertical"
 						width="full"
-						className="bg-zinc-900/50 p-10 rounded-xl"
+						className={`${StyleTheme.Container.BackgroundSubtle} p-10 rounded-xl`}
 					>
 						<Container width="full" gap="none">
 							<TabsV2

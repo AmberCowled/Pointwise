@@ -7,6 +7,7 @@ import { IoSearch } from "react-icons/io5";
 import { CharCount } from "./CharCount";
 import { InputHeader } from "./InputHeader";
 import { ProgressBar } from "./ProgressBar";
+import { StyleTheme } from "./StyleTheme";
 import { VisibilityToggle } from "./VisibilityToggle";
 
 type InputVariants = "primary" | "secondary" | "danger";
@@ -125,25 +126,24 @@ export type InputProps = InputCustomProps &
 		"size" | "onChange" | "value" | "defaultValue"
 	>;
 
-const baseStyle =
-	"border text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:outline-none";
+const baseStyle = `border ${StyleTheme.Text.Primary} ${StyleTheme.Text.Placeholder} outline-none transition focus:outline-none`;
 
 const variantStyles: Record<InputVariants, string> = {
-	primary: "rounded-2xl border-white/10 bg-white/5",
-	secondary: "rounded-lg border-white/10 bg-zinc-900",
-	danger: "rounded-2xl border-rose-400/60 bg-rose-500/10",
+	primary: `rounded-2xl ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput}`,
+	secondary: `rounded-lg ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInputSecondary}`,
+	danger: `rounded-2xl ${StyleTheme.Container.Border.DangerStrong} ${StyleTheme.Container.BackgroundDangerSubtle}`,
 };
 
 const variantFocusStyles: Record<InputVariants, string> = {
-	primary: "focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/40",
-	secondary: "focus:border-fuchsia-500/50",
-	danger: "focus:border-rose-500/80 focus:ring-2 focus:ring-rose-500/40",
+	primary: `${StyleTheme.Accent.FocusBorderPrimary} ${StyleTheme.Accent.FocusRingPrimary}`,
+	secondary: StyleTheme.Accent.FocusBorderSecondary,
+	danger: `${StyleTheme.Accent.FocusBorderDanger} ${StyleTheme.Accent.FocusRingDanger}`,
 };
 
 const variantHoverStyles: Record<InputVariants, string> = {
-	primary: "hover:border-white/20",
-	secondary: "hover:border-white/15",
-	danger: "hover:border-rose-400/70",
+	primary: StyleTheme.Hover.BorderLift,
+	secondary: StyleTheme.Hover.BorderLiftSecondary,
+	danger: StyleTheme.Hover.DangerBorder,
 };
 
 const sizeStyles: Record<InputSizes, string> = {
@@ -157,9 +157,9 @@ const sizeStyles: Record<InputSizes, string> = {
 const disabledStyle = "opacity-50 cursor-not-allowed";
 
 const variantErrorStyles: Record<InputVariants, string> = {
-	primary: "border-rose-400/60 focus:border-rose-400/80",
-	secondary: "border-rose-400/60 focus:border-rose-400/80",
-	danger: "border-rose-500/80 focus:border-rose-500/90",
+	primary: StyleTheme.ErrorBorder.Primary,
+	secondary: StyleTheme.ErrorBorder.Secondary,
+	danger: StyleTheme.ErrorBorder.Danger,
 };
 
 const flexClasses: Record<InputFlex, string> = {
@@ -342,9 +342,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 								onClick={handleSearch}
 								disabled={disabled || !onSearch}
 								className={clsx(
-									"rounded-lg p-1.5 text-zinc-400 transition-all duration-200",
+									`rounded-lg p-1.5 ${StyleTheme.Text.Secondary} transition-all duration-200`,
 									"hover:text-zinc-100 hover:bg-white/10 hover:scale-110",
-									"active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
+									`active:scale-95 focus:outline-none ${StyleTheme.Accent.FocusRingPrimary}`,
 									(disabled || !onSearch) &&
 										"cursor-not-allowed opacity-50 hover:scale-100 hover:bg-transparent",
 								)}
@@ -376,10 +376,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 			{description || errorMessage ? (
 				<div className="min-h-5 space-y-1">
 					{description && (
-						<p className="text-xs text-zinc-500">{description}</p>
+						<p className={`text-xs ${StyleTheme.Text.Muted}`}>{description}</p>
 					)}
 					{errorMessage && (
-						<p className="text-xs font-medium text-rose-400">{errorMessage}</p>
+						<p className={`text-xs font-medium ${StyleTheme.Text.Error}`}>
+							{errorMessage}
+						</p>
 					)}
 				</div>
 			) : null}

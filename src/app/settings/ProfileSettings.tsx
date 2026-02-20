@@ -8,6 +8,7 @@ import InputArea from "@pointwise/app/components/ui/InputArea";
 import InputSelect from "@pointwise/app/components/ui/InputSelect";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
 import {
 	useCheckDisplayNameAvailabilityQuery,
@@ -397,7 +398,9 @@ export default function ProfileSettings() {
 							setProfileVisibility(e.target.checked ? "PUBLIC" : "PRIVATE")
 						}
 					/>
-					<div className="w-11 h-6 bg-zinc-900 peer-focus:outline-none rounded-full peer peer-checked:bg-purple-500 transition-colors" />
+					<div
+						className={`w-11 h-6 bg-zinc-900 peer-focus:outline-none rounded-full peer peer-checked:bg-[${StyleTheme.BrandColors.secondary}] transition-colors`}
+					/>
 					<div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5" />
 				</label>
 			</Container>

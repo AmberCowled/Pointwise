@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type React from "react";
+import { StyleTheme } from "./StyleTheme";
 
 type Props = {
 	children: React.ReactNode;
@@ -39,14 +40,14 @@ export default function GradientButton({
 				"relative overflow-hidden rounded-lg py-2.5 text-sm font-medium transition focus:outline-none",
 				"w-full",
 				isDisabled
-					? "bg-gradient-to-r from-zinc-600 via-zinc-500 to-zinc-600"
-					: "bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-rose-500",
-				"bg-[length:200%_200%]", // ensures gradient has room to move
+					? StyleTheme.GalaxyGradientDisabled
+					: StyleTheme.GalaxyGradient,
 				"shadow-lg",
-				isDisabled ? "shadow-zinc-700/20" : "shadow-fuchsia-700/20",
-				!isDisabled && "hover:animate-rotate-gradient", // rotate gradient on hover (only when enabled)
-				!isDisabled &&
-					"focus:shadow-[0_0_0_3px_rgba(255,255,255,0.35),0_10px_25px_-10px_rgba(0,0,0,0.6)]",
+				isDisabled
+					? StyleTheme.Shadow.ButtonDisabled
+					: StyleTheme.Shadow.ButtonPrimary.replace("shadow-lg ", ""),
+				!isDisabled && "hover:animate-rotate-gradient",
+				!isDisabled && `focus:${StyleTheme.Shadow.Focus}`,
 				isDisabled && "opacity-70 cursor-not-allowed",
 				className,
 			)}

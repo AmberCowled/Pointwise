@@ -9,6 +9,7 @@ import {
 import clsx from "clsx";
 import { Fragment, type ReactNode, useMemo } from "react";
 import type { ButtonProps } from "../Button";
+import { StyleTheme } from "../StyleTheme";
 import { MenuDivider } from "./MenuDivider";
 import { MenuSection } from "./MenuSection";
 
@@ -49,9 +50,9 @@ export interface MenuContainerProps {
 }
 
 const variantStyles: Record<MenuContainerVariants, string> = {
-	primary: "border-white/10 bg-zinc-900 shadow-indigo-500/20",
-	secondary: "border-white/10 bg-zinc-800 shadow-fuchsia-500/20",
-	danger: "border-rose-400/40 bg-zinc-900 shadow-rose-500/20",
+	primary: `${StyleTheme.Container.Border.Primary} ${StyleTheme.Dropdown.Background} ${StyleTheme.Status.Info.shadow}`,
+	secondary: `${StyleTheme.Container.Border.Primary} bg-zinc-800 shadow-fuchsia-500/20`,
+	danger: `${StyleTheme.Container.Border.Danger} ${StyleTheme.Dropdown.Background} ${StyleTheme.Status.Error.shadow}`,
 };
 
 /**

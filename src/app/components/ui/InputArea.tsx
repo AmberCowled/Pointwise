@@ -6,6 +6,7 @@ import { forwardRef, useId, useState } from "react";
 import { CharCount } from "./CharCount";
 import { InputHeader } from "./InputHeader";
 import { ProgressBar } from "./ProgressBar";
+import { StyleTheme } from "./StyleTheme";
 
 type InputAreaFlex = "shrink" | "default" | "grow";
 type InputAreaVariants = "primary" | "secondary" | "danger";
@@ -110,25 +111,24 @@ export interface InputAreaProps
 	onChange?: (value: string) => void;
 }
 
-const baseStyle =
-	"border text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:outline-none resize-none";
+const baseStyle = `border ${StyleTheme.Text.Primary} ${StyleTheme.Text.Placeholder} outline-none transition focus:outline-none resize-none`;
 
 const variantStyles: Record<InputAreaVariants, string> = {
-	primary: "rounded-2xl border-white/10 bg-white/5",
-	secondary: "rounded-lg border-white/10 bg-zinc-900",
-	danger: "rounded-2xl border-rose-400/60 bg-rose-500/10",
+	primary: `rounded-2xl ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput}`,
+	secondary: `rounded-lg ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInputSecondary}`,
+	danger: `rounded-2xl ${StyleTheme.Container.Border.DangerStrong} ${StyleTheme.Container.BackgroundDangerSubtle}`,
 };
 
 const variantFocusStyles: Record<InputAreaVariants, string> = {
-	primary: "focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/40",
-	secondary: "focus:border-fuchsia-500/50",
-	danger: "focus:border-rose-500/80 focus:ring-2 focus:ring-rose-500/40",
+	primary: `${StyleTheme.Accent.FocusBorderPrimary} ${StyleTheme.Accent.FocusRingPrimary}`,
+	secondary: StyleTheme.Accent.FocusBorderSecondary,
+	danger: `${StyleTheme.Accent.FocusBorderDanger} ${StyleTheme.Accent.FocusRingDanger}`,
 };
 
 const variantHoverStyles: Record<InputAreaVariants, string> = {
-	primary: "hover:border-white/20",
-	secondary: "hover:border-white/15",
-	danger: "hover:border-rose-400/70",
+	primary: StyleTheme.Hover.BorderLift,
+	secondary: StyleTheme.Hover.BorderLiftSecondary,
+	danger: StyleTheme.Hover.DangerBorder,
 };
 
 const sizeStyles: Record<InputAreaSizes, string> = {
@@ -146,9 +146,9 @@ const variantDisabledStyles: Record<InputAreaVariants, string> = {
 };
 
 const variantErrorStyles: Record<InputAreaVariants, string> = {
-	primary: "border-rose-400/60 focus:border-rose-400/80",
-	secondary: "border-rose-400/60 focus:border-rose-400/80",
-	danger: "border-rose-500/80 focus:border-rose-500/90",
+	primary: StyleTheme.ErrorBorder.Primary,
+	secondary: StyleTheme.ErrorBorder.Secondary,
+	danger: StyleTheme.ErrorBorder.Danger,
 };
 
 const flexClasses: Record<InputAreaFlex, string> = {

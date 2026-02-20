@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import type { PropsWithChildren } from "react";
 import React from "react";
+import { StyleTheme } from "../StyleTheme";
 import { useModalContext } from "./ModalContext";
 
 /**
@@ -136,7 +137,7 @@ export function ModalFooter({
 	return (
 		<footer
 			className={clsx(
-				"flex flex-wrap items-center border-t border-white/10",
+				`flex flex-wrap items-center border-t ${StyleTheme.Divider.Subtle}`,
 				paddingStyles[size],
 				gapStyles[size],
 				alignmentClass,

@@ -4,6 +4,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import Grid from "@pointwise/app/components/ui/Grid";
 import Input from "@pointwise/app/components/ui/Input";
 import InputSelect from "@pointwise/app/components/ui/InputSelect";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	CORE_TASK_CATEGORIES,
 	CUSTOM_CATEGORY_LABEL,
@@ -83,7 +84,7 @@ export default function TaskFilters({
 			label="Filters"
 			width="full"
 			defaultCollapsed={true}
-			className="rounded-lg border border-white/10 hover:border-white/20 bg-zinc-900/50 px-2"
+			className={`rounded-lg border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Hover.BorderLift} ${StyleTheme.Container.BackgroundSubtle} px-2`}
 		>
 			<Grid
 				columns={{ default: 1, sm: 3 }}

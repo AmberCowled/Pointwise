@@ -5,6 +5,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
+import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import AddUsersToConversationModal, {
 	getAddUsersToConversationModalId,
 } from "@pointwise/app/dashboard/modals/message/AddUsersToConversationModal";
@@ -225,7 +226,7 @@ export default function Conversation() {
 						direction="horizontal"
 						gap="sm"
 						width="full"
-						className="shrink-0 items-center border-t border-white/10 p-3"
+						className={`shrink-0 items-center border-t ${StyleTheme.Divider.Subtle} p-3`}
 					>
 						<textarea
 							id={`conversation-message-input-${conversationId}`}
@@ -250,7 +251,7 @@ export default function Conversation() {
 									? "You must be friends with at least one participant to send a message"
 									: undefined
 							}
-							className="h-10 min-h-10 min-w-0 flex-1 resize-none rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[16px] text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-400/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+							className={`h-10 min-h-10 min-w-0 flex-1 resize-none rounded-lg border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundInput} px-3 py-2 text-[16px] ${StyleTheme.Text.Primary} ${StyleTheme.Text.Placeholder} ${StyleTheme.Accent.FocusBorderPrimary} focus:outline-none ${StyleTheme.Accent.FocusRingPrimary} disabled:cursor-not-allowed disabled:opacity-60`}
 							aria-label="Message"
 						/>
 						<Button

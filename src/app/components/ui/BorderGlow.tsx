@@ -9,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { StyleTheme } from "./StyleTheme";
 
 type BorderGlowProps = PropsWithChildren<{
 	radius?: number;
@@ -27,7 +28,8 @@ type BorderGlowProps = PropsWithChildren<{
 	style?: CSSProperties;
 }>;
 
-const DEFAULT_COLORS = ["#6366f1", "#c026d3"];
+const DEFAULT_COLORS = StyleTheme.BorderGlow
+	.DefaultColors as unknown as string[];
 const FALLBACK_RADIUS = 0;
 
 const getChildRadius = (
