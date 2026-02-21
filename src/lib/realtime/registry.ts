@@ -29,7 +29,11 @@ export const RealtimeEvents = {
 	COMMENT_EDITED: "comment:edited",
 	COMMENT_DELETED: "comment:deleted",
 	JOIN_REQUEST_REJECTED: "join-request:rejected",
+	JOIN_REQUEST_APPROVED: "join-request:approved",
+	JOIN_REQUEST_RECEIVED: "join-request:received",
 	INVITE_REJECTED: "invite:rejected",
+	INVITE_SENT: "invite:sent",
+	INVITE_CANCELLED: "invite:cancelled",
 } as const;
 
 /**

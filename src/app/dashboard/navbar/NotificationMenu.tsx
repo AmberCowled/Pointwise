@@ -74,9 +74,10 @@ export default function NotificationMenu() {
 			// Cache invalidation for project-related notifications
 			if (
 				payload.type === "PROJECT_JOIN_REQUEST_APPROVED" ||
-				payload.type === "PROJECT_INVITE_ACCEPTED"
+				payload.type === "PROJECT_INVITE_ACCEPTED" ||
+				payload.type === "PROJECT_JOIN_REQUEST_RECEIVED"
 			) {
-				dispatch(invalidateTags(["Projects", "Invites"]));
+				dispatch(invalidateTags(["Projects", "Invites", "JoinRequests"]));
 			}
 		},
 		[dispatch],
@@ -84,7 +85,7 @@ export default function NotificationMenu() {
 
 	// Invalidate project-related caches when lightweight Ably events arrive
 	const handleProjectUpdate = useCallback(() => {
-		dispatch(invalidateTags(["Projects", "Invites"]));
+		dispatch(invalidateTags(["Projects", "Invites", "JoinRequests"]));
 	}, [dispatch]);
 
 	useSubscribeUserNotifications(userId, {

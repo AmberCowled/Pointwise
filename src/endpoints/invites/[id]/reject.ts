@@ -35,6 +35,27 @@ export default endpoint.delete<{ success: boolean }, string>({
 			// Ably publish failure should not break the reject action
 		}
 
+		// Notify all project admins so their invite count updates in real-time
+		try {
+			const project = await prisma.project.findUniqueOrThrow({
+				where: { id: invite.projectId },
+				select: { adminUserIds: true },
+			});
+			await Promise.allSettled(
+				project.adminUserIds
+					.filter((adminId) => adminId !== user.id)
+					.map((adminId) =>
+						publishAblyEvent(
+							RealtimeChannels.user.projects(adminId),
+							RealtimeEvents.INVITE_CANCELLED,
+							{ projectId: invite.projectId },
+						),
+					),
+			);
+		} catch {
+			// Ably publish failure should not break the reject action
+		}
+
 		return { success: true };
 	},
 });
