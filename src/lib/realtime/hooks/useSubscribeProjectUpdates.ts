@@ -7,7 +7,11 @@ import { RealtimeChannels, RealtimeEvents } from "../registry";
 /** Project-related events that trigger UI updates (not new-notification). */
 const PROJECT_UPDATE_EVENTS = [
 	RealtimeEvents.JOIN_REQUEST_REJECTED,
+	RealtimeEvents.JOIN_REQUEST_APPROVED,
+	RealtimeEvents.JOIN_REQUEST_RECEIVED,
 	RealtimeEvents.INVITE_REJECTED,
+	RealtimeEvents.INVITE_SENT,
+	RealtimeEvents.INVITE_CANCELLED,
 ] as const;
 
 export interface UseSubscribeProjectUpdatesOptions {

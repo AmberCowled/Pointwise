@@ -14,6 +14,10 @@ interface ModalPanelProps extends PropsWithChildren {
 	 */
 	isFullscreen: boolean;
 	/**
+	 * Whether to go fullscreen on mobile (below sm breakpoint)
+	 */
+	mobileFullscreen?: boolean;
+	/**
 	 * Custom className for the panel
 	 */
 	className?: string;
@@ -87,6 +91,7 @@ const animationStyles: Record<
  */
 export function ModalPanel({
 	isFullscreen,
+	mobileFullscreen,
 	className,
 	sizeClassName,
 	animation,
@@ -147,6 +152,8 @@ export function ModalPanel({
 				className={clsx(
 					`relative w-full transform overflow-hidden rounded-2xl border ${StyleTheme.Container.Border.Primary} ${StyleTheme.Container.BackgroundSolid} ${StyleTheme.Text.Primary} ${StyleTheme.Container.Shadow} transition-all`,
 					sizeClassName,
+					mobileFullscreen &&
+						"max-sm:h-dvh max-sm:max-w-full max-sm:rounded-none max-sm:border-0 max-sm:flex max-sm:flex-col",
 					className,
 				)}
 				style={

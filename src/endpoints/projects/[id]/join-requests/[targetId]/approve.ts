@@ -1,7 +1,12 @@
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { approveJoinRequest } from "@pointwise/lib/api/joinRequests";
 import { serializeProject } from "@pointwise/lib/api/projects";
 import { sendNotification } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
+import {
+	RealtimeChannels,
+	RealtimeEvents,
+} from "@pointwise/lib/realtime/registry";
 import type { GetProjectResponse } from "@pointwise/lib/validation/projects-schema";
 import { endpoint } from "ertk";
 import { z } from "zod";
@@ -68,6 +73,23 @@ export default endpoint.patch<
 			}
 		} catch {
 			// Staleness cleanup failure should not break the approve action
+		}
+
+		// Publish lightweight Ably event to admins so their menu count updates
+		try {
+			await Promise.allSettled(
+				prismaProject.adminUserIds
+					.filter((adminId) => adminId !== user.id)
+					.map((adminId) =>
+						publishAblyEvent(
+							RealtimeChannels.user.projects(adminId),
+							RealtimeEvents.JOIN_REQUEST_APPROVED,
+							{ projectId: params.id },
+						),
+					),
+			);
+		} catch {
+			// Ably publish failure should not break the approve action
 		}
 
 		return { success: true, project };

@@ -1,6 +1,11 @@
+import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { inviteUsersToProject } from "@pointwise/lib/api/invites";
 import { serializeProject } from "@pointwise/lib/api/projects";
 import { sendNotification } from "@pointwise/lib/notifications/service";
+import {
+	RealtimeChannels,
+	RealtimeEvents,
+} from "@pointwise/lib/realtime/registry";
 import type {
 	InviteProjectRequest,
 	InviteProjectResponse,
@@ -50,6 +55,21 @@ export default endpoint.post<
 			);
 		} catch {
 			// Notification failure should not break the invite action
+		}
+
+		// Publish lightweight Ably event to each admin so their invite count updates
+		try {
+			await Promise.allSettled(
+				prismaProject.adminUserIds.map((adminId) =>
+					publishAblyEvent(
+						RealtimeChannels.user.projects(adminId),
+						RealtimeEvents.INVITE_SENT,
+						{ projectId: params.id },
+					),
+				),
+			);
+		} catch {
+			// Ably publish failure should not break the invite action
 		}
 
 		return { project };

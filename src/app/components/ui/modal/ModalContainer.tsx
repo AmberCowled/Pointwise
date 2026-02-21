@@ -136,6 +136,11 @@ export interface ModalContainerProps extends PropsWithChildren {
 	 */
 	focusTrap?: boolean;
 	/**
+	 * Whether the modal should be fullscreen on mobile (below sm breakpoint)
+	 * @default true
+	 */
+	mobileFullscreen?: boolean;
+	/**
 	 * Ref to expose imperative handle for ModalManager
 	 */
 	modalRef?: React.RefObject<ModalRef>;
@@ -170,6 +175,7 @@ export function ModalContainer({
 	onAfterClose,
 	zIndex = 50,
 	focusTrap = true,
+	mobileFullscreen = true,
 	children,
 	modalRef,
 }: ModalContainerProps) {
@@ -380,9 +386,17 @@ export function ModalContainer({
 					className="fixed inset-0 overflow-y-auto"
 					style={{ zIndex: calculatedZIndex }}
 				>
-					<div className="flex min-h-full items-center justify-center p-4">
+					<div
+						className={clsx(
+							"flex min-h-full justify-center",
+							mobileFullscreen
+								? "items-start sm:items-center p-0 sm:p-4"
+								: "items-center p-4",
+						)}
+					>
 						<ModalPanel
 							isFullscreen={false}
+							mobileFullscreen={mobileFullscreen}
 							className={panelClassName}
 							sizeClassName={responsiveSizeStyles[size]}
 							animation={finalAnimation}

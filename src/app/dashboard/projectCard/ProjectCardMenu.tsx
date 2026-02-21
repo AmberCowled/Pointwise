@@ -4,6 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
 import ManageJoinRequestsModal from "@pointwise/app/dashboard/modals/joinRequest/ManageJoinRequestsModal";
+import InviteFriendsModal from "@pointwise/app/dashboard/modals/project/InviteFriendsModal";
 import LeaveProjectConfirmModal from "@pointwise/app/dashboard/modals/project/LeaveProjectConfirmModal";
 import ManageProjectInvitesModal from "@pointwise/app/dashboard/modals/project/ManageProjectInvitesModal";
 import UpdateProjectModal from "@pointwise/app/dashboard/modals/project/UpdateProjectModal";
@@ -35,6 +36,7 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 					<UpdateProjectModal project={project} />
 					<ManageProjectInvitesModal project={project} />
 					<ManageJoinRequestsModal project={project} />
+					<InviteFriendsModal project={project} />
 				</>
 			)}
 			{project.role !== "NONE" && (
@@ -60,11 +62,13 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 								onClick={() => {}}
 							/>
 							<Menu.Option
-								disabled
 								icon={<IoPersonAdd />}
 								label="Invite Members"
 								description="Invite new members"
-								onClick={() => {}}
+								disabled={project.role !== "ADMIN"}
+								onClick={() =>
+									Modal.Manager.open(`invite-friends-modal-${project.id}`)
+								}
 							/>
 							<Menu.Option
 								icon={<IoPersonRemove />}
