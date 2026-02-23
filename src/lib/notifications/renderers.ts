@@ -4,6 +4,10 @@ import type {
 	NotificationData,
 } from "@pointwise/lib/validation/notification-schema";
 
+type ProjectMemberRoleChangedData =
+	NotificationData<"PROJECT_MEMBER_ROLE_CHANGED">;
+type ProjectMemberRemovedData = NotificationData<"PROJECT_MEMBER_REMOVED">;
+
 export interface NotificationAction {
 	label: string;
 	variant: "accept" | "reject";
@@ -127,6 +131,28 @@ export const NOTIFICATION_RENDERERS: Record<string, NotificationRenderer> = {
 		getHref(data) {
 			const d = data as NotificationData<"PROJECT_JOIN_REQUEST_APPROVED">;
 			return `/projects/${d.projectId}`;
+		},
+	},
+	PROJECT_MEMBER_ROLE_CHANGED: {
+		getMessage(data) {
+			const d = data as ProjectMemberRoleChangedData;
+			return `Your role in ${d.projectName} was changed to ${d.newRole}.`;
+		},
+		getUser() {
+			return { name: "System", image: null };
+		},
+		getHref(data) {
+			const d = data as ProjectMemberRoleChangedData;
+			return `/dashboard/${d.projectId}`;
+		},
+	},
+	PROJECT_MEMBER_REMOVED: {
+		getMessage(data) {
+			const d = data as ProjectMemberRemovedData;
+			return `You were removed from ${d.projectName}.`;
+		},
+		getUser() {
+			return { name: "System", image: null };
 		},
 	},
 };

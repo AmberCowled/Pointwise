@@ -75,6 +75,23 @@ export const NotificationRegistry = {
 			role: z.string(),
 		}),
 	},
+	PROJECT_MEMBER_ROLE_CHANGED: {
+		channel: "projects",
+		schema: z.object({
+			projectId: z.string(),
+			projectName: z.string(),
+			newRole: z.string(),
+			changedByName: z.string().nullable(),
+		}),
+	},
+	PROJECT_MEMBER_REMOVED: {
+		channel: "projects",
+		schema: z.object({
+			projectId: z.string(),
+			projectName: z.string(),
+			removedByName: z.string().nullable(),
+		}),
+	},
 } as const;
 
 /** All valid notification type strings, derived from the registry. */

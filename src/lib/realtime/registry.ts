@@ -34,6 +34,8 @@ export const RealtimeEvents = {
 	INVITE_REJECTED: "invite:rejected",
 	INVITE_SENT: "invite:sent",
 	INVITE_CANCELLED: "invite:cancelled",
+	MEMBER_ROLE_UPDATED: "member:role-updated",
+	MEMBER_REMOVED: "member:removed",
 } as const;
 
 /**

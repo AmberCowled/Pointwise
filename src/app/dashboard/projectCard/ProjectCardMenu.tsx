@@ -8,6 +8,7 @@ import InviteFriendsModal from "@pointwise/app/dashboard/modals/project/InviteFr
 import LeaveProjectConfirmModal from "@pointwise/app/dashboard/modals/project/LeaveProjectConfirmModal";
 import ManageProjectInvitesModal from "@pointwise/app/dashboard/modals/project/ManageProjectInvitesModal";
 import UpdateProjectModal from "@pointwise/app/dashboard/modals/project/UpdateProjectModal";
+import ViewMembersModal from "@pointwise/app/dashboard/modals/project/ViewMembersModal";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import {
 	IoClipboard,
@@ -40,7 +41,10 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 				</>
 			)}
 			{project.role !== "NONE" && (
-				<LeaveProjectConfirmModal project={project} />
+				<>
+					<LeaveProjectConfirmModal project={project} />
+					<ViewMembersModal project={project} />
+				</>
 			)}
 			{(project.role !== "NONE" || project.visibility === "PUBLIC") && (
 				<Menu trigger={<Button variant="ghost" size="xs" icon={IoSettings} />}>
@@ -55,11 +59,12 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 					{project.role !== "NONE" && (
 						<Menu.Section title="Community">
 							<Menu.Option
-								disabled
 								icon={<IoPeople />}
 								label="View Members"
 								description="View all members"
-								onClick={() => {}}
+								onClick={() =>
+									Modal.Manager.open(`view-members-modal-${project.id}`)
+								}
 							/>
 							<Menu.Option
 								icon={<IoPersonAdd />}

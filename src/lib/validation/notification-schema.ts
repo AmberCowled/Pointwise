@@ -33,6 +33,10 @@ export const ProjectJoinRequestReceivedDataSchema =
 	NotificationRegistry.PROJECT_JOIN_REQUEST_RECEIVED.schema;
 export const ProjectJoinRequestApprovedDataSchema =
 	NotificationRegistry.PROJECT_JOIN_REQUEST_APPROVED.schema;
+export const ProjectMemberRoleChangedDataSchema =
+	NotificationRegistry.PROJECT_MEMBER_ROLE_CHANGED.schema;
+export const ProjectMemberRemovedDataSchema =
+	NotificationRegistry.PROJECT_MEMBER_REMOVED.schema;
 
 /** Union of all data schemas. */
 export const NotificationDataSchema = z.union([
@@ -43,6 +47,8 @@ export const NotificationDataSchema = z.union([
 	ProjectInviteAcceptedDataSchema,
 	ProjectJoinRequestReceivedDataSchema,
 	ProjectJoinRequestApprovedDataSchema,
+	ProjectMemberRoleChangedDataSchema,
+	ProjectMemberRemovedDataSchema,
 ]);
 
 /** Zod schema for the notification type field (validated at app level, stored as String in DB). */
