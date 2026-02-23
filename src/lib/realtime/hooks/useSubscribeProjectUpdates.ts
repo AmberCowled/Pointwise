@@ -12,6 +12,8 @@ const PROJECT_UPDATE_EVENTS = [
 	RealtimeEvents.INVITE_REJECTED,
 	RealtimeEvents.INVITE_SENT,
 	RealtimeEvents.INVITE_CANCELLED,
+	RealtimeEvents.MEMBER_ROLE_UPDATED,
+	RealtimeEvents.MEMBER_REMOVED,
 ] as const;
 
 export interface UseSubscribeProjectUpdatesOptions {

@@ -178,6 +178,40 @@ export type CancelRequestToJoinProjectResponse = z.infer<
 >;
 export type LeaveProjectRequest = z.infer<typeof LeaveProjectRequestSchema>;
 export type LeaveProjectResponse = z.infer<typeof LeaveProjectResponseSchema>;
+export const ProjectMemberSchema = z.object({
+	userId: z.string(),
+	displayName: z.string(),
+	image: z.string().nullable(),
+	role: z.enum(["ADMIN", "USER", "VIEWER"]),
+});
+
+export const GetProjectMembersResponseSchema = z.object({
+	members: z.array(ProjectMemberSchema),
+});
+
+export const UpdateMemberRoleRequestSchema = z.object({
+	role: z.enum(["ADMIN", "USER", "VIEWER"]),
+});
+
+export const UpdateMemberRoleResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
+export const RemoveMemberResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
 export type InviteUser = z.infer<typeof InviteUserSchema>;
 export type InviteProjectRequest = z.infer<typeof InviteProjectRequestSchema>;
 export type InviteProjectResponse = z.infer<typeof InviteProjectResponseSchema>;
+export type ProjectMember = z.infer<typeof ProjectMemberSchema>;
+export type GetProjectMembersResponse = z.infer<
+	typeof GetProjectMembersResponseSchema
+>;
+export type UpdateMemberRoleRequest = z.infer<
+	typeof UpdateMemberRoleRequestSchema
+>;
+export type UpdateMemberRoleResponse = z.infer<
+	typeof UpdateMemberRoleResponseSchema
+>;
+export type RemoveMemberResponse = z.infer<typeof RemoveMemberResponseSchema>;
