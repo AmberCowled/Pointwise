@@ -181,6 +181,8 @@ model Task {
   taskLikes      TaskLike[]
   commentThread  CommentThread?
   commentCount   Int            @default(0)
+
+  assignedUserIds  String[] @default([]) @db.ObjectId
 }
 
 model TaskLike {

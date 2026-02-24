@@ -14,7 +14,7 @@ export default endpoint.delete<
 	{ projectId: string; targetId: string }
 >({
 	name: "removeProjectMember",
-	tags: { invalidates: ["Members", "Projects"] },
+	tags: { invalidates: ["Members", "Projects", "Tasks"] },
 	protected: true,
 	query: ({ projectId, targetId }) => ({
 		url: `/projects/${projectId}/members/${targetId}/remove`,

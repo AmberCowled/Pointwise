@@ -170,6 +170,7 @@ export async function updateTask(
 			title: true,
 			category: true,
 			xpAward: true,
+			assignedUserIds: true,
 			project: { select: { name: true } },
 		},
 	});
@@ -238,12 +239,20 @@ export async function updateTask(
 		existingTask.status !== "COMPLETED" &&
 		(request.status === "COMPLETED" || updatedTask.status === "COMPLETED");
 	if (isNewlyCompleted && updatedTask.xpAward > 0) {
-		await awardXpForTaskCompletion(
-			userId,
-			updatedTask.xpAward,
-			existingTask.project.name ?? null,
-			updatedTask.title,
-			updatedTask.category ?? null,
+		const recipients =
+			existingTask.assignedUserIds.length > 0
+				? existingTask.assignedUserIds
+				: [userId];
+		await Promise.all(
+			recipients.map((recipientId) =>
+				awardXpForTaskCompletion(
+					recipientId,
+					updatedTask.xpAward,
+					existingTask.project.name ?? null,
+					updatedTask.title,
+					updatedTask.category ?? null,
+				),
+			),
 		);
 	}
 
@@ -303,5 +312,86 @@ export function serializeTask(
 		likeCount,
 		likedByCurrentUser,
 		commentCount: getTotalTaskCommentCount(task),
+		assignedUserIds: task.assignedUserIds ?? [],
 	});
+}
+
+export async function updateTaskAssignments(
+	taskId: string,
+	assignedUserIds: string[],
+	userId: string,
+): Promise<PrismaTask> {
+	const task = await prisma.task.findUnique({
+		where: { id: taskId },
+		select: {
+			projectId: true,
+			status: true,
+			project: {
+				select: {
+					adminUserIds: true,
+					projectUserIds: true,
+				},
+			},
+		},
+	});
+
+	if (!task) {
+		throw new Error("Task not found");
+	}
+
+	if (task.status === "COMPLETED") {
+		throw new Error("Cannot assign users to a completed task");
+	}
+
+	if (!(await isProjectAdmin(task.projectId, userId))) {
+		throw new Error("Forbidden: You must be an admin to assign users to tasks");
+	}
+
+	const eligibleUserIds = new Set([
+		...task.project.adminUserIds,
+		...task.project.projectUserIds,
+	]);
+
+	for (const id of assignedUserIds) {
+		if (!eligibleUserIds.has(id)) {
+			throw new Error(
+				`User ${id} is not an eligible member (admins and users only)`,
+			);
+		}
+	}
+
+	const deduped = [...new Set(assignedUserIds)];
+
+	const updatedTask = await prisma.task.update({
+		where: { id: taskId },
+		data: { assignedUserIds: { set: deduped } },
+	});
+
+	return updatedTask;
+}
+
+export async function removeUserFromTaskAssignments(
+	projectId: string,
+	userId: string,
+): Promise<void> {
+	const tasks = await prisma.task.findMany({
+		where: {
+			projectId,
+			assignedUserIds: { has: userId },
+		},
+		select: { id: true, assignedUserIds: true },
+	});
+
+	await Promise.all(
+		tasks.map((task) =>
+			prisma.task.update({
+				where: { id: task.id },
+				data: {
+					assignedUserIds: {
+						set: task.assignedUserIds.filter((id) => id !== userId),
+					},
+				},
+			}),
+		),
+	);
 }

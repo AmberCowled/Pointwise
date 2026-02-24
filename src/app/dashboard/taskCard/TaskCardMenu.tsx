@@ -83,8 +83,10 @@ export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
 				<Menu.Option
 					label="Assign"
 					icon={<IoPersonAddOutline className="text-indigo-400" />}
-					disabled
-					description="Coming Soon"
+					onClick={() => Modal.Manager.open(`assign-task-modal-${task.id}`)}
+					disabled={
+						task.status === "COMPLETED" || !hasDeleteAccess(project.role)
+					}
 				/>
 			</Menu.Section>
 			{hasDeleteAccess(project.role) && (

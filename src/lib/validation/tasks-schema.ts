@@ -43,6 +43,7 @@ export const TaskSchema = z.object({
 	likeCount: TASK_LIKE_COUNT_SCHEMA,
 	likedByCurrentUser: TASK_LIKED_BY_CURRENT_USER_SCHEMA,
 	commentCount: TASK_COMMENT_COUNT_SCHEMA,
+	assignedUserIds: z.array(z.string()).optional().default([]),
 });
 
 export const GetTaskRequestSchema = z.object({
@@ -119,3 +120,19 @@ export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>;
 export type UpdateTaskResponse = z.infer<typeof UpdateTaskResponseSchema>;
 export type DeleteTaskRequest = z.infer<typeof DeleteTaskRequestSchema>;
 export type DeleteTaskResponse = z.infer<typeof DeleteTaskResponseSchema>;
+
+export const UpdateTaskAssignmentsRequestSchema = z.object({
+	projectId: TASK_PROJECT_ID_SCHEMA,
+	assignedUserIds: z.array(z.string()),
+});
+
+export const UpdateTaskAssignmentsResponseSchema = z.object({
+	task: TaskSchema,
+});
+
+export type UpdateTaskAssignmentsRequest = z.infer<
+	typeof UpdateTaskAssignmentsRequestSchema
+>;
+export type UpdateTaskAssignmentsResponse = z.infer<
+	typeof UpdateTaskAssignmentsResponseSchema
+>;

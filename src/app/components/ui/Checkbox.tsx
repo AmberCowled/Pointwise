@@ -21,6 +21,10 @@ export interface CheckboxCustomProps {
 	description?: React.ReactNode;
 	required?: boolean;
 	/**
+	 * Controlled checked state. When provided, the component is controlled.
+	 */
+	checked?: boolean;
+	/**
 	 * Default checked state (uncontrolled component)
 	 * @default false
 	 */
@@ -105,6 +109,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 			className,
 			id,
 			disabled,
+			checked: checkedProp,
 			defaultChecked = false,
 			onChange,
 			...props
@@ -116,12 +121,17 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 		const errorMessage = typeof error === "string" ? error : undefined;
 		const hasHeader = !!required && !label;
 
+		const isControlled = checkedProp !== undefined;
+
 		// Internal state management (uncontrolled component)
-		const [checked, setChecked] = useState(defaultChecked);
+		const [internalChecked, setInternalChecked] = useState(defaultChecked);
+		const checked = isControlled ? checkedProp : internalChecked;
 
 		const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 			const newChecked = e.target.checked;
-			setChecked(newChecked);
+			if (!isControlled) {
+				setInternalChecked(newChecked);
+			}
 			onChange?.(newChecked);
 		};
 

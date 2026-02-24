@@ -4,7 +4,7 @@ import { endpoint } from "ertk";
 
 export default endpoint.delete<LeaveProjectResponse, { projectId: string }>({
 	name: "leaveProject",
-	tags: { invalidates: ["Projects"] },
+	tags: { invalidates: ["Projects", "Tasks"] },
 	protected: true,
 	query: ({ projectId }) => ({
 		url: `/projects/${projectId}/leave`,
