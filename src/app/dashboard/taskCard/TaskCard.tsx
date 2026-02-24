@@ -5,7 +5,9 @@ import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useState } from "react";
+import AssignTaskModal from "../modals/task/AssignTaskModal";
 import UpdateTaskModal from "../modals/task/UpdateTaskModal";
+import TaskCardAssignees from "./TaskCardAssignees";
 import TaskCardCommentButton from "./TaskCardCommentButton";
 import TaskCardCommentSection from "./TaskCardCommentSection";
 import TaskCardDate from "./TaskCardDate";
@@ -29,6 +31,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 	return (
 		<>
 			<UpdateTaskModal task={task} project={project} />
+			<AssignTaskModal task={task} project={project} />
 			<Container
 				direction="vertical"
 				width="full"
@@ -50,6 +53,12 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 						<TaskStatus status={task.status ?? "PENDING"} />
 						<TaskCardOptional optional={task.optional} />
 					</Container>
+					{(task.assignedUserIds?.length ?? 0) > 0 && (
+						<TaskCardAssignees
+							assignedUserIds={task.assignedUserIds ?? []}
+							projectId={task.projectId}
+						/>
+					)}
 					{(task.startDate || task.dueDate) && (
 						<Container width="full" gap="md" className="flex-wrap">
 							{task.startDate && (

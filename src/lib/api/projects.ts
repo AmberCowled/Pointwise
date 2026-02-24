@@ -1,4 +1,5 @@
 import { ApiError } from "@pointwise/lib/api/errors";
+import { removeUserFromTaskAssignments } from "@pointwise/lib/api/tasks";
 import prisma from "@pointwise/lib/prisma";
 import {
 	type CreateProjectRequest,
@@ -512,5 +513,8 @@ export async function leaveProject(
 			},
 		},
 	});
+
+	await removeUserFromTaskAssignments(projectId, userId);
+
 	return updatedProject as PrismaProject & { _count: { tasks: number } };
 }

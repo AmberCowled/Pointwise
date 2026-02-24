@@ -16,7 +16,7 @@ export default endpoint.patch<
 >({
 	name: "updateMemberRole",
 	request: UpdateMemberRoleRequestSchema,
-	tags: { invalidates: ["Members", "Projects"] },
+	tags: { invalidates: ["Members", "Projects", "Tasks"] },
 	protected: true,
 	query: ({ projectId, targetId, role }) => ({
 		url: `/projects/${projectId}/members/${targetId}/update-role`,

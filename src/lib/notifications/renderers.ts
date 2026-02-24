@@ -155,6 +155,20 @@ export const NOTIFICATION_RENDERERS: Record<string, NotificationRenderer> = {
 			return { name: "System", image: null };
 		},
 	},
+	TASK_ASSIGNED: {
+		getMessage(data) {
+			const d = data as NotificationData<"TASK_ASSIGNED">;
+			return `${d.assignedByName ?? "Someone"} assigned you to "${d.taskName}" in ${d.projectName}.`;
+		},
+		getUser(data) {
+			const d = data as NotificationData<"TASK_ASSIGNED">;
+			return { name: d.assignedByName ?? "User", image: d.assignedByImage };
+		},
+		getHref(data) {
+			const d = data as NotificationData<"TASK_ASSIGNED">;
+			return `/dashboard/${d.projectId}`;
+		},
+	},
 };
 
 /** Fallback renderer for unknown notification types. */

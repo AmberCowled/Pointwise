@@ -92,6 +92,17 @@ export const NotificationRegistry = {
 			removedByName: z.string().nullable(),
 		}),
 	},
+	TASK_ASSIGNED: {
+		channel: "projects",
+		schema: z.object({
+			projectId: z.string(),
+			projectName: z.string(),
+			taskId: z.string(),
+			taskName: z.string(),
+			assignedByName: z.string().nullable(),
+			assignedByImage: z.string().nullable(),
+		}),
+	},
 } as const;
 
 /** All valid notification type strings, derived from the registry. */

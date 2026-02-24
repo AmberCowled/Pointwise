@@ -1,5 +1,6 @@
 import { ApiError } from "@pointwise/lib/api/errors";
 import { getProject, getUserRoleInProject } from "@pointwise/lib/api/projects";
+import { removeUserFromTaskAssignments } from "@pointwise/lib/api/tasks";
 import prisma from "@pointwise/lib/prisma";
 import type {
 	ProjectMember,
@@ -138,6 +139,10 @@ export async function updateMemberRole(
 		},
 	});
 
+	if (newRole === "VIEWER") {
+		await removeUserFromTaskAssignments(projectId, targetId);
+	}
+
 	return updatedProject as PrismaProject & {
 		_count: { tasks: number; projectInvites?: number };
 	};
@@ -184,6 +189,8 @@ export async function removeMember(
 			},
 		},
 	});
+
+	await removeUserFromTaskAssignments(projectId, targetId);
 
 	return updatedProject as PrismaProject & {
 		_count: { tasks: number; projectInvites?: number };
