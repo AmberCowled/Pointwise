@@ -23,7 +23,7 @@ export default endpoint.post<{ status: string }, { receiverId: string }>({
 		const result = await sendFriendRequest(user.id, body.receiverId);
 		if (result.status === "PENDING") {
 			try {
-				const pushExtras = await buildPushExtras(
+				const extras = await buildPushExtras(
 					body.receiverId,
 					"FRIEND_REQUEST_RECEIVED",
 					{
@@ -36,7 +36,7 @@ export default endpoint.post<{ status: string }, { receiverId: string }>({
 					`user:${body.receiverId}:friend-requests`,
 					"friend-request:received",
 					{ senderId: user.id },
-					pushExtras,
+					extras,
 				);
 			} catch (error) {
 				console.warn("Failed to publish friend request event", error);

@@ -24,9 +24,7 @@ export const publishAblyEvent = async (
 	if (!client) {
 		return;
 	}
-	await client.channels.get(channelName).publish({
-		name: eventName,
-		data: payload,
-		...(extras ? { extras } : {}),
-	});
+	await client.channels
+		.get(channelName)
+		.publish({ name: eventName, data: payload, ...(extras ? { extras } : {}) });
 };

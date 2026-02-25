@@ -17,7 +17,7 @@ export default endpoint.delete<
 	tags: { invalidates: ["Members", "Projects", "Tasks"] },
 	protected: true,
 	query: ({ projectId, targetId }) => ({
-		url: `/projects/${projectId}/members/${targetId}/remove`,
+		url: `/projects/${projectId}/members/${targetId}`,
 		method: "DELETE",
 	}),
 	handler: async ({ user, params }) => {

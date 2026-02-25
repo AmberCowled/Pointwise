@@ -22,8 +22,6 @@ const CHANNEL_BUILDERS: Record<string, (userId: string) => string> = {
 /**
  * Publish a notification to the recipient's Ably channel.
  * Channel is derived from the notification registry.
- * If the user has push enabled for this notification category,
- * a push payload is included in extras.
  */
 export async function publishNotification(
 	notification: Notification,
@@ -44,13 +42,14 @@ export async function publishNotification(
 		return;
 	}
 
+	const channelName = buildChannel(notification.userId);
+
 	const extras = await buildPushExtras(
 		notification.userId,
 		notification.type,
 		notification.data as Record<string, unknown>,
 	);
 
-	const channelName = buildChannel(notification.userId);
 	await publishAblyEvent(
 		channelName,
 		RealtimeEvents.NEW_NOTIFICATION,

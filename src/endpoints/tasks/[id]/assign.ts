@@ -54,8 +54,8 @@ export default endpoint.patch<
 					assignedByName: (user.name as string) ?? null,
 					assignedByImage: (user.image as string) ?? null,
 				});
-			} catch {
-				// Notification failure should not break the assign action
+			} catch (error) {
+				console.error("Failed to send task assignment notifications:", error);
 			}
 		}
 

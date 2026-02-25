@@ -1,24 +1,16 @@
 "use client";
 
-import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
-import Grid from "@pointwise/app/components/ui/Grid";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
-import ToggleSwitch from "@pointwise/app/components/ui/ToggleSwitch";
+import { ToggleSwitch } from "@pointwise/app/components/ui/ToggleSwitch";
 import {
 	useGetNotificationSettingsQuery,
 	useUpdateNotificationSettingsMutation,
 } from "@pointwise/generated/api";
 import { useEffect, useState } from "react";
 import { IoSave } from "react-icons/io5";
-
-const CATEGORY_TOGGLES = [
-	{ key: "pushMessages", label: "Messages" },
-	{ key: "pushFriendRequests", label: "Friend Requests" },
-	{ key: "pushProjectActivity", label: "Project Activity" },
-	{ key: "pushTaskAssignments", label: "Task Assignments" },
-] as const;
+import { Button } from "../components/ui/Button";
 
 export default function NotificationSettings() {
 	const { data, isLoading } = useGetNotificationSettingsQuery();
@@ -26,47 +18,33 @@ export default function NotificationSettings() {
 		useUpdateNotificationSettingsMutation();
 	const { showNotification } = useNotifications();
 
-	const [pushEnabled, setPushEnabled] = useState(false);
+	const [pushEnabled, setPushEnabled] = useState(true);
 	const [pushMessages, setPushMessages] = useState(true);
 	const [pushFriendRequests, setPushFriendRequests] = useState(true);
 	const [pushProjectActivity, setPushProjectActivity] = useState(true);
 	const [pushTaskAssignments, setPushTaskAssignments] = useState(true);
 
-	// Sync from server
 	useEffect(() => {
 		if (data?.settings) {
-			setPushEnabled(data.settings.pushEnabled);
-			setPushMessages(data.settings.pushMessages);
-			setPushFriendRequests(data.settings.pushFriendRequests);
-			setPushProjectActivity(data.settings.pushProjectActivity);
-			setPushTaskAssignments(data.settings.pushTaskAssignments);
+			const s = data.settings;
+			setPushEnabled(s.pushEnabled);
+			setPushMessages(s.pushMessages);
+			setPushFriendRequests(s.pushFriendRequests);
+			setPushProjectActivity(s.pushProjectActivity);
+			setPushTaskAssignments(s.pushTaskAssignments);
 		}
 	}, [data]);
-
-	const localState: Record<string, boolean> = {
-		pushEnabled,
-		pushMessages,
-		pushFriendRequests,
-		pushProjectActivity,
-		pushTaskAssignments,
-	};
-
-	const setters: Record<string, (v: boolean) => void> = {
-		pushMessages: setPushMessages,
-		pushFriendRequests: setPushFriendRequests,
-		pushProjectActivity: setPushProjectActivity,
-		pushTaskAssignments: setPushTaskAssignments,
-	};
 
 	const hasChanges = (() => {
 		if (!data?.settings) return false;
 		const s = data.settings;
-		if (pushEnabled !== s.pushEnabled) return true;
-		if (pushMessages !== s.pushMessages) return true;
-		if (pushFriendRequests !== s.pushFriendRequests) return true;
-		if (pushProjectActivity !== s.pushProjectActivity) return true;
-		if (pushTaskAssignments !== s.pushTaskAssignments) return true;
-		return false;
+		return (
+			pushEnabled !== s.pushEnabled ||
+			pushMessages !== s.pushMessages ||
+			pushFriendRequests !== s.pushFriendRequests ||
+			pushProjectActivity !== s.pushProjectActivity ||
+			pushTaskAssignments !== s.pushTaskAssignments
+		);
 	})();
 
 	const handleSave = async () => {
@@ -98,54 +76,87 @@ export default function NotificationSettings() {
 		);
 	}
 
+	const toggles = [
+		{
+			label: "Messages",
+			description: "New direct messages",
+			checked: pushMessages,
+			onChange: setPushMessages,
+		},
+		{
+			label: "Friend Requests",
+			description: "Incoming friend requests and acceptances",
+			checked: pushFriendRequests,
+			onChange: setPushFriendRequests,
+		},
+		{
+			label: "Project Activity",
+			description: "Invites, join requests, role changes, and removals",
+			checked: pushProjectActivity,
+			onChange: setPushProjectActivity,
+		},
+		{
+			label: "Task Assignments",
+			description: "When you are assigned to a task",
+			checked: pushTaskAssignments,
+			onChange: setPushTaskAssignments,
+		},
+	];
+
 	return (
-		<Container direction="vertical" width="full" className="pt-3">
-			{/* Master toggle */}
+		<Container direction="vertical" width="full" className="pt-3 gap-4">
 			<Container
 				width="full"
-				className={`items-center border-b ${StyleTheme.Container.Border.Dark} pb-2`}
+				className={`items-center justify-between border-b ${StyleTheme.Container.Border.Dark} pb-3`}
 			>
-				<span
-					className={`text-xs font-semibold uppercase tracking-[0.3em] ${StyleTheme.Text.Secondary}`}
-				>
-					Enable Push Notifications
-				</span>
+				<div>
+					<span
+						className={`text-xs font-semibold uppercase tracking-[0.3em] ${StyleTheme.Text.Secondary}`}
+					>
+						Enable Push Notifications
+					</span>
+					<p className="text-xs text-zinc-500 mt-1">
+						Receive browser notifications when you&apos;re not on the site
+					</p>
+				</div>
 				<ToggleSwitch checked={pushEnabled} onChange={setPushEnabled} />
 			</Container>
 
-			{/* Category toggles */}
-			<Container direction="vertical" width="full" gap="sm" className="pt-2">
-				{CATEGORY_TOGGLES.map(({ key, label }) => (
-					<Container
-						key={key}
-						width="full"
-						className={`items-center border-b ${StyleTheme.Container.Border.Dark} pb-2`}
-					>
-						<span
-							className={`text-sm ${pushEnabled ? StyleTheme.Text.Primary : StyleTheme.Text.Secondary}`}
-						>
-							{label}
-						</span>
-						<ToggleSwitch
-							checked={localState[key]}
-							onChange={setters[key]}
-							disabled={!pushEnabled}
-						/>
-					</Container>
-				))}
-			</Container>
-
-			<Grid columns={{ default: 1, sm: 3 }}>
-				<Button
-					fullWidth
-					onClick={handleSave}
-					disabled={isSaving || !hasChanges}
-					loading={isSaving}
+			{toggles.map((toggle) => (
+				<Container
+					key={toggle.label}
+					width="full"
+					className={`items-center justify-between border-b ${StyleTheme.Container.Border.Dark} pb-3`}
 				>
-					<IoSave className="text-lg" />
-					Save Changes
-				</Button>
-			</Grid>
+					<div>
+						<span
+							className={`text-sm font-medium ${pushEnabled ? StyleTheme.Text.Primary : "text-zinc-600"}`}
+						>
+							{toggle.label}
+						</span>
+						<p
+							className={`text-xs mt-0.5 ${pushEnabled ? "text-zinc-500" : "text-zinc-700"}`}
+						>
+							{toggle.description}
+						</p>
+					</div>
+					<ToggleSwitch
+						checked={toggle.checked}
+						onChange={toggle.onChange}
+						disabled={!pushEnabled}
+					/>
+				</Container>
+			))}
+
+			<Button
+				fullWidth
+				onClick={handleSave}
+				disabled={isSaving || !hasChanges}
+				loading={isSaving}
+			>
+				<IoSave className="text-lg" />
+				Save Changes
+			</Button>
 		</Container>
 	);
 }

@@ -9,7 +9,7 @@ import InputSelect from "@pointwise/app/components/ui/InputSelect";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
-import ToggleSwitch from "@pointwise/app/components/ui/ToggleSwitch";
+import { ToggleSwitch } from "@pointwise/app/components/ui/ToggleSwitch";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
 import {
 	useCheckDisplayNameAvailabilityQuery,
@@ -394,7 +394,9 @@ export default function ProfileSettings() {
 				</span>
 				<ToggleSwitch
 					checked={profileVisibility === "PUBLIC"}
-					onChange={(v) => setProfileVisibility(v ? "PUBLIC" : "PRIVATE")}
+					onChange={(v: boolean) =>
+						setProfileVisibility(v ? "PUBLIC" : "PRIVATE")
+					}
 				/>
 			</Container>
 

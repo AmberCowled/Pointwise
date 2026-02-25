@@ -8,26 +8,21 @@ export const NotificationSettingsSchema = z.object({
 	pushTaskAssignments: z.boolean(),
 });
 
-export const UpdateNotificationSettingsSchema =
-	NotificationSettingsSchema.partial();
-
-export const GetNotificationSettingsResponseSchema = z.object({
-	settings: NotificationSettingsSchema,
-});
-
-export const UpdateNotificationSettingsResponseSchema = z.object({
-	settings: NotificationSettingsSchema,
-});
-
 export type NotificationSettingsType = z.infer<
 	typeof NotificationSettingsSchema
 >;
+
+export const UpdateNotificationSettingsSchema =
+	NotificationSettingsSchema.partial();
+
 export type UpdateNotificationSettings = z.infer<
 	typeof UpdateNotificationSettingsSchema
 >;
-export type GetNotificationSettingsResponse = z.infer<
-	typeof GetNotificationSettingsResponseSchema
->;
-export type UpdateNotificationSettingsResponse = z.infer<
-	typeof UpdateNotificationSettingsResponseSchema
->;
+
+export type GetNotificationSettingsResponse = {
+	settings: NotificationSettingsType;
+};
+
+export type UpdateNotificationSettingsResponse = {
+	settings: NotificationSettingsType;
+};

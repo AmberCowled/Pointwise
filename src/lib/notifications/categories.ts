@@ -1,10 +1,7 @@
-import type { NotificationType } from "./registry";
-
 /**
- * Maps push notification category toggle keys to notification types.
- * Used to determine whether to include a push payload based on user settings.
+ * Maps push category toggle keys to the notification types they control.
  */
-export const PUSH_CATEGORIES: Record<string, NotificationType[]> = {
+export const PUSH_CATEGORIES: Record<string, string[]> = {
 	pushMessages: ["NEW_MESSAGE"],
 	pushFriendRequests: ["FRIEND_REQUEST_RECEIVED", "FRIEND_REQUEST_ACCEPTED"],
 	pushProjectActivity: [
@@ -26,10 +23,6 @@ for (const [category, types] of Object.entries(PUSH_CATEGORIES)) {
 	}
 }
 
-/**
- * Get the push category toggle key for a given notification type.
- * Returns undefined if the type has no push category mapping.
- */
 export function getCategoryForNotificationType(
 	type: string,
 ): string | undefined {

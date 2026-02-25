@@ -153,6 +153,14 @@ model VerificationToken {
   @@index([identifier])
 }
 
+type NotificationSettings {
+  pushEnabled         Boolean @default(true)
+  pushMessages        Boolean @default(true)
+  pushFriendRequests  Boolean @default(true)
+  pushProjectActivity Boolean @default(true)
+  pushTaskAssignments Boolean @default(true)
+}
+
 enum XpMode {
   AI
   MANUAL

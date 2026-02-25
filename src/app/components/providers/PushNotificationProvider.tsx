@@ -1,7 +1,7 @@
 "use client";
 
 import { useGetNotificationSettingsQuery } from "@pointwise/generated/api";
-import { usePushNotifications } from "@pointwise/lib/realtime";
+import { usePushNotifications } from "@pointwise/lib/realtime/hooks/usePushNotifications";
 import { useSession } from "next-auth/react";
 
 export function PushNotificationProvider({
@@ -17,7 +17,6 @@ export function PushNotificationProvider({
 	});
 
 	const pushEnabled = data?.settings?.pushEnabled ?? false;
-
 	usePushNotifications(userId, { enabled: pushEnabled });
 
 	return <>{children}</>;

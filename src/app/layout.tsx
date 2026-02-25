@@ -35,6 +35,28 @@ export const metadata: Metadata = {
 	],
 	authors: [{ name: "Amber Cowled" }],
 	creator: "Amber Cowled",
+	manifest: "/manifest.json",
+	icons: [
+		{ rel: "icon", url: "/favicon.ico", sizes: "any" },
+		{
+			rel: "icon",
+			url: "/favicon-32x32.png",
+			sizes: "32x32",
+			type: "image/png",
+		},
+		{
+			rel: "icon",
+			url: "/favicon-16x16.png",
+			sizes: "16x16",
+			type: "image/png",
+		},
+		{ rel: "apple-touch-icon", url: "/apple-touch-icon.png", sizes: "180x180" },
+	],
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "black-translucent",
+		title: "Pointwise",
+	},
 	openGraph: {
 		title: "Pointwise",
 		description:
@@ -53,6 +75,7 @@ export const viewport: Viewport = {
 	initialScale: 1,
 	maximumScale: 5,
 	userScalable: true,
+	themeColor: "#3B0270",
 };
 
 export default function RootLayout({
