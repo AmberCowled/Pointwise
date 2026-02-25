@@ -1,3 +1,4 @@
+export { usePushNotifications } from "./usePushNotifications";
 export type { UseSubscribeConversationOptions } from "./useSubscribeConversation";
 export { useSubscribeConversation } from "./useSubscribeConversation";
 export type { UseSubscribeFriendUpdatesOptions } from "./useSubscribeFriendUpdates";

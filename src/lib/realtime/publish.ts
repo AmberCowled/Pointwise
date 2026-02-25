@@ -3,6 +3,7 @@
  * Import only from API routes, lib/api, or lib/notifications.
  */
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
+import { buildPushExtras } from "@pointwise/lib/notifications/push";
 import type { Notification } from "@pointwise/lib/validation/notification-schema";
 import {
 	getChannelForNotificationType,
@@ -21,6 +22,8 @@ const CHANNEL_BUILDERS: Record<string, (userId: string) => string> = {
 /**
  * Publish a notification to the recipient's Ably channel.
  * Channel is derived from the notification registry.
+ * If the user has push enabled for this notification category,
+ * a push payload is included in extras.
  */
 export async function publishNotification(
 	notification: Notification,
@@ -41,15 +44,26 @@ export async function publishNotification(
 		return;
 	}
 
+	const extras = await buildPushExtras(
+		notification.userId,
+		notification.type,
+		notification.data as Record<string, unknown>,
+	);
+
 	const channelName = buildChannel(notification.userId);
-	await publishAblyEvent(channelName, RealtimeEvents.NEW_NOTIFICATION, {
-		...notification,
-		createdAt:
-			typeof notification.createdAt === "string"
-				? notification.createdAt
-				: notification.createdAt.toISOString(),
-		data: notification.data,
-	});
+	await publishAblyEvent(
+		channelName,
+		RealtimeEvents.NEW_NOTIFICATION,
+		{
+			...notification,
+			createdAt:
+				typeof notification.createdAt === "string"
+					? notification.createdAt
+					: notification.createdAt.toISOString(),
+			data: notification.data,
+		},
+		extras,
+	);
 }
 
 /**

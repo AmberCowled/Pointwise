@@ -1,5 +1,6 @@
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { sendFriendRequest } from "@pointwise/lib/api/friends";
+import { buildPushExtras } from "@pointwise/lib/notifications/push";
 import { sendNotification } from "@pointwise/lib/notifications/service";
 import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { endpoint } from "ertk";
@@ -22,10 +23,20 @@ export default endpoint.post<{ status: string }, { receiverId: string }>({
 		const result = await sendFriendRequest(user.id, body.receiverId);
 		if (result.status === "PENDING") {
 			try {
+				const pushExtras = await buildPushExtras(
+					body.receiverId,
+					"FRIEND_REQUEST_RECEIVED",
+					{
+						senderId: user.id,
+						senderName: user.name as string | null,
+						senderImage: user.image as string | null,
+					},
+				);
 				await publishAblyEvent(
 					`user:${body.receiverId}:friend-requests`,
 					"friend-request:received",
 					{ senderId: user.id },
+					pushExtras,
 				);
 			} catch (error) {
 				console.warn("Failed to publish friend request event", error);

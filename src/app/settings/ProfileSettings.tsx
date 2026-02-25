@@ -9,6 +9,7 @@ import InputSelect from "@pointwise/app/components/ui/InputSelect";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
+import ToggleSwitch from "@pointwise/app/components/ui/ToggleSwitch";
 import ProfilePicture from "@pointwise/app/dashboard/userCard/ProfilePicture";
 import {
 	useCheckDisplayNameAvailabilityQuery,
@@ -391,20 +392,10 @@ export default function ProfileSettings() {
 				>
 					Public Profile
 				</span>
-				<label className="relative inline-flex cursor-pointer">
-					<input
-						type="checkbox"
-						className="sr-only peer"
-						checked={profileVisibility === "PUBLIC"}
-						onChange={(e) =>
-							setProfileVisibility(e.target.checked ? "PUBLIC" : "PRIVATE")
-						}
-					/>
-					<div
-						className={`w-11 h-6 bg-zinc-900 peer-focus:outline-none rounded-full peer peer-checked:bg-[${StyleTheme.BrandColors.secondary}] transition-colors`}
-					/>
-					<div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5" />
-				</label>
+				<ToggleSwitch
+					checked={profileVisibility === "PUBLIC"}
+					onChange={(v) => setProfileVisibility(v ? "PUBLIC" : "PRIVATE")}
+				/>
 			</Container>
 
 			<Grid columns={{ default: 1, sm: 3 }}>

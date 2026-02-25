@@ -17,9 +17,15 @@ export async function POST() {
 		);
 	}
 
+	const userId = session.user.id;
 	const client = new Ably.Rest({ key: apiKey });
 	const tokenRequest = await client.auth.createTokenRequest({
-		clientId: session.user.id,
+		clientId: userId,
+		capability: {
+			[`user:${userId}:*`]: ["subscribe", "publish", "push-subscribe"],
+			["conversation:*"]: ["subscribe", "publish"],
+			["task:*"]: ["subscribe", "publish"],
+		},
 	});
 
 	return NextResponse.json(tokenRequest);

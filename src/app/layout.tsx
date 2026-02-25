@@ -5,6 +5,7 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
 import "./globals.css";
 import { NotificationProviderWrapper } from "./components/providers/NotificationProviderWrapper";
+import { PushNotificationProvider } from "./components/providers/PushNotificationProvider";
 import { SessionProviderWrapper } from "./components/providers/SessionProviderWrapper";
 import { ModalProvider } from "./components/ui/modal";
 import { StoreProvider } from "./StoreProvider";
@@ -67,11 +68,13 @@ export default function RootLayout({
 				<NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
 				<SessionProviderWrapper>
 					<StoreProvider>
-						<ModalProvider>
-							<NotificationProviderWrapper>
-								{children}
-							</NotificationProviderWrapper>
-						</ModalProvider>
+						<PushNotificationProvider>
+							<ModalProvider>
+								<NotificationProviderWrapper>
+									{children}
+								</NotificationProviderWrapper>
+							</ModalProvider>
+						</PushNotificationProvider>
 					</StoreProvider>
 				</SessionProviderWrapper>
 			</body>

@@ -18,10 +18,15 @@ export const publishAblyEvent = async (
 	channelName: string,
 	eventName: string,
 	payload: Record<string, unknown>,
+	extras?: Record<string, unknown>,
 ) => {
 	const client = getRestClient();
 	if (!client) {
 		return;
 	}
-	await client.channels.get(channelName).publish(eventName, payload);
+	await client.channels.get(channelName).publish({
+		name: eventName,
+		data: payload,
+		...(extras ? { extras } : {}),
+	});
 };

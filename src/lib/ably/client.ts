@@ -1,7 +1,7 @@
-import type AblyTypes from "ably";
+import Ably from "ably";
+import Push from "ably/push";
 
-let ablyClient: AblyTypes.Realtime | null = null;
-let ablyPromise: Promise<AblyTypes.Realtime> | null = null;
+let ablyClient: Ably.Realtime | null = null;
 
 export const getAblyClient = async () => {
 	if (ablyClient) {
@@ -10,15 +10,12 @@ export const getAblyClient = async () => {
 	if (typeof window === "undefined") {
 		throw new Error("Ably client is only available in the browser");
 	}
-	if (!ablyPromise) {
-		ablyPromise = import("ably").then((Ably) => {
-			const client = new Ably.Realtime({
-				authUrl: "/api/ably/token",
-				authMethod: "POST",
-			});
-			ablyClient = client;
-			return client;
-		});
-	}
-	return ablyPromise;
+	const client = new Ably.Realtime({
+		authUrl: "/api/ably/token",
+		authMethod: "POST",
+		pushServiceWorkerUrl: "/service_worker.js",
+		plugins: { Push },
+	});
+	ablyClient = client;
+	return client;
 };
