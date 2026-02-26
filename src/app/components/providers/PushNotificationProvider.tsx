@@ -16,7 +16,7 @@ export function PushNotificationProvider({
 		skip: !userId,
 	});
 
-	const pushEnabled = data?.settings?.pushEnabled ?? false;
+	const pushEnabled = data?.settings?.pushEnabled ?? true;
 	usePushNotifications(userId, { enabled: pushEnabled });
 
 	return <>{children}</>;
