@@ -17,6 +17,14 @@ datasource db {
   url      = env("DATABASE_URL") // Required for Prisma 6 migrations
 }
 
+type NotificationSettings {
+  pushEnabled         Boolean @default(true)
+  pushMessages        Boolean @default(true)
+  pushFriendRequests  Boolean @default(true)
+  pushProjectActivity Boolean @default(true)
+  pushTaskAssignments Boolean @default(true)
+}
+
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
@@ -33,6 +41,8 @@ model User {
   location     String?
   website      String?
   gender       String?
+
+  notificationSettings NotificationSettings?
 
   accounts Account[]
   sessions Session[]

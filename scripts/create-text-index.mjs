@@ -11,10 +11,10 @@
  * Or via npm: pnpm db:create-text-index
  */
 
-import { MongoClient } from "mongodb";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { MongoClient } from "mongodb";
 
 // Load environment variables
 const __filename = fileURLToPath(import.meta.url);

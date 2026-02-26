@@ -221,3 +221,70 @@ The `PATCH /notifications/dismiss` endpoint marks notifications as read when the
 ### markConversationRead
 
 Uses a MongoDB raw command to filter on `data.conversationId` directly in the database, avoiding the need to load all unread message notifications into memory.
+
+## Push Notifications
+
+OS-level push notifications are delivered via Ably's Web Push (VAPID/FCM) when users aren't on the site.
+
+### Architecture
+
+```
+Server publishes to Ably channel with `extras: { push: { notification: {...} } }`
+  -> Ably forwards to FCM (Chrome) or APNs (Safari)
+    -> Browser service worker receives push event
+      -> OS notification displayed
+```
+
+### How It Works
+
+1. **Device registration** — `usePushNotifications` hook registers the service worker, calls `client.push.activate()`, then subscribes the device to all 3 user channels
+2. **Server-side injection** — `publishNotification()` in `src/lib/realtime/publish.ts` calls `buildPushExtras()` which checks the recipient's `NotificationSettings` and includes a push payload if their category toggle is enabled
+3. **Service worker** — `public/service_worker.js` handles the `push` event (shows OS notification) and `notificationclick` event (navigates to the relevant URL)
+
+### Per-User Settings
+
+`NotificationSettings` is a composite type on the User model (`prisma/schema.prisma`):
+
+| Field | Default | Controls |
+|-------|---------|----------|
+| `pushEnabled` | `true` | Master toggle — disables all push when `false` |
+| `pushMessages` | `true` | `NEW_MESSAGE` |
+| `pushFriendRequests` | `true` | `FRIEND_REQUEST_RECEIVED`, `FRIEND_REQUEST_ACCEPTED` |
+| `pushProjectActivity` | `true` | All project invite/join/role/removal types |
+| `pushTaskAssignments` | `true` | `TASK_ASSIGNED` |
+
+Category mappings are defined in `src/lib/notifications/categories.ts`.
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `public/service_worker.js` | Push event handler + notification click navigation |
+| `src/lib/notifications/push.ts` | `buildPushPayload()` and `buildPushExtras()` |
+| `src/lib/notifications/categories.ts` | Category toggle → notification type mapping |
+| `src/lib/realtime/hooks/usePushNotifications.ts` | Client-side push activation hook |
+| `src/app/components/providers/PushNotificationProvider.tsx` | Global provider (reads settings, activates push) |
+| `src/endpoints/user/notification-settings/get.ts` | GET settings endpoint |
+| `src/endpoints/user/notification-settings/update.ts` | PATCH settings endpoint |
+| `src/app/settings/NotificationSettings.tsx` | Settings UI with toggles |
+
+### Push Without DB Notification
+
+Some events (e.g., friend requests) use `publishAblyEvent` directly without `sendNotification`. To still send an OS push for these, use `buildPushExtras()` and pass the result as the `extras` parameter:
+
+```typescript
+const extras = await buildPushExtras(recipientId, "FRIEND_REQUEST_RECEIVED", data);
+await publishAblyEvent(channelName, eventName, payload, extras);
+```
+
+### Ably Dashboard Setup
+
+1. Go to Ably dashboard → app → **Configuration** → **Rules**
+2. Add a rule for namespace `user`
+3. Enable **Push notifications enabled**
+4. Configure **Firebase Cloud Messaging** with a service account JSON (required for Chrome — Chrome routes Web Push through FCM)
+
+### Adding Push to a New Notification Type
+
+1. Add the type string to the appropriate category array in `src/lib/notifications/categories.ts`
+2. That's it — `buildPushExtras()` will automatically include push payloads for the new type based on the user's category toggle

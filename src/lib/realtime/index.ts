@@ -8,6 +8,7 @@ export type {
 	UseSubscribeUserNotificationsOptions,
 } from "./hooks";
 export {
+	usePushNotifications,
 	useSubscribeConversation,
 	useSubscribeFriendUpdates,
 	useSubscribeProjectUpdates,

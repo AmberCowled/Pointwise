@@ -3,6 +3,7 @@
  * Import only from API routes, lib/api, or lib/notifications.
  */
 import { publishAblyEvent } from "@pointwise/lib/ably/server";
+import { buildPushExtras } from "@pointwise/lib/notifications/push";
 import type { Notification } from "@pointwise/lib/validation/notification-schema";
 import {
 	getChannelForNotificationType,
@@ -42,14 +43,26 @@ export async function publishNotification(
 	}
 
 	const channelName = buildChannel(notification.userId);
-	await publishAblyEvent(channelName, RealtimeEvents.NEW_NOTIFICATION, {
-		...notification,
-		createdAt:
-			typeof notification.createdAt === "string"
-				? notification.createdAt
-				: notification.createdAt.toISOString(),
-		data: notification.data,
-	});
+
+	const extras = await buildPushExtras(
+		notification.userId,
+		notification.type,
+		notification.data as Record<string, unknown>,
+	);
+
+	await publishAblyEvent(
+		channelName,
+		RealtimeEvents.NEW_NOTIFICATION,
+		{
+			...notification,
+			createdAt:
+				typeof notification.createdAt === "string"
+					? notification.createdAt
+					: notification.createdAt.toISOString(),
+			data: notification.data,
+		},
+		extras,
+	);
 }
 
 /**

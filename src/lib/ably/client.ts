@@ -11,14 +11,19 @@ export const getAblyClient = async () => {
 		throw new Error("Ably client is only available in the browser");
 	}
 	if (!ablyPromise) {
-		ablyPromise = import("ably").then((Ably) => {
+		ablyPromise = (async () => {
+			const Ably = await import("ably");
+			const PushModule = await import("ably/push");
+			const Push = PushModule.default ?? PushModule;
 			const client = new Ably.Realtime({
 				authUrl: "/api/ably/token",
 				authMethod: "POST",
+				pushServiceWorkerUrl: "/service_worker.js",
+				plugins: { Push },
 			});
 			ablyClient = client;
 			return client;
-		});
+		})();
 	}
 	return ablyPromise;
 };
