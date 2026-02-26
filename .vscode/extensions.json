@@ -1,13 +1,11 @@
 {
-  "recommendations": [
-    "biomejs.biome",
-    "bradlc.vscode-tailwindcss",
-    "prisma.prisma",
-    "usernamehw.errorlens",
-    "typescriptteam.native-preview",
-    "yoavbls.pretty-ts-errors"
-  ],
-  "unwantedRecommendations": [
-    "esbenp.prettier-vscode"
-  ]
+	"recommendations": [
+		"biomejs.biome",
+		"bradlc.vscode-tailwindcss",
+		"prisma.prisma",
+		"usernamehw.errorlens",
+		"typescriptteam.native-preview",
+		"yoavbls.pretty-ts-errors"
+	],
+	"unwantedRecommendations": ["esbenp.prettier-vscode"]
 }

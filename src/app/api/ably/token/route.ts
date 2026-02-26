@@ -23,8 +23,8 @@ export async function POST() {
 		clientId: userId,
 		capability: {
 			[`user:${userId}:*`]: ["subscribe", "publish", "push-subscribe"],
-			["conversation:*"]: ["subscribe", "publish"],
-			["task:*"]: ["subscribe", "publish"],
+			"conversation:*": ["subscribe", "publish"],
+			"task:*": ["subscribe", "publish"],
 		},
 	});
 
