@@ -262,7 +262,7 @@ export default function AccountSettings() {
 						<p className="text-xs text-zinc-500 mt-0.5">
 							{info?.hasPassword
 								? "You can reset your password via email"
-								: "Set a password via email to enable 2FA"}
+								: "Set a password to enable direct email login"}
 						</p>
 					</div>
 					<Button
