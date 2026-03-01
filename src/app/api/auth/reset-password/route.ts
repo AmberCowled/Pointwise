@@ -1,11 +1,18 @@
 import crypto from "node:crypto";
 import prisma from "@pointwise/lib/prisma";
+import { checkRateLimit } from "@pointwise/lib/rate-limit";
 import { ResetPasswordSchema } from "@pointwise/lib/validation/password-reset-schema";
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
 	try {
+		const rateLimited = await checkRateLimit(request, {
+			windowMs: 600_000,
+			max: 10,
+		});
+		if (rateLimited) return rateLimited;
+
 		const body = await request.json();
 		const parsed = ResetPasswordSchema.safeParse(body);
 

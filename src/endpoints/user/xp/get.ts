@@ -6,6 +6,7 @@ export default endpoint.get<GetXPResponse, void>({
 	name: "getXP",
 	tags: { provides: ["XP"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/user/xp",
 	handler: async ({ user }) => {
 		const prismaXP = await getXP(user.id);

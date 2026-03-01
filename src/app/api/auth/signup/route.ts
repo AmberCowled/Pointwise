@@ -1,5 +1,6 @@
 import { generateUniqueDisplayName } from "@pointwise/lib/api/users";
 import prisma from "@pointwise/lib/prisma";
+import { checkRateLimit } from "@pointwise/lib/rate-limit";
 import { parseSignupBody } from "@pointwise/lib/validation/auth";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -8,6 +9,12 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
 	try {
+		const rateLimited = await checkRateLimit(req, {
+			windowMs: 600_000,
+			max: 10,
+		});
+		if (rateLimited) return rateLimited;
+
 		const rawBody = await req.json().catch(() => ({}));
 		const parsed = parseSignupBody(rawBody);
 		if (!parsed.success) {

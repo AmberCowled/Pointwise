@@ -6,6 +6,7 @@ export default endpoint.get<DeviceSessionsResponse, void>({
 	name: "getDeviceSessions",
 	tags: { provides: ["DeviceSessions"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/user/device-sessions",
 	handler: async ({ user }) => {
 		const sessions = await prisma.deviceSession.findMany({

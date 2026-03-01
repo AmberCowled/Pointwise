@@ -6,6 +6,7 @@ export default endpoint.get<AccountInfoResponse, void>({
 	name: "getAccountInfo",
 	tags: { provides: ["AccountInfo"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/user/account-info",
 	handler: async ({ user }) => {
 		const [accounts, dbUser] = await Promise.all([

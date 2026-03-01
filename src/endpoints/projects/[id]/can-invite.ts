@@ -11,6 +11,7 @@ export default endpoint.get<
 	request: InviteRequestSchema,
 	tags: { provides: ["Invites", "Projects"] },
 	protected: true,
+	maxRetries: 2,
 	query: ({ projectId, inviteeId, role }) =>
 		`/projects/${projectId}/can-invite?inviteeId=${inviteeId}&role=${role}`,
 	handler: async ({ user, params, query }) => {

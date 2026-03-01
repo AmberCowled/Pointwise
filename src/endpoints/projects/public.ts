@@ -17,6 +17,7 @@ export default endpoint.get<
 	request: SearchPublicProjectsRequestSchema,
 	tags: { provides: ["Projects"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/projects/public",
 	handler: async ({ user, query }) => {
 		const q = query as SearchPublicProjectsRequest;

@@ -18,6 +18,7 @@ export default endpoint.get<
 	request: GetNotificationsQuerySchema,
 	tags: { provides: ["Notifications"] },
 	protected: true,
+	maxRetries: 2,
 	query: ({ cursor, limit } = {}) => {
 		const params = new URLSearchParams();
 		if (cursor) params.set("cursor", cursor);

@@ -25,6 +25,7 @@ export default endpoint.get<
 	name: "getReceivedInvites",
 	tags: { provides: ["Invites"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/invites",
 	handler: async ({ user }) => {
 		const invites = await getReceivedInvites(user.id);

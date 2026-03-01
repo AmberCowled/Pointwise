@@ -10,6 +10,7 @@ export default endpoint.get<FriendshipStatusResponse, string>({
 		],
 	},
 	protected: true,
+	maxRetries: 2,
 	query: (userId) => `/friends/${userId}/status`,
 	handler: async ({ user, params }) => {
 		const status = await getFriendshipStatus(user.id, params.id);

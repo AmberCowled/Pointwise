@@ -11,6 +11,7 @@ export default endpoint.get<SearchUsersResponse, SearchUsersRequest>({
 	request: SearchUsersRequestSchema,
 	tags: { provides: ["Users"] },
 	protected: true,
+	maxRetries: 2,
 	query: (params) =>
 		`/users/search?query=${encodeURIComponent(params.query ?? "")}&limit=${params.limit ?? 50}&offset=${params.offset ?? 0}`,
 	handler: async ({ user, query }) => {

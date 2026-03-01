@@ -14,6 +14,7 @@ export default endpoint.get<
 	name: "getProjectJoinRequests",
 	tags: { provides: ["JoinRequests"] },
 	protected: true,
+	maxRetries: 2,
 	query: (projectId) => `/projects/${projectId}/join-requests`,
 	handler: async ({ user, params }) => {
 		const requests = await getProjectJoinRequests(params.id, user.id);
