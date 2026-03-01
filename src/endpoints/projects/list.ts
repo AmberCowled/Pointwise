@@ -6,6 +6,7 @@ export default endpoint.get<GetProjectsResponse, void>({
 	name: "getProjects",
 	tags: { provides: ["Projects"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/projects",
 	handler: async ({ user }) => {
 		const prismaProjects = await getProjects(user.id);

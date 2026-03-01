@@ -18,6 +18,7 @@ export default endpoint.get<
 		],
 	},
 	protected: true,
+	maxRetries: 2,
 	query: ({ conversationId, cursor, limit }) => {
 		const params = new URLSearchParams();
 		if (cursor) params.set("cursor", cursor);

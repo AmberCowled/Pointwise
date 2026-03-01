@@ -6,6 +6,7 @@ export default endpoint.get<FriendListResponse, void>({
 	name: "getFriends",
 	tags: { provides: ["Friends"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/friends",
 	handler: async ({ user }) => {
 		const friends = await getFriends(user.id);

@@ -6,6 +6,7 @@ export default endpoint.get<PendingRequestsResponse, void>({
 	name: "getPendingRequests",
 	tags: { provides: ["FriendRequests"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/friends/requests",
 	handler: async ({ user }) => {
 		const requests = await getPendingRequests(user.id);

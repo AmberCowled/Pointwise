@@ -6,6 +6,7 @@ export default endpoint.get<DeletePreviewResponse, void>({
 	name: "getDeletePreview",
 	tags: { provides: ["DeletePreview"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/user/delete-preview",
 	handler: async ({ user }) => {
 		// Find all projects where this user is an admin

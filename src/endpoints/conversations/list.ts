@@ -6,6 +6,7 @@ export default endpoint.get<ConversationListItem[], void>({
 	name: "getConversations",
 	tags: { provides: ["Conversations"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/conversations",
 	handler: async ({ user }) => {
 		const list = await getConversations(user.id);

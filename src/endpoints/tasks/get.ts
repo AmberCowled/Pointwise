@@ -11,6 +11,7 @@ export default endpoint.get<GetTasksResponse, GetTasksRequest>({
 	request: GetTasksRequestSchema,
 	tags: { provides: ["Tasks"] },
 	protected: true,
+	maxRetries: 2,
 	query: ({ projectId }) => `/tasks?projectId=${projectId}`,
 	handler: async ({ user, query }) => {
 		const queryData = query as unknown as GetTasksRequest;

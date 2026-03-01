@@ -13,6 +13,7 @@ export default endpoint.get<
 		],
 	},
 	protected: true,
+	maxRetries: 2,
 	query: ({ taskId, commentId, projectId }) =>
 		`/tasks/${taskId}/comments/${commentId}/replies?projectId=${projectId}`,
 	handler: async ({ user, params, req }) => {

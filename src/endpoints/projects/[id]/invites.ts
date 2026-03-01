@@ -22,6 +22,7 @@ export default endpoint.get<
 	name: "getProjectInvites",
 	tags: { provides: ["Invites"] },
 	protected: true,
+	maxRetries: 2,
 	query: (projectId) => `/projects/${projectId}/invites`,
 	handler: async ({ user, params }) => {
 		const project = await getProject(params.id, user.id);

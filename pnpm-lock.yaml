@@ -40,6 +40,12 @@ importers:
       '@uploadthing/react':
         specifier: ^7.3.3
         version: 7.3.3(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(uploadthing@7.7.4(express@5.2.1)(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(tailwindcss@4.1.18))
+      '@upstash/ratelimit':
+        specifier: ^2.0.8
+        version: 2.0.8(@upstash/redis@1.36.3)
+      '@upstash/redis':
+        specifier: ^1.36.3
+        version: 1.36.3
       ably:
         specifier: ^2.17.0
         version: 2.17.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -56,8 +62,8 @@ importers:
         specifier: ^17.2.3
         version: 17.2.4
       ertk:
-        specifier: ^0.1.1
-        version: 0.1.1(@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0))(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0)(typescript@5.9.3)(zod@4.3.6)
+        specifier: ^0.1.2
+        version: 0.1.2(@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0))(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0)(typescript@5.9.3)(zod@4.3.6)
       next:
         specifier: ^16.0.11
         version: 16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1125,6 +1131,18 @@ packages:
   '@uploadthing/shared@7.1.10':
     resolution: {integrity: sha512-R/XSA3SfCVnLIzFpXyGaKPfbwlYlWYSTuGjTFHuJhdAomuBuhopAHLh2Ois5fJibAHzi02uP1QCKbgTAdmArqg==}
 
+  '@upstash/core-analytics@0.0.10':
+    resolution: {integrity: sha512-7qJHGxpQgQr9/vmeS1PktEwvNAF7TI4iJDi8Pu2CFZ9YUGHZH4fOP5TfYlZ4aVxfopnELiE4BS4FBjyK7V1/xQ==}
+    engines: {node: '>=16.0.0'}
+
+  '@upstash/ratelimit@2.0.8':
+    resolution: {integrity: sha512-YSTMBJ1YIxsoPkUMX/P4DDks/xV5YYCswWMamU8ZIfK9ly6ppjRnVOyBhMDXBmzjODm4UQKcxsJPvaeFAijp5w==}
+    peerDependencies:
+      '@upstash/redis': ^1.34.3
+
+  '@upstash/redis@1.36.3':
+    resolution: {integrity: sha512-wxo1ei4OHDHm4UGMgrNVz9QUEela9N/Iwi4p1JlHNSowQiPi+eljlGnfbZVkV0V4PIrjGtGFJt5GjWM5k28enA==}
+
   ably@2.17.1:
     resolution: {integrity: sha512-70yfXHoM7JtJD/8FCtPD1gkWW0f+AJqbJp0PsqDAqiyxFB8cPFY+FuKHgNTYb8eRHKXq8hT1xiDphUcY0+GHnA==}
     engines: {node: '>=16'}
@@ -1478,8 +1496,8 @@ packages:
     resolution: {integrity: sha512-xUtoPkMggbz0MPyPiIWr1Kp4aeWJjDZ6SMvURhimjdZgsRuDplF5/s9hcgGhyXMhs+6vpnuoiZ2kFiu3FMnS8Q==}
     engines: {node: '>=18'}
 
-  ertk@0.1.1:
-    resolution: {integrity: sha512-wXI04fiQXYrLzkOWgAKVIkNTXkz7V7AEkhFBdhxuNd+hHlx5eauAWGQTa8n00wCykyN3e4nx/y8bVJ2C9fH8JA==}
+  ertk@0.1.2:
+    resolution: {integrity: sha512-t0RLjTMXpmLPo6auPJi+ze1vmbyerB2rWJYG1Ze6eUItm2o9RcGQtcetPVP5K9+BkckQh5xhzIU49X+iI4AacA==}
     hasBin: true
     peerDependencies:
       '@reduxjs/toolkit': ^2.0.0
@@ -1727,8 +1745,8 @@ packages:
   highlightjs-vue@1.0.0:
     resolution: {integrity: sha512-PDEfEF102G23vHmPhLyPboFCD+BkMGu+GuJe2d9/eH4FsCwvgBpnc9n0pGE+ffKdph38s6foEZiEjdgHdzp+IA==}
 
-  hono@4.12.2:
-    resolution: {integrity: sha512-gJnaDHXKDayjt8ue0n8Gs0A007yKXj4Xzb8+cNjZeYsSzzwKc0Lr+OZgYwVfB0pHfUs17EPoLvrOsEaJ9mj+Tg==}
+  hono@4.12.3:
+    resolution: {integrity: sha512-SFsVSjp8sj5UumXOOFlkZOG6XS9SJDKw0TbwFeV+AJ8xlST8kxK5Z/5EYa111UY8732lK2S/xB653ceuaoGwpg==}
     engines: {node: '>=16.9.0'}
 
   html-url-attributes@3.0.1:
@@ -2800,6 +2818,9 @@ packages:
     resolution: {integrity: sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg==}
     hasBin: true
 
+  uncrypto@0.1.3:
+    resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
+
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
@@ -3163,9 +3184,9 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono/node-server@1.19.9(hono@4.12.2)':
+  '@hono/node-server@1.19.9(hono@4.12.3)':
     dependencies:
-      hono: 4.12.2
+      hono: 4.12.3
     optional: true
 
   '@img/colour@1.0.0':
@@ -3299,7 +3320,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.26.0(zod@4.3.6)':
     dependencies:
-      '@hono/node-server': 1.19.9(hono@4.12.2)
+      '@hono/node-server': 1.19.9(hono@4.12.3)
       ajv: 8.18.0
       ajv-formats: 3.0.1(ajv@8.18.0)
       content-type: 1.0.5
@@ -3309,7 +3330,7 @@ snapshots:
       eventsource-parser: 3.0.6
       express: 5.2.1
       express-rate-limit: 8.2.1(express@5.2.1)
-      hono: 4.12.2
+      hono: 4.12.3
       jose: 6.1.3
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -3800,6 +3821,19 @@ snapshots:
       effect: 3.17.7
       sqids: 0.3.0
 
+  '@upstash/core-analytics@0.0.10':
+    dependencies:
+      '@upstash/redis': 1.36.3
+
+  '@upstash/ratelimit@2.0.8(@upstash/redis@1.36.3)':
+    dependencies:
+      '@upstash/core-analytics': 0.0.10
+      '@upstash/redis': 1.36.3
+
+  '@upstash/redis@1.36.3':
+    dependencies:
+      uncrypto: 0.1.3
+
   ably@2.17.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       '@ably/msgpack-js': 0.4.1
@@ -4146,7 +4180,7 @@ snapshots:
 
   environment@1.1.0: {}
 
-  ertk@0.1.1(@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0))(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0)(typescript@5.9.3)(zod@4.3.6):
+  ertk@0.1.2(@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0))(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0)(typescript@5.9.3)(zod@4.3.6):
     dependencies:
       '@reduxjs/toolkit': 2.11.2(react-redux@9.2.0(@types/react@19.2.13)(react@19.2.0)(redux@5.0.1))(react@19.2.0)
       jiti: 2.6.1
@@ -4495,7 +4529,7 @@ snapshots:
 
   highlightjs-vue@1.0.0: {}
 
-  hono@4.12.2:
+  hono@4.12.3:
     optional: true
 
   html-url-attributes@3.0.1: {}
@@ -5823,6 +5857,8 @@ snapshots:
   typescript@5.9.3: {}
 
   ulid@2.4.0: {}
+
+  uncrypto@0.1.3: {}
 
   undici-types@6.21.0: {}
 

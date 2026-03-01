@@ -6,6 +6,7 @@ export default endpoint.get<GetUserResponse, void>({
 	name: "getUser",
 	tags: { provides: ["User"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/user",
 	handler: async ({ user }) => {
 		const userData = await getUser(user.id);

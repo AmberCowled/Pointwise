@@ -11,6 +11,7 @@ export default endpoint.get<
 		provides: (_result, _err, { taskId }) => [{ type: "Comments", id: taskId }],
 	},
 	protected: true,
+	maxRetries: 2,
 	query: ({ taskId, projectId }) =>
 		`/tasks/${taskId}/comments?projectId=${projectId}`,
 	handler: async ({ user, params, req }) => {

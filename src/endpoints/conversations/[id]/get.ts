@@ -8,6 +8,7 @@ export default endpoint.get<Conversation, string>({
 		provides: (_result, _error, id) => [{ type: "Conversation", id }],
 	},
 	protected: true,
+	maxRetries: 2,
 	query: (id) => `/conversations/${id}`,
 	handler: async ({ user, params }) => {
 		const conversation = await getConversation(params.id, user.id);

@@ -11,6 +11,7 @@ export default endpoint.get<
 >({
 	name: "checkDisplayNameAvailability",
 	protected: true,
+	maxRetries: 2,
 	query: ({ name }) =>
 		`/user/check-availability?name=${encodeURIComponent(name)}`,
 	handler: async ({ user, req }) => {

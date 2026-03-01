@@ -1,10 +1,17 @@
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
+import { UpstashRateLimitAdapter } from "@pointwise/lib/rate-limit-adapter";
 import { Prisma } from "@prisma/client";
-import { configureHandler } from "ertk/next";
+import { configureHandler, defaultKeyFn } from "ertk/next";
 import { getServerSession } from "next-auth";
 
 export const createRouteHandler = configureHandler({
+	rateLimit: {
+		windowMs: 600_000, // 10 minutes
+		max: 250,
+		adapter: new UpstashRateLimitAdapter(),
+		keyFn: (req, user) => user?.id ?? defaultKeyFn(req),
+	},
 	auth: {
 		getUser: async () => {
 			const session = await getServerSession(authOptions);

@@ -14,6 +14,7 @@ export default endpoint.get<GetNotificationSettingsResponse, void>({
 	name: "getNotificationSettings",
 	tags: { provides: ["NotificationSettings"] },
 	protected: true,
+	maxRetries: 2,
 	query: () => "/user/notification-settings",
 	handler: async ({ user }) => {
 		const dbUser = await prisma.user.findUnique({
