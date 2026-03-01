@@ -11,12 +11,34 @@ export const createRouteHandler = configureHandler({
 			const email = session?.user?.email;
 			if (!email) return null;
 
+			// Check if session is pending 2FA — block API access
+			if (session.pendingTwoFactor) return null;
+
 			const user = await prisma.user.findUnique({
 				where: { email },
 				select: { id: true, email: true, name: true, image: true },
 			});
 
 			if (!user?.email) return null;
+
+			// Validate device session (check if jti is still valid)
+			if (session.jti) {
+				const deviceSession = await prisma.deviceSession.findUnique({
+					where: { jti: session.jti },
+					select: { id: true },
+				});
+				// If a jti exists but no matching device session, the session was revoked
+				if (!deviceSession) {
+					// Allow if no device sessions exist at all for this user (legacy sessions)
+					const hasAnyDeviceSession = await prisma.deviceSession.count({
+						where: { userId: user.id },
+					});
+					if (hasAnyDeviceSession > 0) {
+						return null;
+					}
+				}
+			}
+
 			return {
 				id: user.id,
 				email: user.email,

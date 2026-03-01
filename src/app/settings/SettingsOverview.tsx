@@ -5,6 +5,7 @@ import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { TabsV2 } from "@pointwise/app/components/ui/TabsV2";
 import { useState } from "react";
 import { IoSettings } from "react-icons/io5";
+import AccountSettings from "./AccountSettings";
 import NotificationSettings from "./NotificationSettings";
 import ProfileSettings from "./ProfileSettings";
 
@@ -60,6 +61,7 @@ export default function SettingsOverview() {
 				</Container>
 				<Container width="full" gap="none">
 					{activeTab === Tab.PROFILE && <ProfileSettings />}
+					{activeTab === Tab.ACCOUNT && <AccountSettings />}
 					{activeTab === Tab.NOTIFICATIONS && <NotificationSettings />}
 				</Container>
 			</Container>

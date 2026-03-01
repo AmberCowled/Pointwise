@@ -25,6 +25,8 @@
 		"@headlessui/react": "^2.2.9",
 		"@prisma/client": "^6.19.0",
 		"@reduxjs/toolkit": "^2.5.0",
+		"@simplewebauthn/browser": "^13.2.2",
+		"@simplewebauthn/server": "^13.2.3",
 		"@uploadthing/react": "^7.3.3",
 		"ably": "^2.17.0",
 		"bcrypt": "^6.0.0",
@@ -44,6 +46,7 @@
 		"remark-breaks": "^4.0.0",
 		"remark-gemoji": "^8.0.0",
 		"remark-gfm": "^4.0.1",
+		"resend": "^6.9.3",
 		"uploadthing": "^7.7.4",
 		"zod": "^4.1.13"
 	},

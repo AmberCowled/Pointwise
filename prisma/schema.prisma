@@ -34,6 +34,9 @@ model User {
 
   passwordHash String?
 
+  twoFactorEnabled    Boolean   @default(false)
+  twoFactorVerifiedAt DateTime?
+
   profileVisibility ProfileVisibility @default(PRIVATE)
 
   displayName   String
@@ -71,6 +74,9 @@ model User {
 
   comments     Comment[]
   commentLikes CommentLike[]
+
+  deviceSessions      DeviceSession[]
+  webAuthnCredentials WebAuthnCredential[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -382,5 +388,34 @@ model CommentLike {
 
   @@unique([commentId, userId])
   @@index([commentId])
+  @@index([userId])
+}
+
+model DeviceSession {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jti          String   @unique
+  deviceName   String?
+  ipAddress    String?
+  location     String?
+  userAgent    String?
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+model WebAuthnCredential {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialId String   @unique
+  publicKey    String
+  counter      Int      @default(0)
+  transports   String[]
+  deviceName   String?
+  createdAt    DateTime @default(now())
+
   @@index([userId])
 }
