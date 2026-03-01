@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
 import "./globals.css";
+import DeviceSessionProvider from "./components/providers/DeviceSessionProvider";
 import { NotificationProviderWrapper } from "./components/providers/NotificationProviderWrapper";
 import { PushNotificationProvider } from "./components/providers/PushNotificationProvider";
 import { SessionProviderWrapper } from "./components/providers/SessionProviderWrapper";
@@ -91,13 +92,15 @@ export default function RootLayout({
 				<NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
 				<SessionProviderWrapper>
 					<StoreProvider>
-						<PushNotificationProvider>
-							<ModalProvider>
-								<NotificationProviderWrapper>
-									{children}
-								</NotificationProviderWrapper>
-							</ModalProvider>
-						</PushNotificationProvider>
+						<DeviceSessionProvider>
+							<PushNotificationProvider>
+								<ModalProvider>
+									<NotificationProviderWrapper>
+										{children}
+									</NotificationProviderWrapper>
+								</ModalProvider>
+							</PushNotificationProvider>
+						</DeviceSessionProvider>
 					</StoreProvider>
 				</SessionProviderWrapper>
 			</body>

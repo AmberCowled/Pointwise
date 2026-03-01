@@ -6,6 +6,8 @@ declare module "next-auth" {
 			id?: string;
 		} & DefaultSession["user"];
 		remember?: boolean;
+		jti?: string;
+		pendingTwoFactor?: boolean;
 	}
 }
 
@@ -13,5 +15,7 @@ declare module "next-auth/jwt" {
 	interface JWT extends DefaultJWT {
 		id?: string;
 		shortSession?: boolean;
+		jti?: string;
+		pendingTwoFactor?: boolean;
 	}
 }

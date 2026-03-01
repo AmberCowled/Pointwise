@@ -7,6 +7,7 @@ import { Button } from "../ui/Button";
 import { Checkbox } from "../ui/Checkbox";
 import Grid from "../ui/Grid";
 import { Input } from "../ui/Input";
+import Modal from "../ui/modal";
 import { useNotifications } from "../ui/NotificationProvider";
 import { StyleTheme } from "../ui/StyleTheme";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
@@ -190,9 +191,33 @@ export default function AuthForm({ tab, onLoadingChange }: Props) {
 					/>
 					<button
 						type="button"
-						onClick={(e) => {
+						onClick={async (e) => {
 							e.preventDefault();
-							// TODO: Implement forgot password functionality
+							const userEmail = await Modal.Prompt({
+								title: "Reset Password",
+								label:
+									"Enter your email address and we'll send you a link to reset your password.",
+								placeholder: "you@example.com",
+								confirmText: "Send reset link",
+							});
+							if (!userEmail) return;
+							try {
+								await fetch("/api/auth/forgot-password", {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({ email: userEmail }),
+								});
+								showNotification({
+									message:
+										"If an account exists with that email, we've sent a reset link.",
+									variant: "success",
+								});
+							} catch {
+								showNotification({
+									message: "Failed to send reset link",
+									variant: "error",
+								});
+							}
 						}}
 						className={`text-xs ${StyleTheme.Text.Secondary} ${StyleTheme.Hover.TextBrighten} transition focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 rounded px-1`}
 						aria-label="Reset your password"
