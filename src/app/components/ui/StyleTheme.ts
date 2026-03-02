@@ -37,10 +37,6 @@ export const StyleTheme = {
 	GalaxyGradient: `bg-gradient-to-r ${palette.brandFrom} ${palette.brandVia} ${palette.brandTo} bg-[length:200%_200%]`,
 	GalaxyGradientDisabled: `bg-gradient-to-r ${palette.disabledFrom} ${palette.disabledVia} ${palette.disabledTo}`,
 
-	// Linear variant used by BackgroundGlow (combined with a direction class)
-	GalaxyGlow:
-		"from-brand-primary/30 via-brand-secondary/20 to-brand-tertiary/20",
-
 	// ── Container / Card ─────────────────────────────────────────────
 	Container: {
 		Background: "bg-zinc-900/60 backdrop-blur",
