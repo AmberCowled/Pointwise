@@ -2,8 +2,8 @@ import { authOptions } from "@pointwise/lib/auth";
 import { getServerSession } from "next-auth";
 import { AutoRedirectNotice } from "./components/general/AutoRedirectNotice";
 import BrandHeader from "./components/general/BrandHeader";
-import BackgroundGlow from "./components/ui/BackgroundGlow";
 import { Card } from "./components/ui/Card";
+import Page from "./components/ui/Page";
 import { StyleTheme } from "./components/ui/StyleTheme";
 export default async function NotFound() {
 	const session = await getServerSession(authOptions);
@@ -24,9 +24,7 @@ export default async function NotFound() {
 		: "Redirecting you to the home page in a few seconds…";
 
 	return (
-		<main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950 px-4 py-20 text-zinc-100">
-			<BackgroundGlow />
-
+		<Page className="flex items-center justify-center px-4 py-20">
 			<div className="relative z-10 w-full max-w-2xl space-y-10">
 				<BrandHeader />
 
@@ -54,6 +52,6 @@ export default async function NotFound() {
 					/>
 				</Card>
 			</div>
-		</main>
+		</Page>
 	);
 }
