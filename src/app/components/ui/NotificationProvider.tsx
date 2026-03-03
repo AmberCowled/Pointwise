@@ -69,10 +69,12 @@ const NotificationContext = createContext<NotificationContextValue | null>(
 const positionStyles: Record<NotificationPosition, string> = {
 	"top-left": "top-4 left-4",
 	"top-right": "top-4 right-4",
-	"top-center": "top-4 left-1/2 -translate-x-1/2",
+	"top-center":
+		"top-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2",
 	"bottom-left": "bottom-4 left-4",
 	"bottom-right": "bottom-4 right-4",
-	"bottom-center": "bottom-4 left-1/2 -translate-x-1/2",
+	"bottom-center":
+		"bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2",
 };
 
 export interface NotificationProviderProps {
@@ -148,11 +150,10 @@ export function NotificationProvider({
 					position.includes("top") || position.includes("bottom")
 						? "flex flex-col gap-3"
 						: "",
+					position.includes("center")
+						? "w-auto sm:max-w-[90vw]"
+						: "max-w-[420px] w-full",
 				)}
-				style={{
-					maxWidth: position.includes("center") ? "90vw" : "420px",
-					width: position.includes("center") ? "auto" : "100%",
-				}}
 			>
 				{notifications.map((notification) => (
 					<div key={notification.id} className="pointer-events-auto">
