@@ -1,5 +1,8 @@
+"use client";
+
 import clsx from "clsx";
 import Image from "next/image";
+import { useState } from "react";
 import { IoPersonCircle } from "react-icons/io5";
 
 // Size mappings for different profile picture sizes
@@ -19,6 +22,7 @@ interface ProfilePictureProps {
 	size?: "xs" | "sm" | "md" | "lg" | "xl" | "full";
 	disabled?: boolean;
 	className?: string;
+	priority?: boolean;
 }
 
 export default function ProfilePicture({
@@ -28,21 +32,33 @@ export default function ProfilePicture({
 	size = "md",
 	disabled = false,
 	className: customClassName,
+	priority = false,
 }: ProfilePictureProps) {
 	const { dimension, className } = sizeMappings[size];
+	const [imgError, setImgError] = useState(false);
+	const [imgLoaded, setImgLoaded] = useState(false);
+
+	const showFallback = !profilePicture || imgError;
 
 	const content = (
 		<>
-			{profilePicture ? (
+			{!showFallback && (
 				<Image
 					src={profilePicture}
 					alt={displayName}
 					width={dimension || 500}
 					height={dimension || 500}
-					className="rounded-full w-full h-full object-cover"
+					className={clsx(
+						"rounded-full w-full h-full object-cover absolute inset-0",
+						imgLoaded ? "opacity-100" : "opacity-0",
+					)}
 					unoptimized
+					priority={priority}
+					onLoad={() => setImgLoaded(true)}
+					onError={() => setImgError(true)}
 				/>
-			) : (
+			)}
+			{(showFallback || !imgLoaded) && (
 				<IoPersonCircle className="w-full h-full text-zinc-400 scale-120" />
 			)}
 		</>
@@ -50,7 +66,7 @@ export default function ProfilePicture({
 
 	const containerClasses = clsx(
 		className,
-		"flex items-center justify-center overflow-hidden rounded-full",
+		"relative flex items-center justify-center overflow-hidden rounded-full",
 		customClassName,
 	);
 

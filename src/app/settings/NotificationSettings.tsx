@@ -8,12 +8,16 @@ import {
 	useGetNotificationSettingsQuery,
 	useUpdateNotificationSettingsMutation,
 } from "@pointwise/generated/api";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { IoSave } from "react-icons/io5";
 import { Button } from "../components/ui/Button";
 
 export default function NotificationSettings() {
-	const { data, isLoading } = useGetNotificationSettingsQuery();
+	const { data: session } = useSession();
+	const { data, isLoading } = useGetNotificationSettingsQuery(undefined, {
+		skip: !session?.user?.id,
+	});
 	const [updateSettings, { isLoading: isSaving }] =
 		useUpdateNotificationSettingsMutation();
 	const { showNotification } = useNotifications();

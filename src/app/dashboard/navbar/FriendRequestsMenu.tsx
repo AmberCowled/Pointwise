@@ -22,7 +22,9 @@ export default function FriendRequestsMenu() {
 	const dispatch = useAppDispatch();
 	const { data: session } = useSession();
 	const userId = session?.user?.id;
-	const { data, isLoading } = useGetPendingRequestsQuery();
+	const { data, isLoading } = useGetPendingRequestsQuery(undefined, {
+		skip: !userId,
+	});
 	const [handleRequest, { isLoading: isHandling }] =
 		useHandleFriendRequestMutation();
 
