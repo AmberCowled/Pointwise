@@ -18,7 +18,9 @@ import { hasWriteAccess } from "@pointwise/lib/api/projects";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { IoSparkles } from "react-icons/io5";
 import CreateTaskModal from "../modals/task/CreateTaskModal";
+import GenerateTaskModal from "../modals/task/GenerateTaskModal";
 import TaskCard from "../taskCard/TaskCard";
 import NoFilteredTasksView from "./NoFilteredTasksView";
 import NoTasksView from "./NoTasksView";
@@ -162,22 +164,39 @@ export default function TasksOverview() {
 	return (
 		<>
 			{project && <CreateTaskModal project={project} />}
+			{project && (
+				<GenerateTaskModal project={project} tasks={tasks?.tasks ?? []} />
+			)}
 			<Container direction="vertical" gap="sm" className="py-3">
 				<Card
 					title="Tasks"
 					label="Overview"
 					loading={isLoading}
 					action={
-						hasWriteAccess(project?.role ?? "NONE") ? (
-							<Button
-								variant="secondary"
-								onClick={() =>
-									Modal.Manager.open(`create-task-modal-${projectId}`)
-								}
-							>
-								Create Task
-							</Button>
-						) : null
+						hasWriteAccess(project?.role ?? "NONE")
+							? [
+									<Button
+										key="create"
+										variant="secondary"
+										onClick={() =>
+											Modal.Manager.open(`create-task-modal-${projectId}`)
+										}
+									>
+										Create Task
+									</Button>,
+									<Button
+										key="generate"
+										variant="secondary"
+										title="Generate Task"
+										onClick={() =>
+											Modal.Manager.open(`generate-task-modal-${projectId}`)
+										}
+										className="!px-2"
+									>
+										<IoSparkles className="h-4 w-4" />
+									</Button>,
+								]
+							: null
 					}
 				>
 					<Container
