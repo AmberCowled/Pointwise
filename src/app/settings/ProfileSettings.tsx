@@ -264,6 +264,7 @@ export default function ProfileSettings() {
 							}
 							displayName={user?.displayName ?? ""}
 							size="full"
+							priority
 						/>
 					</div>
 					<Container direction="vertical" width="full" gap="sm">
