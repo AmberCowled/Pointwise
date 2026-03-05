@@ -8,6 +8,7 @@ import {
 	IoMenu,
 	IoPerson,
 	IoSettings,
+	IoStatsChart,
 } from "react-icons/io5";
 
 export default function UserMenu() {
@@ -19,6 +20,12 @@ export default function UserMenu() {
 					label="Projects"
 					description="View all projects"
 					href="/dashboard"
+				/>
+				<Menu.Option
+					icon={<IoStatsChart />}
+					label="Analytics"
+					description="View project analytics"
+					href="/analytics"
 				/>
 				<Menu.Option
 					icon={<IoMail />}
