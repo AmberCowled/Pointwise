@@ -13,7 +13,6 @@ const TABS = [
 	{ id: "profile", label: "Profile" },
 	{ id: "account", label: "Account" },
 	{ id: "notifications", label: "Notifications" },
-	{ id: "appearance", label: "Appearance" },
 ];
 
 export default function SettingsOverview() {
@@ -21,7 +20,6 @@ export default function SettingsOverview() {
 		PROFILE = "profile",
 		ACCOUNT = "account",
 		NOTIFICATIONS = "notifications",
-		APPEARANCE = "appearance",
 	}
 	const [activeTab, setActiveTab] = useState<Tab>(Tab.PROFILE);
 
@@ -56,7 +54,6 @@ export default function SettingsOverview() {
 						{activeTab === Tab.PROFILE && "Profile Settings"}
 						{activeTab === Tab.ACCOUNT && "Account Settings"}
 						{activeTab === Tab.NOTIFICATIONS && "Notifications Settings"}
-						{activeTab === Tab.APPEARANCE && "Appearance Settings"}
 					</h2>
 				</Container>
 				<Container width="full" gap="none">
