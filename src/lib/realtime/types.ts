@@ -31,8 +31,18 @@ export interface CommentEventPayload {
 	comment: Record<string, unknown> | null;
 }
 
+/** Payload for comment events on post channels. */
+export interface PostCommentEventPayload {
+	commentId: string;
+	threadId: string;
+	postId: string;
+	parentCommentId: string | null;
+	comment: Record<string, unknown> | null;
+}
+
 /** Union of all known event payloads (for handlers). */
 export type RealtimeEventPayload =
 	| NewNotificationPayload
 	| NewMessagePayload
-	| CommentEventPayload;
+	| CommentEventPayload
+	| PostCommentEventPayload;

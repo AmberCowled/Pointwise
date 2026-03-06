@@ -10,7 +10,11 @@ import {
 	RealtimeChannels,
 	RealtimeEvents,
 } from "./registry";
-import type { CommentEventPayload, NewMessagePayload } from "./types";
+import type {
+	CommentEventPayload,
+	NewMessagePayload,
+	PostCommentEventPayload,
+} from "./types";
 
 /** Map channel suffix → channel name builder. */
 const CHANNEL_BUILDERS: Record<string, (userId: string) => string> = {
@@ -96,6 +100,22 @@ export async function publishCommentEvent(
 	payload: CommentEventPayload,
 ): Promise<void> {
 	const channelName = RealtimeChannels.task.comments(taskId);
+	await publishAblyEvent(
+		channelName,
+		eventName,
+		payload as unknown as Record<string, unknown>,
+	);
+}
+
+/**
+ * Publish a comment event to the post's comment channel.
+ */
+export async function publishPostCommentEvent(
+	postId: string,
+	eventName: string,
+	payload: PostCommentEventPayload,
+): Promise<void> {
+	const channelName = RealtimeChannels.post.comments(postId);
 	await publishAblyEvent(
 		channelName,
 		eventName,

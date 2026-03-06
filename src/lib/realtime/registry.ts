@@ -14,6 +14,10 @@ export const RealtimeChannels = {
 	task: {
 		comments: (taskId: string) => `task:${taskId}:comments`,
 	},
+	/** Post-scoped channels. */
+	post: {
+		comments: (postId: string) => `post:${postId}:comments`,
+	},
 } as const;
 
 /** Event names published on Ably channels. */

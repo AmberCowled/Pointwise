@@ -25,6 +25,7 @@ export async function POST() {
 			[`user:${userId}:*`]: ["subscribe", "publish", "push-subscribe"],
 			"conversation:*": ["subscribe", "publish"],
 			"task:*": ["subscribe", "publish"],
+			"post:*": ["subscribe", "publish"],
 		},
 	});
 

@@ -1,281 +1,275 @@
 # Pointwise
 
-> A gamified productivity platform built with Next.js, React, and TypeScript. Manage projects, collaborate with teams, chat in real time, and earn XP for completing tasks.
+**Full-stack collaborative project management platform with real-time social features, gamification, and AI-powered workflows.**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://pointwise.dev/)
-[![Next.js](https://img.shields.io/badge/Next.js-16.x-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+Built as an exploration of end-to-end system design — how authentication, real-time event distribution, data fetching, caching, code generation, and AI integration compose cleanly within a single architecture.
 
-## Live Demo
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-pointwise.dev-000000?style=for-the-badge&logo=vercel)](https://pointwise.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 
-**Try it now:** [https://pointwise.dev/](https://pointwise.dev/)
+**[Try the live demo](https://pointwise.dev/)**
 
-## Features
+---
 
-### Project Management
+## Overview
 
-- **Create & Organize Projects** - Projects with descriptions, goals, and visibility settings (Public/Private)
-- **Team Collaboration** - Role-based access control (Admin, User, Viewer) with granular permissions
-- **Project Invites** - Admins can invite users with specific roles; invitees accept/reject inline from notifications
-- **Join Requests** - Public projects allow users to request access; admins approve/reject with role selection from notifications
-- **Leave Projects** - Users can leave projects (with validation to prevent orphaned projects)
+Pointwise is a production-grade platform where teams manage projects, track tasks, communicate in real time, and earn XP for their contributions. It combines structured project management with a social layer (friends, messaging, notifications) and a gamification system that uses AI to evaluate task impact.
 
-### Task Management
+The platform serves 77 API endpoints — all generated from declarative endpoint definitions via a custom code-generation tool — with real-time synchronisation across clients, multi-layered authentication, and end-to-end type safety from database to UI.
 
-- **Create & Organize Tasks** - Tasks with descriptions, categories, and due dates
-- **Task Status Tracking** - Track tasks as pending or completed
-- **Date & Time Management** - Start dates, due dates, and optional times
-- **Task Filtering** - Filter by project, status, and date ranges
-- **Task Likes** - Like tasks to show appreciation
-- **AI XP Suggestions** - Choose "AI Suggested" or "Manual" when creating/editing tasks; Google Gemini evaluates task impact against the project goal and suggests XP
+---
 
-### Task Comments
+## Engineering Challenges
 
-- **Threaded Discussions** - Comment on tasks with nested reply threads
-- **Edit & Delete** - Modify or remove your own comments and replies
-- **Comment Likes** - Like comments to surface useful discussion
-- **Real-Time Updates** - Comments, edits, and deletions sync instantly via Ably
+### Custom Code Generation with ERTK
 
-### Friends & Social
+The most significant architectural decision was building [ERTK](https://npmjs.com/package/ertk), a code-generation layer that bridges Next.js App Router API routes with Redux Toolkit Query. Each of the 77 endpoints is defined once in `src/endpoints/` as a single file containing its route handler, RTK Query configuration, Zod request schema, and cache tag declarations.
 
-- **Friend Requests** - Send, accept, decline, and cancel friend requests
-- **Friend List** - View and manage your friends
-- **Friendship Status** - See relationship status on user cards throughout the app
-- **Real-Time Sync** - Friend request events update across browsers instantly
+From these definitions, ERTK generates:
+- **Next.js route handlers** in `src/app/api/` with automatic request validation, auth gating, and error handling
+- **A complete RTK Query API slice** (`src/generated/api.ts`) with typed hooks for every endpoint
+- **A configured Redux store** (`src/generated/store.ts`) with middleware and type exports
+- **Cache invalidation helpers** (`src/generated/invalidation.ts`) for cross-endpoint tag management
 
-### Messaging
+The result is zero hand-written boilerplate for data fetching. Adding a new endpoint — complete with route handler, typed hook, validation, and cache invalidation — requires writing a single definition file. The pre-commit hook runs codegen automatically, so generated code never drifts from its source definitions.
 
-- **Direct Messages** - 1-on-1 conversations with friends
-- **Group Conversations** - Add multiple users to conversations
-- **Real-Time Chat** - Messages delivered instantly via Ably WebSockets
-- **Read Tracking** - Unread message counts and per-conversation read state
-- **Conversation Management** - Archive, leave, and update conversations
+### Real-Time State Synchronisation
 
-### Notification System
+Pointwise uses Ably WebSockets to synchronise state across clients in real time. The challenge was designing a channel architecture that scales without coupling the UI to transport-level details.
 
-- **Registry-Driven Architecture** - Adding a new notification type requires only 3 steps
-- **7 Notification Types** - Friend requests, messages, project invites, join requests, and more
-- **Inline Action Buttons** - Accept/reject invites and approve/reject join requests directly from notifications
-- **Real-Time Delivery** - Notifications arrive instantly via Ably and are optimistically inserted into the UI
-- **Scoped Read Tracking** - Opening the notification bell doesn't mark message notifications as read
-- **Cursor-Based Pagination** - Efficient loading for users with many notifications
+**Channel hierarchy:** Channels are scoped per-user (`user:{id}:friend-requests`, `user:{id}:messages`, `user:{id}:projects`) and per-entity (`conversation:{id}`, `task:{id}:comments`). Token generation grants capabilities per-channel pattern, so clients can only subscribe to their own event streams.
 
-### Gamification
+**Subscription presets:** Rather than having components subscribe to raw channels, a registry layer (`src/lib/realtime/config.ts`) defines named presets — `friend-notifications`, `general-notifications`, `message-notifications`, `project-notifications` — that map to filtered event sets. UI components consume these presets through React hooks (`useSubscribeUserNotifications`, `useSubscribeConversation`, etc.), keeping real-time logic decoupled from rendering.
 
-- **XP System** - Earn experience points for completing tasks
-- **Level Progression** - Level up as you accumulate XP
-- **Progress Tracking** - Visual XP bar in the navbar
+**Optimistic cache integration:** When real-time events arrive, they're injected directly into RTK Query's normalised cache rather than triggering refetches. This means a friend request accepted on one client appears instantly on the other — no polling, no stale data, no loading spinners.
 
-### Account & Security
+### Multi-Layered Authentication
 
-- **Two-Factor Authentication** - WebAuthn/Passkey-based 2FA with browser-native passkey dialogs
-- **Device Sessions** - Track active sessions with browser/OS detection and IP address; revoke all other sessions
-- **Password Reset** - Email-based password reset flow with SHA-256 hashed tokens (1-hour expiry)
-- **Account Deletion** - Full account deletion with preview of affected projects and cascading data cleanup
-- **Account Info** - View linked providers, password status, and 2FA state
+Authentication is not a single concern but a stack of complementary security layers, each enforced at a different boundary:
 
-### User Experience
+1. **Identity** — NextAuth v4 with three providers (credentials with bcrypt hashing, Google OAuth, GitHub OAuth) and JWT session strategy
+2. **Second factor** — WebAuthn/passkey-based 2FA via SimpleWebAuthn. On login, if 2FA is enabled, the session is flagged `pendingTwoFactor` and all API access is blocked until the passkey challenge completes
+3. **Device sessions** — Each login generates a unique `jti` claim stored as a `DeviceSession` record. Users can view active sessions (with browser, OS, and IP metadata) and revoke any session, which immediately invalidates that JWT
+4. **Rate limiting** — Upstash Redis enforces 250 requests per 10-minute window per user, applied uniformly at the ERTK handler layer before any business logic executes
+5. **Middleware gating** — Next.js middleware enforces auth redirects and 2FA challenge routing at the edge
 
-- **Dark Theme** - Modern dark UI with gradient accents and role-based color coding
-- **Responsive Design** - Works on desktop and mobile
-- **Search** - Search for public projects and users
-- **Authentication** - Sign in with email/password, Google, or GitHub OAuth
-- **Custom UI Components** - Comprehensive component library (buttons, cards, modals, menus, tabs, inputs, and more)
+All five layers compose through the centralised ERTK request handler (`src/lib/ertk-handler.ts`), so every generated endpoint inherits the full security stack without per-route configuration.
 
-## Tech Stack
+### Optimistic Updates at Scale
 
-### Frontend
+Social interactions demand instant feedback. Pointwise implements optimistic updates across likes, comments, friend requests, project invites, and notifications — every mutation updates the local RTK Query cache immediately, then reconciles with the server response.
 
-- **Next.js 16** - React framework with App Router
-- **React 19** - Latest React features and hooks
-- **TypeScript 5** - Type-safe development
-- **Tailwind CSS v4** - Utility-first styling
-- **Headless UI** - Accessible component primitives
-- **Redux Toolkit Query** - Data fetching, caching, and tag-based cache invalidation
-- **Ably** - Real-time WebSocket subscriptions for notifications, messages, comments, and friend events
+The coordination problem is cross-user invalidation: when User A rejects User B's friend request, User B's cache must update too. This is solved through lightweight Ably events (distinct from the notification system) that trigger targeted cache invalidations on the receiving client, avoiding full refetches while keeping data consistent.
 
-### Backend
+---
 
-- **Next.js API Routes** - 61 serverless API endpoints
-- **[ERTK](https://npmjs.com/package/ertk)** - Code generation for RTK Query endpoints; defines endpoint, route handler, query, and cache tags in a single file
-- **Prisma** - Type-safe database ORM
-- **MongoDB** - NoSQL database
-- **NextAuth.js** - Authentication with credentials and OAuth
-- **SimpleWebAuthn** - WebAuthn/Passkey registration and authentication for 2FA
-- **Resend** - Transactional email delivery (password reset)
-- **Zod** - Schema validation for all request/notification payloads
-- **Ably (server)** - REST client for publishing real-time events
-- **Google Gemini** - LLM API for AI XP suggestions
+## Architecture
 
-### Development Tools
+### Tech Stack
 
-- **Biome** - Fast linter and formatter
-- **ERTK Codegen** - Auto-generates RTK Query API slice, Redux store, and cache invalidation helpers from endpoint definitions
-- **simple-git-hooks** - Pre-commit hooks for codegen and lint
+| Layer | Technology |
+|---|---|
+| **Framework** | Next.js 16 (App Router), React 19, React Compiler (`babel-plugin-react-compiler`) |
+| **Language** | TypeScript 5 (strict mode) |
+| **Styling** | Tailwind CSS v4 with custom design token system (`StyleTheme`) |
+| **UI** | 41 custom components, Headless UI, react-icons (Ionicons 5), Recharts |
+| **State & Data** | Redux Toolkit (RTK Query), ERTK code generation |
+| **Database** | MongoDB via Prisma ORM |
+| **Auth** | NextAuth v4, SimpleWebAuthn, bcrypt, Prisma adapter |
+| **Real-Time** | Ably (WebSocket pub/sub) |
+| **AI** | Google Gemini (`@google/genai`) |
+| **Validation** | Zod v4 (end-to-end, API to client) |
+| **Rate Limiting** | Upstash Redis |
+| **Email** | Resend |
+| **File Uploads** | UploadThing |
+| **Tooling** | Biome, pnpm, simple-git-hooks + lint-staged |
 
-## Project Structure
+### System Design
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT (React 19)                        │
+│                                                                 │
+│  RTK Query Hooks (generated) ◄── Real-Time Subscription Hooks   │
+│         │                              │                        │
+│         ▼                              ▼                        │
+│  Redux Store (generated)         Ably Client (WebSocket)        │
+└────────┬───────────────────────────────┬────────────────────────┘
+         │ HTTP                          │ Token Auth
+         ▼                               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    NEXT.JS APP ROUTER                           │
+│                                                                 │
+│  API Routes (generated by ERTK)    Ably Token Endpoint          │
+│         │                                                       │
+│         ▼                                                       │
+│  ERTK Handler Layer                                             │
+│  ┌─ Rate Limit (Upstash) ──► Auth (NextAuth) ──► 2FA Gate  ─┐   │
+│  │  ──► Device Session Check ──► Zod Validation ──► Handler │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│         │                          │                            │
+│         ▼                          ▼                            │
+│  Service Functions            Ably REST (publish)               │
+│         │                                                       │
+│         ▼                                                       │
+│  Prisma ORM ──► MongoDB                                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Project Structure
 
 ```
 pointwise/
 ├── src/
 │   ├── app/                        # Next.js App Router
-│   │   ├── api/                    # Auto-generated route handlers (via ERTK)
-│   │   ├── components/             # Shared React components
-│   │   │   ├── auth/               # Auth forms (signin, signup)
+│   │   ├── api/                    # Generated route handlers (via ERTK) + manual auth routes
+│   │   ├── components/
+│   │   │   ├── ui/                 # 41 custom components (Button, Card, Modal, DatePicker, etc.)
+│   │   │   ├── auth/               # Auth forms (sign-in, sign-up)
 │   │   │   ├── providers/          # Context providers (Session, Redux, Ably, DeviceSession)
-│   │   │   └── ui/                 # Reusable UI library (Button, Card, Modal, Menu, etc.)
-│   │   ├── reset-password/         # Password reset page
-│   │   ├── settings/               # Account settings (account info, delete account)
-│   │   ├── two-factor/             # 2FA challenge page
-│   │   └── dashboard/              # Dashboard pages and features
-│   │       ├── [id]/               # Individual project page
-│   │       ├── navbar/             # Navbar, NotificationMenu, MessagesMenu, FriendRequestsMenu
-│   │       ├── modals/             # All modal dialogs (project, task, invite, message, join request)
-│   │       ├── projectCard/        # Project card components
-│   │       ├── taskCard/           # Task card with comments, likes, status
-│   │       │   └── comments/       # Comment list, input, replies, likes
-│   │       ├── search/             # Project and user search
-│   │       └── userCard/           # User profile cards with friend actions
+│   │   │   └── analytics/          # Chart components (Recharts)
+│   │   ├── dashboard/              # Core app: projects, tasks, comments, search, messaging
+│   │   ├── settings/               # Account settings, device sessions, 2FA management
+│   │   └── two-factor/             # 2FA challenge page
 │   ├── endpoints/                  # ERTK endpoint definitions (single source of truth)
-│   │   ├── conversations/          # Messaging endpoints
-│   │   ├── friends/                # Friend system endpoints
-│   │   ├── invites/                # Invite accept/reject endpoints
-│   │   ├── notifications/          # Notification list, dismiss, delete endpoints
-│   │   ├── projects/               # Project CRUD, invite, join request endpoints
-│   │   ├── tasks/                  # Task CRUD, likes, comments endpoints
-│   │   └── user/                   # User profile, XP, device sessions, account info endpoints
-│   ├── generated/                  # Auto-generated by ERTK codegen
-│   │   ├── api.ts                  # RTK Query API slice (61 endpoints)
-│   │   ├── store.ts                # Redux store configuration
-│   │   └── invalidation.ts         # Cache invalidation helpers
-│   └── lib/                        # Shared libraries
-│       ├── ably/                   # Ably client (browser) and server (REST) setup
-│       ├── api/                    # Service functions (projects, tasks, friends, messages, account deletion, etc.)
-│       ├── email/                  # Resend client, sendEmail wrapper, and email templates
-│       ├── notifications/          # Notification registry, renderers, and send service
-│       ├── realtime/               # Real-time layer: channels, events, subscription hooks
-│       │   └── hooks/              # useSubscribeConversation, FriendUpdates, ProjectUpdates, etc.
-│       ├── redux/                  # Redux hooks
-│       └── validation/             # Zod schemas for all data types
+│   │   ├── conversations/          # Messaging (create, list, send, read tracking, archive)
+│   │   ├── friends/                # Friend system (request, accept, decline, remove)
+│   │   ├── projects/               # Project CRUD, members, invites, join requests
+│   │   ├── tasks/                  # Task CRUD, likes, comments, threading
+│   │   ├── user/                   # Profile, XP, device sessions, account management
+│   │   ├── notifications/          # List, dismiss, delete with cursor pagination
+│   │   └── llm/                    # AI endpoints (XP suggestion, task expansion, suggestions)
+│   ├── generated/                  # Auto-generated by ERTK (never manually edited)
+│   │   ├── api.ts                  # RTK Query API slice (77 endpoints)
+│   │   ├── store.ts                # Redux store with middleware
+│   │   └── invalidation.ts         # Cache tag invalidation helpers
+│   └── lib/
+│       ├── ably/                   # Ably client singleton + server REST publisher
+│       ├── realtime/               # Channel registry, subscription presets, React hooks
+│       ├── api/                    # Service layer (business logic per domain)
+│       ├── llm/                    # Gemini client and prompt engineering
+│       ├── notifications/          # Notification registry, renderers, send service
+│       ├── validation/             # Zod schemas for all data types
+│       ├── email/                  # Resend client and email templates
+│       ├── auth.ts                 # NextAuth configuration
+│       └── ertk-handler.ts         # Centralised request handler (auth, rate limit, validation)
 ├── prisma/
-│   └── schema.prisma               # Database schema (MongoDB)
-├── docs/                           # Documentation
-│   └── notification-system.md      # Notification system developer guide
-└── scripts/
-    └── create-text-index.mjs       # MongoDB text index creation
+│   └── schema.prisma               # MongoDB schema (14 models)
+└── ertk.config.mjs                 # ERTK code generation configuration
 ```
+
+---
+
+## Key Features
+
+**Project Management** — Workspaces with role-based access (owner, admin, member, viewer), task boards with categories and due dates, team invitations and join request workflows with inline notification actions.
+
+**Real-Time Social Layer** — Friend system with stateful request lifecycle, direct and group messaging with read tracking, user search and public profiles, 7 notification types delivered instantly via WebSocket with cursor-based pagination.
+
+**Gamification** — Exponential XP curve (base 100, power 1.5, 100 levels), immutable XP event log for auditability, AI-powered XP evaluation where Gemini scores task impact against project goals on a 0–1,000,000 scale.
+
+**AI Workflows** — Gemini-powered task generation (suggest tasks from project goals), task expansion (enrich summaries into detailed descriptions), and XP suggestion (evaluate task difficulty and impact).
+
+**Threaded Comments** — Markdown-rendered with syntax highlighting, nested reply threads, likes, real-time creation/edit/delete synchronisation across clients.
+
+**Registry-Driven Notifications** — The notification registry is the single source of truth for types, Zod schemas, and Ably channel routing. Adding a new notification type is three steps: add to registry, call `sendNotification()`, add a renderer. Renderers can declare inline action buttons (accept/reject) that dispatch mutations and optimistically update the cache.
+
+---
+
+## Game Development Influence
+
+My background in game programming (Advanced Diploma) directly influenced several architectural decisions:
+
+- **XP and leveling** — The progression system uses an exponential curve with precomputed thresholds and binary search for level resolution, the same pattern used in RPG character systems.
+- **State machines for relationships** — Friendship status transitions (none → pending → accepted, with cancellation and rejection branches) are modelled as a finite state machine, ensuring invalid transitions are structurally impossible.
+- **Event-driven architecture** — The real-time layer follows the publish/subscribe pattern common in game engines, where gameplay events propagate through decoupled systems. In Pointwise, a single user action (e.g., accepting a friend request) publishes events that independently update notifications, friend lists, and UI state across multiple clients.
+- **Optimistic simulation** — Games routinely predict outcomes locally before server confirmation (client-side prediction). Pointwise applies this to every social interaction — likes, comments, friend requests — so the UI never waits for the network.
+
+---
+
+## Why I Built This
+
+Pointwise started as a question: *how do you architect a platform where authentication, real-time events, data fetching, caching, and code generation all compose cleanly?*
+
+Most full-stack projects demonstrate CRUD. I wanted to build something that forced me to solve coordination problems — real-time cache consistency across clients, multi-layered security that composes without per-route wiring, a code-generation pipeline that eliminates an entire category of boilerplate while preserving type safety end-to-end.
+
+The result is a system where adding a feature (a new API endpoint, a new notification type, a new real-time event) follows a consistent, minimal-surface-area pattern. The architecture carries its own weight: ERTK generates the plumbing, the notification registry routes events, subscription presets decouple transport from UI, and Zod schemas enforce contracts at every boundary.
+
+Building ERTK as a [standalone npm package](https://npmjs.com/package/ertk) was the natural endpoint — if the abstraction is good enough for one project, it should be extractable.
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- MongoDB database (local or cloud)
-- Ably API key (free tier available at [ably.com](https://ably.com))
-- Google/GitHub OAuth credentials (optional, for social auth)
+- MongoDB instance (local or Atlas)
+- Ably API key ([free tier](https://ably.com))
 
-### Installation
+### Setup
 
-1. **Clone the repository**
+```bash
+git clone https://github.com/AmberCowled/pointwise.git
+cd pointwise
+pnpm install
+```
 
-   ```bash
-   git clone https://github.com/AmberCowled/pointwise.git
-   cd pointwise
-   ```
+Create a `.env` file:
 
-2. **Install dependencies**
+```env
+DATABASE_URL="mongodb://localhost:27017/pointwise"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
 
-   ```bash
-   pnpm install
-   ```
+# Real-time (required)
+ABLY_API_KEY="your-ably-api-key"
 
-3. **Set up environment variables**
+# AI features (optional — free key from https://aistudio.google.com/apikey)
+GEMINI_API_KEY="your-gemini-api-key"
 
-   Create a `.env` file in the root directory:
+# OAuth (optional)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
 
-   ```env
-   DATABASE_URL="mongodb://localhost:27017/pointwise"
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key-here"
+# Email — required for password reset
+RESEND_API_KEY=""
+EMAIL_FROM="noreply@yourdomain.com"
 
-   # Real-time features (free key from https://ably.com)
-   ABLY_API_KEY="your-ably-api-key"
+# File uploads (optional)
+UPLOADTHING_TOKEN=""
+```
 
-   # AI features (free key from https://aistudio.google.com/apikey)
-   GEMINI_API_KEY="your-gemini-api-key"
+```bash
+pnpm prisma generate && pnpm prisma db push
+pnpm dev  # Starts Next.js + ERTK codegen in watch mode
+```
 
-   # Optional: OAuth providers
-   GOOGLE_CLIENT_ID="your-google-client-id"
-   GOOGLE_CLIENT_SECRET="your-google-client-secret"
-   GITHUB_CLIENT_ID="your-github-client-id"
-   GITHUB_CLIENT_SECRET="your-github-client-secret"
+### Scripts
 
-   # Optional: Email (password reset) — required for password reset flow
-   RESEND_API_KEY="your-resend-api-key"
-   EMAIL_FROM="noreply@yourdomain.com"
-
-   # Optional: File uploads
-   UPLOADTHING_TOKEN="your-uploadthing-token"
-   ```
-
-4. **Set up the database**
-
-   ```bash
-   pnpm prisma generate
-   pnpm prisma db push
-   ```
-
-5. **Run the development server**
-
-   ```bash
-   pnpm dev
-   ```
-
-   This starts both the Next.js dev server and ERTK codegen in watch mode.
-
-6. **Open your browser**
-
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## Available Scripts
-
-- `pnpm dev` - Start dev server + ERTK codegen watcher
-- `pnpm generate` - Run ERTK codegen once
-- `pnpm build` - Generate + build for production
-- `pnpm start` - Start production server
-- `pnpm check` - Run Biome check (lint + format)
-- `pnpm check:fix` - Run Biome check and auto-fix
-- `pnpm typecheck` - Run TypeScript type checking
-- `pnpm audit` - Run security audit (high severity)
-- `pnpm db:push` - Push Prisma schema changes to database
-- `pnpm db:create-text-index` - Create MongoDB text indexes for search
-
-## Architecture Highlights
-
-- **ERTK Codegen** - Each endpoint is defined once in `src/endpoints/` with its handler, query, request schema, and cache tags. ERTK generates the RTK Query API slice, route handlers, Redux store, and invalidation helpers automatically.
-- **Registry-Driven Notifications** - The notification registry is the single source of truth for types, Zod schemas, and Ably channel routing. Adding a new notification type is 3 steps: add to registry, call `sendNotification()`, add a renderer.
-- **Declarative Action Buttons** - Notification renderers can define `getActions()` to render inline Accept/Reject buttons. The UI handles mutation dispatch, optimistic removal, and cache invalidation automatically.
-- **Real-Time Layer** - Ably channels are organized per user (`user:{id}:friend-requests`, `user:{id}:messages`, `user:{id}:projects`) and per entity (`conversation:{id}`, `task:{id}:comments`). Subscription hooks handle connect/disconnect lifecycle.
-- **Optimistic Updates** - Real-time events are inserted directly into RTK Query cache before server confirmation. Lightweight Ably events (not tied to notifications) handle cross-user cache invalidation for actions like rejections.
-- **Type Safety End-to-End** - Prisma-generated types, Zod validation on all inputs and notification payloads, TypeScript strict mode, and generated RTK Query types.
-- **Role-Based Access Control** - Admin, User, and Viewer roles with permission checks in service functions and UI components.
-
-## Deployment
-
-The project is configured for deployment on Vercel:
-
-1. Push your code to GitHub
-2. Import the repository in Vercel
-3. Add environment variables: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `ABLY_API_KEY`, `GEMINI_API_KEY`, `RESEND_API_KEY`, `UPLOADTHING_TOKEN`, and OAuth credentials (optional)
-4. Deploy
-
-The live demo is hosted at: [https://pointwise.dev/](https://pointwise.dev/)
-
-## License
-
-© 2026 Amber Cowled. All rights reserved.
+| Command | Description |
+|---|---|
+| `pnpm dev` | Dev server + ERTK codegen watcher |
+| `pnpm generate` | Run ERTK codegen once |
+| `pnpm build` | Generate + production build |
+| `pnpm check` | Biome lint + format check |
+| `pnpm typecheck` | TypeScript type checking |
+| `pnpm db:push` | Push Prisma schema to database |
 
 ---
 
-**Made with Next.js, React, and TypeScript**
+## Deployment
+
+Configured for Vercel. Set `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `ABLY_API_KEY`, and any optional provider keys as environment variables.
+
+**Live at [pointwise.dev](https://pointwise.dev/)**
+
+---
+
+## License
+
+&copy; 2026 Amber Cowled. All rights reserved.
