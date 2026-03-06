@@ -1,6 +1,8 @@
 import { utapi } from "@pointwise/lib/api/utapi";
 import prisma from "@pointwise/lib/prisma";
 import {
+	type PublicUserProfileResponse,
+	PublicUserProfileSchema,
 	type SearchableUser,
 	SearchableUserSchema,
 	type User,
@@ -267,6 +269,50 @@ export async function updateUserProfile(
 	};
 
 	return UserSchema.parse(transformedUser);
+}
+
+export async function getPublicUserProfile(
+	targetUserId: string,
+	requesterId: string,
+): Promise<PublicUserProfileResponse> {
+	const userData = await prisma.user.findUnique({
+		where: { id: targetUserId },
+		select: {
+			id: true,
+			displayName: true,
+			image: true,
+			xp: true,
+			bio: true,
+			location: true,
+			website: true,
+			gender: true,
+			createdAt: true,
+			profileVisibility: true,
+		},
+	});
+
+	if (!userData) {
+		throw new Error("User not found");
+	}
+
+	const isOwnProfile = targetUserId === requesterId;
+	const isPrivate = userData.profileVisibility === "PRIVATE" && !isOwnProfile;
+
+	const profileData = isPrivate
+		? {
+				...userData,
+				bio: null,
+				location: null,
+				website: null,
+				gender: null,
+				xp: 0,
+			}
+		: userData;
+
+	return {
+		user: PublicUserProfileSchema.parse(profileData),
+		isOwnProfile,
+	};
 }
 
 export async function searchUsers(

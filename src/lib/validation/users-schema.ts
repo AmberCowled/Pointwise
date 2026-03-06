@@ -70,6 +70,29 @@ export type SearchUsersRequest = z.infer<typeof SearchUsersRequestSchema>;
 export type SearchUsersResponse = z.infer<typeof SearchUsersResponseSchema>;
 export type SearchableUser = z.infer<typeof SearchableUserSchema>;
 
+export const PublicUserProfileSchema = z.object({
+	id: z.string(),
+	displayName: z.string(),
+	image: z.string().nullable(),
+	xp: z.number(),
+	bio: z.string().nullable(),
+	location: z.string().nullable(),
+	website: z.string().nullable(),
+	gender: z.string().nullable(),
+	createdAt: z.coerce.date(),
+	profileVisibility: z.string().nullable(),
+});
+
+export const PublicUserProfileResponseSchema = z.object({
+	user: PublicUserProfileSchema,
+	isOwnProfile: z.boolean(),
+});
+
+export type PublicUserProfile = z.infer<typeof PublicUserProfileSchema>;
+export type PublicUserProfileResponse = z.infer<
+	typeof PublicUserProfileResponseSchema
+>;
+
 export const CheckDisplayNameResponseSchema = z.object({
 	available: z.boolean(),
 });
