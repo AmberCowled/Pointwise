@@ -1,14 +1,29 @@
 import crypto from "node:crypto";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { generateUniqueDisplayName } from "@pointwise/lib/api/users";
 import prisma from "@pointwise/lib/prisma";
 import bcrypt from "bcrypt";
 import type { NextAuthOptions } from "next-auth";
+import type { Adapter, AdapterUser } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 
+const prismaAdapter = PrismaAdapter(prisma) as Adapter;
+
 export const authOptions: NextAuthOptions = {
-	adapter: PrismaAdapter(prisma),
+	adapter: {
+		...prismaAdapter,
+		async createUser(user: Omit<AdapterUser, "id">) {
+			const displayName = await generateUniqueDisplayName();
+			return prisma.user.create({
+				data: {
+					...user,
+					displayName,
+				},
+			}) as unknown as AdapterUser;
+		},
+	},
 
 	providers: [
 		GoogleProvider({
