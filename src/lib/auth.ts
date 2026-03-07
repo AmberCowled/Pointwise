@@ -82,7 +82,9 @@ export const authOptions: NextAuthOptions = {
 			// GitHub only returns the user's primary verified email by default,
 			// so no additional check is needed for it.
 			if (account?.provider === "google") {
-				return profile?.email_verified === true;
+				return (
+					(profile as { email_verified?: boolean })?.email_verified === true
+				);
 			}
 			return true;
 		},
