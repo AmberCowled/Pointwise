@@ -39,7 +39,7 @@ model User {
 
   profileVisibility ProfileVisibility @default(PRIVATE)
 
-  displayName   String
+  displayName   String   @default("")
   bio          String?
   location     String?
   website      String?
