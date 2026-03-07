@@ -1,5 +1,6 @@
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
+import { checkRateLimit } from "@pointwise/lib/rate-limit";
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -9,6 +10,12 @@ const origin = process.env.WEBAUTHN_ORIGIN ?? "http://localhost:3000";
 
 export async function POST(request: Request) {
 	try {
+		const rateLimited = await checkRateLimit(request, {
+			windowMs: 600_000,
+			max: 10,
+		});
+		if (rateLimited) return rateLimited;
+
 		const session = await getServerSession(authOptions);
 		if (!session?.user?.id) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
