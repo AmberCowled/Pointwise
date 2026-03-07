@@ -76,6 +76,19 @@ export const authOptions: NextAuthOptions = {
 	},
 
 	callbacks: {
+		async signIn({ account, profile }) {
+			// For Google OAuth, require the provider to have verified the email
+			// to prevent account linking with unverified email addresses.
+			// GitHub only returns the user's primary verified email by default,
+			// so no additional check is needed for it.
+			if (account?.provider === "google") {
+				return (
+					(profile as { email_verified?: boolean })?.email_verified === true
+				);
+			}
+			return true;
+		},
+
 		async redirect({ url, baseUrl }) {
 			try {
 				const target = new URL(url, baseUrl);
