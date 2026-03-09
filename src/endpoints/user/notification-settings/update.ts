@@ -12,6 +12,8 @@ const DEFAULTS = {
 	pushFriendRequests: true,
 	pushProjectActivity: true,
 	pushTaskAssignments: true,
+	pushComments: true,
+	pushTaskStatusChanges: true,
 };
 
 export default endpoint.patch<

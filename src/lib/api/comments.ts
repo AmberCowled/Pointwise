@@ -1,101 +1,79 @@
 import {
+	commentInclude,
+	replyInclude,
+	serializeComment,
+	serializeReply,
+} from "@pointwise/lib/api/comment-serialization";
+import {
+	getProjectMemberIds,
 	isProjectAdmin,
 	verifyProjectAccess,
 } from "@pointwise/lib/api/projects";
+import { truncateMessageSnippet } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
-import { publishCommentEvent } from "@pointwise/lib/realtime/publish";
-import { RealtimeEvents } from "@pointwise/lib/realtime/registry";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, emitEvent } from "@pointwise/lib/realtime/publish";
 import type { Comment, Reply } from "@pointwise/lib/validation/comments-schema";
+
+// ── Recipient resolution ────────────────────────────────────────────
+
+/**
+ * Resolve all users interested in task comments:
+ * task assignees + project admins + all comment authors on the task.
+ */
+export async function resolveTaskCommentRecipients(
+	taskId: string,
+): Promise<string[]> {
+	const userIds = new Set<string>();
+
+	const [task, threads] = await Promise.all([
+		prisma.task.findUnique({
+			where: { id: taskId },
+			select: { assignedUserIds: true, projectId: true },
+		}),
+		prisma.commentThread.findMany({
+			where: { taskId },
+			select: { comments: { select: { authorId: true } } },
+		}),
+	]);
+
+	if (task) {
+		for (const id of task.assignedUserIds) userIds.add(id);
+		const project = await prisma.project.findUnique({
+			where: { id: task.projectId },
+			select: { adminUserIds: true },
+		});
+		if (project) {
+			for (const id of project.adminUserIds) userIds.add(id);
+		}
+	}
+
+	for (const thread of threads) {
+		for (const c of thread.comments) userIds.add(c.authorId);
+	}
+
+	return [...userIds];
+}
 
 // ── Thread helpers ──────────────────────────────────────────────────
 
 export async function getOrCreateBaseThread(taskId: string) {
-	const existing = await prisma.commentThread.findUnique({
+	return prisma.commentThread.upsert({
 		where: { taskId },
+		create: { taskId },
+		update: {},
 	});
-	if (existing) return existing;
-	return prisma.commentThread.create({ data: { taskId } });
 }
 
 export async function getOrCreateReplyThread(parentCommentId: string) {
-	const existing = await prisma.commentThread.findUnique({
+	return prisma.commentThread.upsert({
 		where: { parentCommentId },
+		create: { parentCommentId },
+		update: {},
 	});
-	if (existing) return existing;
-	return prisma.commentThread.create({ data: { parentCommentId } });
-}
-
-// ── Serialization ───────────────────────────────────────────────────
-
-function serializeComment(
-	comment: {
-		id: string;
-		threadId: string;
-		authorId: string;
-		author: { id: string; displayName: string; image: string | null };
-		content: string;
-		editedAt: Date | null;
-		createdAt: Date;
-		commentLikes: { userId: string }[];
-		replyThread?: { _count: { comments: number } } | null;
-	},
-	userId: string,
-): Comment {
-	return {
-		id: comment.id,
-		threadId: comment.threadId,
-		authorId: comment.authorId,
-		author: {
-			id: comment.author.id,
-			displayName: comment.author.displayName,
-			image: comment.author.image,
-		},
-		content: comment.content,
-		editedAt: comment.editedAt?.toISOString() ?? null,
-		createdAt: comment.createdAt.toISOString(),
-		likeCount: comment.commentLikes.length,
-		likedByCurrentUser: comment.commentLikes.some((l) => l.userId === userId),
-		replyCount: comment.replyThread?._count?.comments ?? 0,
-	};
-}
-
-function serializeReply(
-	comment: {
-		id: string;
-		threadId: string;
-		authorId: string;
-		author: { id: string; displayName: string; image: string | null };
-		content: string;
-		editedAt: Date | null;
-		createdAt: Date;
-		commentLikes: { userId: string }[];
-	},
-	userId: string,
-): Reply {
-	return {
-		id: comment.id,
-		threadId: comment.threadId,
-		authorId: comment.authorId,
-		author: {
-			id: comment.author.id,
-			displayName: comment.author.displayName,
-			image: comment.author.image,
-		},
-		content: comment.content,
-		editedAt: comment.editedAt?.toISOString() ?? null,
-		createdAt: comment.createdAt.toISOString(),
-		likeCount: comment.commentLikes.length,
-		likedByCurrentUser: comment.commentLikes.some((l) => l.userId === userId),
-	};
 }
 
 // ── Top-level comments ──────────────────────────────────────────────
-
-const commentInclude = {
-	author: { select: { id: true, displayName: true, image: true } },
-	commentLikes: { select: { userId: true } },
-	replyThread: { include: { _count: { select: { comments: true } } } },
-} as const;
 
 export async function getComments(
 	taskId: string,
@@ -145,26 +123,64 @@ export async function createComment(
 	const serialized = serializeComment(comment, userId);
 
 	try {
-		await publishCommentEvent(taskId, RealtimeEvents.COMMENT_CREATED, {
-			commentId: serialized.id,
-			threadId: serialized.threadId,
-			taskId,
-			parentCommentId: null,
-			comment: serialized,
-		});
-	} catch (_e) {
-		// Non-critical: don't fail the request if publishing fails
+		const memberIds = await getProjectMemberIds(projectId);
+		const eventRecipients = memberIds.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_CREATED",
+				{
+					commentId: serialized.id,
+					threadId: serialized.threadId,
+					taskId,
+					parentCommentId: null,
+					comment: serialized,
+				},
+				eventRecipients,
+			);
+			await emitEvent("TASK_MUTATED", { projectId }, eventRecipients);
+		}
+	} catch (error) {
+		logDispatchError("task comment create", error);
+	}
+
+	// Send TASK_COMMENT_RECEIVED notification to interested users (excluding author)
+	try {
+		const recipients = await resolveTaskCommentRecipients(taskId);
+		const filtered = recipients.filter((id) => id !== userId);
+		if (filtered.length > 0) {
+			const task = await prisma.task.findUnique({
+				where: { id: taskId },
+				select: {
+					title: true,
+					projectId: true,
+					project: { select: { name: true } },
+				},
+			});
+			if (task) {
+				await dispatch(
+					"TASK_COMMENT_RECEIVED",
+					userId,
+					{
+						taskId,
+						taskName: task.title,
+						projectId: task.projectId,
+						projectName: task.project.name,
+						commentId: serialized.id,
+						commentSnippet: truncateMessageSnippet(content),
+						isReply: false,
+					},
+					filtered,
+				);
+			}
+		}
+	} catch (error) {
+		logDispatchError("task comment notification", error);
 	}
 
 	return serialized;
 }
 
 // ── Replies ─────────────────────────────────────────────────────────
-
-const replyInclude = {
-	author: { select: { id: true, displayName: true, image: true } },
-	commentLikes: { select: { userId: true } },
-} as const;
 
 export async function getReplies(
 	parentCommentId: string,
@@ -244,15 +260,58 @@ export async function createReply(
 	const serialized = serializeReply(reply, userId);
 
 	try {
-		await publishCommentEvent(taskId, RealtimeEvents.COMMENT_CREATED, {
-			commentId: serialized.id,
-			threadId: serialized.threadId,
-			taskId,
-			parentCommentId,
-			comment: serialized,
-		});
-	} catch (_e) {
-		// Non-critical
+		const memberIds = await getProjectMemberIds(projectId);
+		const eventRecipients = memberIds.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_CREATED",
+				{
+					commentId: serialized.id,
+					threadId: serialized.threadId,
+					taskId,
+					parentCommentId,
+					comment: serialized,
+				},
+				eventRecipients,
+			);
+			await emitEvent("TASK_MUTATED", { projectId }, eventRecipients);
+		}
+	} catch (error) {
+		logDispatchError("task reply create", error);
+	}
+
+	// Send TASK_COMMENT_RECEIVED notification (isReply: true)
+	try {
+		const recipients = await resolveTaskCommentRecipients(taskId);
+		const filtered = recipients.filter((id) => id !== userId);
+		if (filtered.length > 0) {
+			const task = await prisma.task.findUnique({
+				where: { id: taskId },
+				select: {
+					title: true,
+					projectId: true,
+					project: { select: { name: true } },
+				},
+			});
+			if (task) {
+				await dispatch(
+					"TASK_COMMENT_RECEIVED",
+					userId,
+					{
+						taskId,
+						taskName: task.title,
+						projectId: task.projectId,
+						projectName: task.project.name,
+						commentId: serialized.id,
+						commentSnippet: truncateMessageSnippet(content),
+						isReply: true,
+					},
+					filtered,
+				);
+			}
+		}
+	} catch (error) {
+		logDispatchError("task reply notification", error);
 	}
 
 	return serialized;
@@ -324,15 +383,23 @@ export async function editComment(
 		: serializeReply(updated, userId);
 
 	try {
-		await publishCommentEvent(taskId, RealtimeEvents.COMMENT_EDITED, {
-			commentId: serialized.id,
-			threadId: serialized.threadId,
-			taskId,
-			parentCommentId: isTopLevel ? null : comment.threadId,
-			comment: serialized,
-		});
-	} catch (_e) {
-		// Non-critical
+		const memberIds = await getProjectMemberIds(projectId);
+		const eventRecipients = memberIds.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_EDITED",
+				{
+					commentId: serialized.id,
+					threadId: serialized.threadId,
+					taskId,
+					parentCommentId: isTopLevel ? null : comment.threadId,
+					comment: serialized,
+				},
+				eventRecipients,
+			);
+		}
+	} catch (error) {
+		logDispatchError("task comment edit", error);
 	}
 
 	return serialized;
@@ -411,15 +478,24 @@ export async function deleteComment(
 	});
 
 	try {
-		await publishCommentEvent(taskId, RealtimeEvents.COMMENT_DELETED, {
-			commentId,
-			threadId: comment.threadId,
-			taskId,
-			parentCommentId: isTopLevel ? null : comment.threadId,
-			comment: null,
-		});
-	} catch (_e) {
-		// Non-critical
+		const memberIds = await getProjectMemberIds(projectId);
+		const eventRecipients = memberIds.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_DELETED",
+				{
+					commentId,
+					threadId: comment.threadId,
+					taskId,
+					parentCommentId: isTopLevel ? null : comment.threadId,
+					comment: null,
+				},
+				eventRecipients,
+			);
+			await emitEvent("TASK_MUTATED", { projectId }, eventRecipients);
+		}
+	} catch (error) {
+		logDispatchError("task comment delete", error);
 	}
 }
 

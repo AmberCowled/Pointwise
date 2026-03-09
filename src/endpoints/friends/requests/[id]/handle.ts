@@ -1,10 +1,10 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import {
 	acceptFriendRequest,
 	declineFriendRequest,
 } from "@pointwise/lib/api/friends";
-import { sendNotification } from "@pointwise/lib/notifications/service";
-import { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import prisma from "@pointwise/lib/prisma";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, emitEvent } from "@pointwise/lib/realtime/publish";
 import { endpoint } from "ertk";
 import { z } from "zod";
 
@@ -24,36 +24,55 @@ export default endpoint.patch<
 		body: { action },
 	}),
 	handler: async ({ user, body, params }) => {
+		let senderId: string;
+
 		if (body.action === "ACCEPT") {
 			const request = await acceptFriendRequest(params.id, user.id);
+			senderId = request.senderId;
 			try {
-				await sendNotification(
-					request.senderId,
-					NotificationType.FRIEND_REQUEST_ACCEPTED,
-					{
-						accepterId: user.id,
-						accepterName: request.accepter.displayName,
-						accepterImage: request.accepter.image,
-					},
-				);
+				await dispatch("FRIEND_REQUEST_ACCEPTED", user.id, {}, [senderId]);
 			} catch (error) {
-				console.warn(
-					"Failed to publish friend request acceptance event",
-					error,
-				);
+				logDispatchError("friend request accept", error);
 			}
-			return { success: true };
+		} else {
+			const request = await declineFriendRequest(params.id, user.id);
+			senderId = request.senderId;
+			try {
+				await dispatch("FRIEND_REQUEST_DECLINED", { declinerId: user.id }, [
+					senderId,
+				]);
+			} catch (error) {
+				logDispatchError("friend request decline", error);
+			}
 		}
-		const request = await declineFriendRequest(params.id, user.id);
+
+		// Mark the matching FRIEND_REQUEST_RECEIVED notification as read
 		try {
-			await publishAblyEvent(
-				`user:${request.senderId}:friend-requests`,
-				"friend-request:declined",
-				{ declinerId: user.id },
-			);
+			const staleNotifs = await prisma.notification.findMany({
+				where: {
+					userId: user.id,
+					type: "FRIEND_REQUEST_RECEIVED",
+					read: false,
+				},
+				select: { id: true, data: true },
+			});
+			const matchingIds = staleNotifs
+				.filter((n) => {
+					const d = n.data as Record<string, unknown> | null;
+					return d?.actorId === senderId;
+				})
+				.map((n) => n.id);
+			if (matchingIds.length > 0) {
+				await prisma.notification.updateMany({
+					where: { id: { in: matchingIds } },
+					data: { read: true },
+				});
+				await emitEvent("NOTIFICATIONS_READ", { userId: user.id }, [user.id]);
+			}
 		} catch (error) {
-			console.warn("Failed to publish friend request decline event", error);
+			logDispatchError("friend request notification cleanup", error);
 		}
+
 		return { success: true };
 	},
 });

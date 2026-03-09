@@ -118,6 +118,19 @@ export const authOptions: NextAuthOptions = {
 				// Generate a unique JWT ID for device session tracking
 				token.jti = crypto.randomUUID();
 
+				// Pre-register device session so API calls succeed immediately
+				// on the first page load (avoids race with DeviceSessionProvider).
+				// DeviceSessionProvider will upsert with device info later.
+				await prisma.deviceSession
+					.create({
+						data: {
+							userId: user.id,
+							jti: token.jti,
+							lastActiveAt: new Date(),
+						},
+					})
+					.catch(() => {});
+
 				// Check if 2FA is required (works for both credentials and OAuth)
 				const dbUser = await prisma.user.findUnique({
 					where: { id: user.id },

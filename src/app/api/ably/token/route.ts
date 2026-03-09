@@ -22,10 +22,7 @@ export async function POST() {
 	const tokenRequest = await client.auth.createTokenRequest({
 		clientId: userId,
 		capability: {
-			[`user:${userId}:*`]: ["subscribe", "publish", "push-subscribe"],
-			"conversation:*": ["subscribe", "publish"],
-			"task:*": ["subscribe", "publish"],
-			"post:*": ["subscribe", "publish"],
+			[`user:${userId}`]: ["subscribe", "push-subscribe"],
 		},
 	});
 

@@ -1,4 +1,8 @@
 import { unlikeComment } from "@pointwise/lib/api/comments";
+import { getProjectMemberIds } from "@pointwise/lib/api/projects";
+import prisma from "@pointwise/lib/prisma";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { emitEvent } from "@pointwise/lib/realtime/publish";
 import type { CommentLikeResponse } from "@pointwise/lib/validation/comments-schema";
 import { endpoint } from "ertk";
 
@@ -65,8 +69,41 @@ export default endpoint.delete<
 			},
 		],
 	},
-	handler: async ({ user, params }) => {
+	handler: async ({ user, params, req }) => {
+		const projectId = new URL(req.url).searchParams.get("projectId");
 		await unlikeComment(params.commentId, user.id);
+
+		if (!projectId) return { success: true };
+
+		try {
+			const comment = await prisma.comment.findUnique({
+				where: { id: params.commentId },
+				select: {
+					threadId: true,
+					thread: { select: { parentCommentId: true } },
+				},
+			});
+			if (comment) {
+				const memberIds = await getProjectMemberIds(projectId);
+				const eventRecipients = memberIds.filter((id) => id !== user.id);
+				if (eventRecipients.length > 0) {
+					await emitEvent(
+						"COMMENT_EDITED",
+						{
+							commentId: params.commentId,
+							threadId: comment.threadId,
+							taskId: params.id,
+							parentCommentId: comment.thread.parentCommentId ?? null,
+							comment: null,
+						},
+						eventRecipients,
+					);
+				}
+			}
+		} catch (error) {
+			logDispatchError("comment unlike", error);
+		}
+
 		return { success: true };
 	},
 });

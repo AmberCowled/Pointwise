@@ -25,6 +25,7 @@ export default function Message({ message, currentUserId }: MessageProps) {
 			<ProfilePicture
 				profilePicture={image}
 				displayName={displayName}
+				userId={message.senderId}
 				size="sm"
 			/>
 			<Container

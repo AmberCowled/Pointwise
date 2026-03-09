@@ -1,6 +1,8 @@
+import { getProjectMemberIds } from "@pointwise/lib/api/projects";
 import { serializeTask, updateTaskAssignments } from "@pointwise/lib/api/tasks";
-import { sendNotifications } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, emitEvent } from "@pointwise/lib/realtime/publish";
 import type {
 	UpdateTaskAssignmentsRequest,
 	UpdateTaskAssignmentsResponse,
@@ -46,17 +48,34 @@ export default endpoint.patch<
 
 		if (newlyAssigned.length > 0 && previousTask) {
 			try {
-				await sendNotifications(newlyAssigned, "TASK_ASSIGNED", {
-					projectId: body.projectId,
-					projectName: previousTask.project.name,
-					taskId: params.id,
-					taskName: previousTask.title,
-					assignedByName: (user.name as string) ?? null,
-					assignedByImage: (user.image as string) ?? null,
-				});
+				await dispatch(
+					"TASK_ASSIGNED",
+					user.id,
+					{
+						projectId: body.projectId,
+						projectName: previousTask.project.name,
+						taskId: params.id,
+						taskName: previousTask.title,
+					},
+					newlyAssigned,
+				);
 			} catch (error) {
-				console.error("Failed to send task assignment notifications:", error);
+				logDispatchError("task assignment", error);
 			}
+		}
+
+		try {
+			const memberIds = await getProjectMemberIds(body.projectId);
+			const eventRecipients = memberIds.filter((id) => id !== user.id);
+			if (eventRecipients.length > 0) {
+				await emitEvent(
+					"TASK_MUTATED",
+					{ projectId: body.projectId },
+					eventRecipients,
+				);
+			}
+		} catch (error) {
+			logDispatchError("task assignment event", error);
 		}
 
 		return { task };

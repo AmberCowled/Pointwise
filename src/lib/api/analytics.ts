@@ -38,18 +38,30 @@ export async function getProjectAnalytics(
 	// Build task query filters
 	const taskWhere: Record<string, unknown> = { projectId };
 
-	if (filters.startDate) {
-		taskWhere.createdAt = {
-			...(taskWhere.createdAt as Record<string, unknown>),
-			gte: new Date(filters.startDate),
-		};
+	// Include tasks that were created OR completed within the date range so
+	// that tasks created before the window but completed inside it still
+	// appear in completion analytics.
+	if (filters.startDate || filters.endDate) {
+		const start = filters.startDate ? new Date(filters.startDate) : undefined;
+		const end = filters.endDate ? new Date(filters.endDate) : undefined;
+
+		const createdAtRange: Record<string, Date> = {};
+		const completedAtRange: Record<string, Date> = {};
+		if (start) {
+			createdAtRange.gte = start;
+			completedAtRange.gte = start;
+		}
+		if (end) {
+			createdAtRange.lte = end;
+			completedAtRange.lte = end;
+		}
+
+		taskWhere.OR = [
+			{ createdAt: createdAtRange },
+			{ completedAt: completedAtRange },
+		];
 	}
-	if (filters.endDate) {
-		taskWhere.createdAt = {
-			...(taskWhere.createdAt as Record<string, unknown>),
-			lte: new Date(filters.endDate),
-		};
-	}
+
 	if (filters.category && filters.category !== "All") {
 		taskWhere.category = filters.category;
 	}

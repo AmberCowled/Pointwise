@@ -55,7 +55,7 @@ export default function MemberTable({ members }: MemberTableProps) {
 					</tr>
 				</thead>
 				<tbody>
-					{members
+					{[...members]
 						.sort((a, b) => b.tasksCompleted - a.tasksCompleted)
 						.map((member) => (
 							<tr

@@ -6,6 +6,9 @@ export const NotificationSettingsSchema = z.object({
 	pushFriendRequests: z.boolean(),
 	pushProjectActivity: z.boolean(),
 	pushTaskAssignments: z.boolean(),
+	pushComments: z.boolean(),
+	pushTaskStatusChanges: z.boolean(),
+	pushLikes: z.boolean(),
 });
 
 export type NotificationSettingsType = z.infer<

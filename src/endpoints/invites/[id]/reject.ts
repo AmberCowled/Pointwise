@@ -1,10 +1,7 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { rejectInvite } from "@pointwise/lib/api/invites";
 import prisma from "@pointwise/lib/prisma";
-import {
-	RealtimeChannels,
-	RealtimeEvents,
-} from "@pointwise/lib/realtime/registry";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import { endpoint } from "ertk";
 
 export default endpoint.delete<{ success: boolean }, string>({
@@ -26,13 +23,11 @@ export default endpoint.delete<{ success: boolean }, string>({
 
 		// Notify the inviter via lightweight Ably event so their cache updates
 		try {
-			await publishAblyEvent(
-				RealtimeChannels.user.projects(invite.inviterId),
-				RealtimeEvents.INVITE_REJECTED,
-				{ projectId: invite.projectId },
-			);
-		} catch {
-			// Ably publish failure should not break the reject action
+			await dispatch("INVITE_REJECTED", { projectId: invite.projectId }, [
+				invite.inviterId,
+			]);
+		} catch (error) {
+			logDispatchError("invite reject event", error);
 		}
 
 		// Notify all project admins so their invite count updates in real-time
@@ -41,19 +36,16 @@ export default endpoint.delete<{ success: boolean }, string>({
 				where: { id: invite.projectId },
 				select: { adminUserIds: true },
 			});
-			await Promise.allSettled(
-				project.adminUserIds
-					.filter((adminId) => adminId !== user.id)
-					.map((adminId) =>
-						publishAblyEvent(
-							RealtimeChannels.user.projects(adminId),
-							RealtimeEvents.INVITE_CANCELLED,
-							{ projectId: invite.projectId },
-						),
-					),
+			const filteredAdminIds = project.adminUserIds.filter(
+				(adminId) => adminId !== user.id,
 			);
-		} catch {
-			// Ably publish failure should not break the reject action
+			await dispatch(
+				"INVITE_CANCELLED",
+				{ projectId: invite.projectId },
+				filteredAdminIds,
+			);
+		} catch (error) {
+			logDispatchError("invite cancel event", error);
 		}
 
 		return { success: true };

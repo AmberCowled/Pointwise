@@ -1,10 +1,7 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { rejectJoinRequest } from "@pointwise/lib/api/joinRequests";
 import prisma from "@pointwise/lib/prisma";
-import {
-	RealtimeChannels,
-	RealtimeEvents,
-} from "@pointwise/lib/realtime/registry";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import { endpoint } from "ertk";
 
 export default endpoint.delete<
@@ -33,9 +30,7 @@ export default endpoint.delete<
 			const idsToMark = staleNotifications
 				.filter((n) => {
 					const d = n.data as Record<string, unknown> | null;
-					return (
-						d?.projectId === params.id && d?.requesterId === params.targetId
-					);
+					return d?.projectId === params.id && d?.actorId === params.targetId;
 				})
 				.map((n) => n.id);
 			if (idsToMark.length > 0) {
@@ -44,19 +39,17 @@ export default endpoint.delete<
 					data: { read: true },
 				});
 			}
-		} catch {
-			// Staleness cleanup failure should not break the reject action
+		} catch (error) {
+			logDispatchError("join request staleness cleanup", error);
 		}
 
 		// Notify the requester via lightweight Ably event so their cache updates
 		try {
-			await publishAblyEvent(
-				RealtimeChannels.user.projects(params.targetId),
-				RealtimeEvents.JOIN_REQUEST_REJECTED,
-				{ projectId: params.id },
-			);
-		} catch {
-			// Ably publish failure should not break the reject action
+			await dispatch("JOIN_REQUEST_REJECTED", { projectId: params.id }, [
+				params.targetId,
+			]);
+		} catch (error) {
+			logDispatchError("join request reject event", error);
 		}
 
 		return { success: true };

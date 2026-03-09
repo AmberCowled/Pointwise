@@ -1,4 +1,10 @@
-import { likePostComment } from "@pointwise/lib/api/post-comments";
+import {
+	likePostComment,
+	resolvePostCommentRecipients,
+} from "@pointwise/lib/api/post-comments";
+import prisma from "@pointwise/lib/prisma";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, emitEvent } from "@pointwise/lib/realtime/publish";
 import type { CommentLikeResponse } from "@pointwise/lib/validation/comments-schema";
 import { endpoint } from "ertk";
 
@@ -67,6 +73,50 @@ export default endpoint.post<
 	},
 	handler: async ({ user, params }) => {
 		await likePostComment(params.commentId, user.id);
+
+		try {
+			const comment = await prisma.comment.findUnique({
+				where: { id: params.commentId },
+				select: {
+					threadId: true,
+					authorId: true,
+					thread: { select: { parentCommentId: true } },
+				},
+			});
+			if (comment) {
+				const recipients = await resolvePostCommentRecipients(params.postId);
+				const eventRecipients = recipients.filter((id) => id !== user.id);
+				if (eventRecipients.length > 0) {
+					await emitEvent(
+						"COMMENT_EDITED",
+						{
+							commentId: params.commentId,
+							threadId: comment.threadId,
+							postId: params.postId,
+							parentCommentId: comment.thread.parentCommentId ?? null,
+							comment: null,
+						},
+						eventRecipients,
+					);
+				}
+
+				// Notify the comment author
+				if (comment.authorId !== user.id) {
+					await dispatch(
+						"POST_COMMENT_LIKED",
+						user.id,
+						{
+							postId: params.postId,
+							commentId: params.commentId,
+						},
+						[comment.authorId],
+					);
+				}
+			}
+		} catch (error) {
+			logDispatchError("post comment like", error);
+		}
+
 		return { success: true };
 	},
 });

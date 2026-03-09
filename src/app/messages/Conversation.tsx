@@ -16,13 +16,10 @@ import {
 	useMarkConversationReadMutation,
 	useSendMessageMutation,
 } from "@pointwise/generated/api";
-import { invalidateTags } from "@pointwise/generated/invalidation";
-import { useSubscribeConversation } from "@pointwise/lib/realtime";
-import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	IoArchiveOutline,
 	IoChevronBack,
@@ -35,7 +32,6 @@ import Message from "./Message";
 export default function Conversation() {
 	const params = useParams<{ conversationId: string }>();
 	const router = useRouter();
-	const dispatch = useAppDispatch();
 	const conversationId = params?.conversationId;
 	const { data: session } = useSession();
 	const userId = session?.user?.id;
@@ -46,6 +42,7 @@ export default function Conversation() {
 	const [sendMessage, { isLoading: sending }] = useSendMessageMutation();
 	const [input, setInput] = useState("");
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const markReadTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
 	const { data: conversation } = useGetConversationQuery(conversationId ?? "", {
 		skip: !conversationId,
@@ -64,40 +61,18 @@ export default function Conversation() {
 
 	const messages = messagesData?.messages ?? [];
 
-	// Mark this conversation as read when viewing it (removes from message notifications)
+	// Scroll to bottom immediately; debounce markConversationRead (500ms)
 	useEffect(() => {
-		if (!conversationId) return;
-		markConversationRead(conversationId).catch((err) => {
-			console.warn("Failed to mark conversation read on mount", err);
-		});
-	}, [conversationId, markConversationRead]);
-
-	const handleNewMessage = useCallback(() => {
-		if (!conversationId) return;
-		dispatch(invalidateTags([{ type: "Messages", id: conversationId }]));
-		setTimeout(() => {
-			markConversationRead(conversationId)
-				.then(() => {
-					dispatch(invalidateTags(["Notifications"]));
-				})
-				.catch((err) => {
-					console.warn(
-						"Failed to mark conversation read after new message",
-						err,
-					);
-				});
-		}, 400);
-	}, [conversationId, dispatch, markConversationRead]);
-
-	useSubscribeConversation(conversationId, {
-		onNewMessage: handleNewMessage,
-	});
-
-	useEffect(() => {
-		if (conversationId && messages.length > 0) {
-			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-		}
-	}, [conversationId, messages.length]);
+		if (!conversationId || messages.length === 0) return;
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		clearTimeout(markReadTimeoutRef.current);
+		markReadTimeoutRef.current = setTimeout(() => {
+			markConversationRead(conversationId).catch((err) => {
+				console.warn("Failed to mark conversation read", err);
+			});
+		}, 500);
+		return () => clearTimeout(markReadTimeoutRef.current);
+	}, [conversationId, messages.length, markConversationRead]);
 
 	if (!conversationId) {
 		return (

@@ -1,4 +1,6 @@
 import { likePost } from "@pointwise/lib/api/posts";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import type { PostLikeResponse } from "@pointwise/lib/validation/posts-schema";
 import { endpoint } from "ertk";
 
@@ -32,6 +34,17 @@ export default endpoint.post<
 	},
 	handler: async ({ user, params }) => {
 		await likePost(params.postId, user.id);
+
+		if (params.id !== user.id) {
+			try {
+				await dispatch("POST_LIKED", user.id, { postId: params.postId }, [
+					params.id,
+				]);
+			} catch (error) {
+				logDispatchError("post liked notification", error);
+			}
+		}
+
 		return { success: true };
 	},
 });

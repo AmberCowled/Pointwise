@@ -1,4 +1,6 @@
 import prisma from "@pointwise/lib/prisma";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { emitEvent } from "@pointwise/lib/realtime/publish";
 import { endpoint } from "ertk";
 import { z } from "zod";
 
@@ -50,6 +52,12 @@ export default endpoint.patch<
 				where: { id: { in: matchingIds } },
 				data: { read: true },
 			});
+
+			try {
+				await emitEvent("NOTIFICATIONS_READ", { userId: user.id }, [user.id]);
+			} catch (error) {
+				logDispatchError("notifications read sync", error);
+			}
 		}
 
 		return { success: true, count: matchingIds.length };

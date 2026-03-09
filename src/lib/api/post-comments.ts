@@ -1,12 +1,52 @@
 import {
+	commentInclude,
+	replyInclude,
+	serializeComment,
+	serializeReply,
+} from "@pointwise/lib/api/comment-serialization";
+import {
 	getOrCreateReplyThread,
 	likeComment,
 	unlikeComment,
 } from "@pointwise/lib/api/comments";
+import { truncateMessageSnippet } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
-import { publishPostCommentEvent } from "@pointwise/lib/realtime/publish";
-import { RealtimeEvents } from "@pointwise/lib/realtime/registry";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, emitEvent } from "@pointwise/lib/realtime/publish";
 import type { Comment, Reply } from "@pointwise/lib/validation/comments-schema";
+
+// ── Recipient resolution ────────────────────────────────────────────
+
+/**
+ * Resolve all users interested in post comments:
+ * post author + all comment authors on the post.
+ */
+export async function resolvePostCommentRecipients(
+	postId: string,
+): Promise<string[]> {
+	const userIds = new Set<string>();
+
+	const [post, threads] = await Promise.all([
+		prisma.post.findUnique({
+			where: { id: postId },
+			select: { authorId: true },
+		}),
+		prisma.commentThread.findMany({
+			where: { postId },
+			select: { comments: { select: { authorId: true } } },
+		}),
+	]);
+
+	if (post) {
+		userIds.add(post.authorId);
+	}
+
+	for (const thread of threads) {
+		for (const c of thread.comments) userIds.add(c.authorId);
+	}
+
+	return [...userIds];
+}
 
 // ── Thread helpers ──────────────────────────────────────────────────
 
@@ -17,83 +57,6 @@ export async function getOrCreatePostThread(postId: string) {
 	if (existing) return existing;
 	return prisma.commentThread.create({ data: { postId } });
 }
-
-// ── Serialization ───────────────────────────────────────────────────
-
-function serializeComment(
-	comment: {
-		id: string;
-		threadId: string;
-		authorId: string;
-		author: { id: string; displayName: string; image: string | null };
-		content: string;
-		editedAt: Date | null;
-		createdAt: Date;
-		commentLikes: { userId: string }[];
-		replyThread?: { _count: { comments: number } } | null;
-	},
-	userId: string,
-): Comment {
-	return {
-		id: comment.id,
-		threadId: comment.threadId,
-		authorId: comment.authorId,
-		author: {
-			id: comment.author.id,
-			displayName: comment.author.displayName,
-			image: comment.author.image,
-		},
-		content: comment.content,
-		editedAt: comment.editedAt?.toISOString() ?? null,
-		createdAt: comment.createdAt.toISOString(),
-		likeCount: comment.commentLikes.length,
-		likedByCurrentUser: comment.commentLikes.some((l) => l.userId === userId),
-		replyCount: comment.replyThread?._count?.comments ?? 0,
-	};
-}
-
-function serializeReply(
-	comment: {
-		id: string;
-		threadId: string;
-		authorId: string;
-		author: { id: string; displayName: string; image: string | null };
-		content: string;
-		editedAt: Date | null;
-		createdAt: Date;
-		commentLikes: { userId: string }[];
-	},
-	userId: string,
-): Reply {
-	return {
-		id: comment.id,
-		threadId: comment.threadId,
-		authorId: comment.authorId,
-		author: {
-			id: comment.author.id,
-			displayName: comment.author.displayName,
-			image: comment.author.image,
-		},
-		content: comment.content,
-		editedAt: comment.editedAt?.toISOString() ?? null,
-		createdAt: comment.createdAt.toISOString(),
-		likeCount: comment.commentLikes.length,
-		likedByCurrentUser: comment.commentLikes.some((l) => l.userId === userId),
-	};
-}
-
-// ── Includes ────────────────────────────────────────────────────────
-
-const commentInclude = {
-	author: { select: { id: true, displayName: true, image: true } },
-	commentLikes: { select: { userId: true } },
-	replyThread: { include: { _count: { select: { comments: true } } } },
-} as const;
-
-const replyInclude = {
-	author: { select: { id: true, displayName: true, image: true } },
-	commentLikes: { select: { userId: true } },
-} as const;
 
 // ── Top-level comments ──────────────────────────────────────────────
 
@@ -135,15 +98,44 @@ export async function createPostComment(
 	const serialized = serializeComment(comment, userId);
 
 	try {
-		await publishPostCommentEvent(postId, RealtimeEvents.COMMENT_CREATED, {
-			commentId: serialized.id,
-			threadId: serialized.threadId,
-			postId,
-			parentCommentId: null,
-			comment: serialized,
-		});
-	} catch (_e) {
-		// Non-critical
+		const recipients = await resolvePostCommentRecipients(postId);
+		const eventRecipients = recipients.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_CREATED",
+				{
+					commentId: serialized.id,
+					threadId: serialized.threadId,
+					postId,
+					parentCommentId: null,
+					comment: serialized,
+				},
+				eventRecipients,
+			);
+		}
+	} catch (error) {
+		logDispatchError("post comment create", error);
+	}
+
+	// Send POST_COMMENT_RECEIVED notification (excluding author)
+	try {
+		const recipients = await resolvePostCommentRecipients(postId);
+		const filtered = recipients.filter((id) => id !== userId);
+		if (filtered.length > 0) {
+			await dispatch(
+				"POST_COMMENT_RECEIVED",
+				userId,
+				{
+					postId,
+					commentId: serialized.id,
+					commentSnippet: truncateMessageSnippet(content),
+					isReply: false,
+				},
+				filtered,
+			);
+		}
+	} catch (error) {
+		logDispatchError("post comment notification", error);
 	}
 
 	return serialized;
@@ -217,15 +209,44 @@ export async function createPostReply(
 	const serialized = serializeReply(reply, userId);
 
 	try {
-		await publishPostCommentEvent(postId, RealtimeEvents.COMMENT_CREATED, {
-			commentId: serialized.id,
-			threadId: serialized.threadId,
-			postId,
-			parentCommentId,
-			comment: serialized,
-		});
-	} catch (_e) {
-		// Non-critical
+		const recipients = await resolvePostCommentRecipients(postId);
+		const eventRecipients = recipients.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_CREATED",
+				{
+					commentId: serialized.id,
+					threadId: serialized.threadId,
+					postId,
+					parentCommentId,
+					comment: serialized,
+				},
+				eventRecipients,
+			);
+		}
+	} catch (error) {
+		logDispatchError("post reply create", error);
+	}
+
+	// Send POST_COMMENT_RECEIVED notification (isReply: true)
+	try {
+		const recipients = await resolvePostCommentRecipients(postId);
+		const filtered = recipients.filter((id) => id !== userId);
+		if (filtered.length > 0) {
+			await dispatch(
+				"POST_COMMENT_RECEIVED",
+				userId,
+				{
+					postId,
+					commentId: serialized.id,
+					commentSnippet: truncateMessageSnippet(content),
+					isReply: true,
+				},
+				filtered,
+			);
+		}
+	} catch (error) {
+		logDispatchError("post reply notification", error);
 	}
 
 	return serialized;
@@ -286,15 +307,23 @@ export async function editPostComment(
 		: serializeReply(updated, userId);
 
 	try {
-		await publishPostCommentEvent(postId, RealtimeEvents.COMMENT_EDITED, {
-			commentId: serialized.id,
-			threadId: serialized.threadId,
-			postId,
-			parentCommentId: isTopLevel ? null : comment.threadId,
-			comment: serialized,
-		});
-	} catch (_e) {
-		// Non-critical
+		const recipients = await resolvePostCommentRecipients(postId);
+		const eventRecipients = recipients.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_EDITED",
+				{
+					commentId: serialized.id,
+					threadId: serialized.threadId,
+					postId,
+					parentCommentId: isTopLevel ? null : comment.threadId,
+					comment: serialized,
+				},
+				eventRecipients,
+			);
+		}
+	} catch (error) {
+		logDispatchError("post comment edit", error);
 	}
 
 	return serialized;
@@ -354,15 +383,23 @@ export async function deletePostComment(
 	});
 
 	try {
-		await publishPostCommentEvent(postId, RealtimeEvents.COMMENT_DELETED, {
-			commentId,
-			threadId: comment.threadId,
-			postId,
-			parentCommentId: isTopLevel ? null : comment.threadId,
-			comment: null,
-		});
-	} catch (_e) {
-		// Non-critical
+		const recipients = await resolvePostCommentRecipients(postId);
+		const eventRecipients = recipients.filter((id) => id !== userId);
+		if (eventRecipients.length > 0) {
+			await emitEvent(
+				"COMMENT_DELETED",
+				{
+					commentId,
+					threadId: comment.threadId,
+					postId,
+					parentCommentId: isTopLevel ? null : comment.threadId,
+					comment: null,
+				},
+				eventRecipients,
+			);
+		}
+	} catch (error) {
+		logDispatchError("post comment delete", error);
 	}
 }
 

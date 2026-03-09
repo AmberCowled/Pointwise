@@ -10,6 +10,29 @@ import {
 } from "@pointwise/lib/validation/projects-schema";
 import type { Prisma, Project as PrismaProject } from "@prisma/client";
 
+export async function getProjectMemberIds(
+	projectId: string,
+): Promise<string[]> {
+	const project = await prisma.project.findUnique({
+		where: { id: projectId },
+		select: { adminUserIds: true, projectUserIds: true, viewerUserIds: true },
+	});
+	if (!project) return [];
+	return [
+		...project.adminUserIds,
+		...project.projectUserIds,
+		...project.viewerUserIds,
+	];
+}
+
+export async function getProjectAdminIds(projectId: string): Promise<string[]> {
+	const project = await prisma.project.findUnique({
+		where: { id: projectId },
+		select: { adminUserIds: true },
+	});
+	return project?.adminUserIds ?? [];
+}
+
 export async function createProject(
 	request: CreateProjectRequest,
 	userId: string,
@@ -270,7 +293,7 @@ export async function verifyProjectAccess(
 		[
 			...project.adminUserIds,
 			...project.projectUserIds,
-			project.viewerUserIds,
+			...project.viewerUserIds,
 		].includes(userId)
 	);
 }

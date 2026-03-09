@@ -18,7 +18,10 @@ const sizeMappings = {
 interface ProfilePictureProps {
 	profilePicture: string;
 	displayName: string;
+	/** Direct link URL. Takes precedence over `userId`. */
 	href?: string;
+	/** User ID — auto-generates `/profile/{userId}` link. */
+	userId?: string;
 	size?: "xs" | "sm" | "md" | "lg" | "xl" | "full";
 	disabled?: boolean;
 	className?: string;
@@ -29,11 +32,13 @@ export default function ProfilePicture({
 	profilePicture,
 	displayName,
 	href,
+	userId,
 	size = "md",
 	disabled = false,
 	className: customClassName,
 	priority = false,
 }: ProfilePictureProps) {
+	const resolvedHref = href ?? (userId ? `/profile/${userId}` : undefined);
 	const { dimension, className } = sizeMappings[size];
 	const [imgError, setImgError] = useState(false);
 	const [imgLoaded, setImgLoaded] = useState(false);
@@ -70,12 +75,12 @@ export default function ProfilePicture({
 		customClassName,
 	);
 
-	if (disabled || !href) {
+	if (disabled || !resolvedHref) {
 		return <div className={containerClasses}>{content}</div>;
 	}
 
 	return (
-		<a href={href} className={containerClasses}>
+		<a href={resolvedHref} className={containerClasses}>
 			{content}
 		</a>
 	);

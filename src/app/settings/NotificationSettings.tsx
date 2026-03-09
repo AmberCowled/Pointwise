@@ -27,6 +27,9 @@ export default function NotificationSettings() {
 	const [pushFriendRequests, setPushFriendRequests] = useState(true);
 	const [pushProjectActivity, setPushProjectActivity] = useState(true);
 	const [pushTaskAssignments, setPushTaskAssignments] = useState(true);
+	const [pushComments, setPushComments] = useState(true);
+	const [pushTaskStatusChanges, setPushTaskStatusChanges] = useState(true);
+	const [pushLikes, setPushLikes] = useState(true);
 
 	useEffect(() => {
 		if (data?.settings) {
@@ -36,6 +39,9 @@ export default function NotificationSettings() {
 			setPushFriendRequests(s.pushFriendRequests);
 			setPushProjectActivity(s.pushProjectActivity);
 			setPushTaskAssignments(s.pushTaskAssignments);
+			setPushComments(s.pushComments);
+			setPushTaskStatusChanges(s.pushTaskStatusChanges);
+			setPushLikes(s.pushLikes);
 		}
 	}, [data]);
 
@@ -47,7 +53,10 @@ export default function NotificationSettings() {
 			pushMessages !== s.pushMessages ||
 			pushFriendRequests !== s.pushFriendRequests ||
 			pushProjectActivity !== s.pushProjectActivity ||
-			pushTaskAssignments !== s.pushTaskAssignments
+			pushTaskAssignments !== s.pushTaskAssignments ||
+			pushComments !== s.pushComments ||
+			pushTaskStatusChanges !== s.pushTaskStatusChanges ||
+			pushLikes !== s.pushLikes
 		);
 	})();
 
@@ -59,6 +68,9 @@ export default function NotificationSettings() {
 				pushFriendRequests,
 				pushProjectActivity,
 				pushTaskAssignments,
+				pushComments,
+				pushTaskStatusChanges,
+				pushLikes,
 			}).unwrap();
 			showNotification({
 				message: "Notification settings saved",
@@ -104,6 +116,25 @@ export default function NotificationSettings() {
 			description: "When you are assigned to a task",
 			checked: pushTaskAssignments,
 			onChange: setPushTaskAssignments,
+		},
+		{
+			label: "Task Completions",
+			description:
+				"When a task you're assigned to or administrate is completed",
+			checked: pushTaskStatusChanges,
+			onChange: setPushTaskStatusChanges,
+		},
+		{
+			label: "Comments",
+			description: "Comments on your tasks and posts",
+			checked: pushComments,
+			onChange: setPushComments,
+		},
+		{
+			label: "Likes",
+			description: "When someone likes your task or post",
+			checked: pushLikes,
+			onChange: setPushLikes,
 		},
 	];
 
