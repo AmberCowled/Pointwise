@@ -18,11 +18,14 @@ datasource db {
 }
 
 type NotificationSettings {
-  pushEnabled         Boolean @default(true)
-  pushMessages        Boolean @default(true)
-  pushFriendRequests  Boolean @default(true)
-  pushProjectActivity Boolean @default(true)
-  pushTaskAssignments Boolean @default(true)
+  pushEnabled            Boolean @default(true)
+  pushMessages           Boolean @default(true)
+  pushFriendRequests     Boolean @default(true)
+  pushProjectActivity    Boolean @default(true)
+  pushTaskAssignments    Boolean @default(true)
+  pushComments           Boolean @default(true)
+  pushTaskStatusChanges  Boolean @default(true)
+  pushLikes              Boolean @default(true)
 }
 
 model User {
@@ -37,7 +40,7 @@ model User {
   twoFactorEnabled    Boolean   @default(false)
   twoFactorVerifiedAt DateTime?
 
-  profileVisibility ProfileVisibility @default(PRIVATE)
+  profileVisibility ProfileVisibility @default(PUBLIC)
 
   displayName   String
   bio          String?

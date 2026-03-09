@@ -14,22 +14,17 @@ import {
 	useRejectJoinRequestMutation,
 } from "@pointwise/generated/api";
 import { invalidateTags } from "@pointwise/generated/invalidation";
-import type { NotificationAction } from "@pointwise/lib/notifications/renderers";
+import type { NotificationAction } from "@pointwise/lib/notifications/actions";
+import { getNotificationActions } from "@pointwise/lib/notifications/actions";
 import {
 	FALLBACK_RENDERER,
+	getNotificationMenu,
 	NOTIFICATION_RENDERERS,
-} from "@pointwise/lib/notifications/renderers";
-import {
-	type NewNotificationPayload,
-	RealtimePreset,
-	useSubscribeProjectUpdates,
-	useSubscribeUserNotifications,
-} from "@pointwise/lib/realtime";
+} from "@pointwise/lib/realtime/registry";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import type { Notification } from "@pointwise/lib/validation/notification-schema";
-import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 import { useSession } from "next-auth/react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { IoCheckmark, IoClose, IoNotifications } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
@@ -60,45 +55,6 @@ export default function NotificationMenu() {
 
 	// Track which notifications have pending actions
 	const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
-
-	// Optimistic real-time update: insert Ably payload into RTK Query cache
-	const handleNotification = useCallback(
-		(payload: NewNotificationPayload) => {
-			dispatch(
-				api.util.updateQueryData("getNotifications", {}, (draft) => {
-					if (!draft.notifications.some((n) => n.id === payload.id)) {
-						draft.notifications.unshift(payload);
-					}
-				}),
-			);
-			// Cache invalidation for project-related notifications
-			if (
-				payload.type === "PROJECT_JOIN_REQUEST_APPROVED" ||
-				payload.type === "PROJECT_INVITE_ACCEPTED" ||
-				payload.type === "PROJECT_JOIN_REQUEST_RECEIVED"
-			) {
-				dispatch(invalidateTags(["Projects", "Invites", "JoinRequests"]));
-			}
-		},
-		[dispatch],
-	);
-
-	// Invalidate project-related caches when lightweight Ably events arrive
-	const handleProjectUpdate = useCallback(() => {
-		dispatch(invalidateTags(["Projects", "Invites", "JoinRequests"]));
-	}, [dispatch]);
-
-	useSubscribeUserNotifications(userId, {
-		preset: RealtimePreset.GENERAL_NOTIFICATIONS,
-		onEvent: handleNotification,
-	});
-
-	useSubscribeUserNotifications(userId, {
-		preset: RealtimePreset.PROJECT_NOTIFICATIONS,
-		onEvent: handleNotification,
-	});
-
-	useSubscribeProjectUpdates(userId, { onEvent: handleProjectUpdate });
 
 	// Remove a notification from cache optimistically
 	const removeNotificationFromCache = useCallback(
@@ -177,17 +133,42 @@ export default function NotificationMenu() {
 		],
 	);
 
-	// Exclude NEW_MESSAGE; those are shown only in MessagesMenu
-	const notificationMenuItems = notifications.filter(
-		(n) => n.type !== NotificationType.NEW_MESSAGE,
+	// Only show notifications routed to the "notifications" menu
+	const notificationMenuItems = useMemo(
+		() =>
+			notifications.filter(
+				(n) => getNotificationMenu(n.type) === "notifications",
+			),
+		[notifications],
 	);
-	const unreadNotifications = notificationMenuItems.filter((n) => !n.read);
-	const unreadCount = unreadNotifications.length;
+	const unreadCount = useMemo(
+		() => notificationMenuItems.filter((n) => !n.read).length,
+		[notificationMenuItems],
+	);
 
 	const handleOpenMenu = () => {
 		if (unreadCount > 0) {
-			// Scoped: exclude NEW_MESSAGE so opening the bell doesn't mark message notifications as read
-			void markAllRead({ excludeTypes: ["NEW_MESSAGE"] });
+			// Optimistically mark all notification-menu items as read in cache
+			const patchResult = dispatch(
+				api.util.updateQueryData("getNotifications", {}, (draft) => {
+					for (const n of draft.notifications) {
+						if (getNotificationMenu(n.type) === "notifications") {
+							n.read = true;
+						}
+					}
+				}),
+			);
+
+			// Exclude types routed to other menus so opening the bell doesn't mark them as read
+			const excludeTypes = notifications
+				.filter((n) => getNotificationMenu(n.type) !== "notifications")
+				.map((n) => n.type)
+				.filter((t, i, arr) => arr.indexOf(t) === i);
+			markAllRead(excludeTypes.length > 0 ? { excludeTypes } : {})
+				.unwrap()
+				.catch(() => {
+					patchResult.undo();
+				});
 		}
 	};
 
@@ -214,10 +195,16 @@ export default function NotificationMenu() {
 							NOTIFICATION_RENDERERS[notification.type] ?? FALLBACK_RENDERER;
 						const notifData = notification.data as Record<string, unknown>;
 						const userInfo = renderer.getUser(notifData);
+						const actorUserId = renderer.getUserId?.(notifData);
 						const message = renderer.getMessage(notifData);
 						const href = renderer.getHref?.(notifData);
-						const actions = renderer.getActions?.(notifData);
+						const actions = getNotificationActions(
+							notification.type,
+							notifData,
+						);
 						const isActionPending = pendingActions.has(notification.id);
+
+						const hasLink = !actions && !!href;
 
 						const content = (
 							<div
@@ -227,7 +214,9 @@ export default function NotificationMenu() {
 								<ProfilePicture
 									profilePicture={userInfo.image ?? ""}
 									displayName={userInfo.name}
+									userId={actorUserId}
 									size="xs"
+									disabled={hasLink}
 								/>
 								<div className="flex-1 min-w-0">
 									<p className="text-sm text-zinc-100 wrap-break-word">

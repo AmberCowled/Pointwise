@@ -35,7 +35,11 @@ export default function BarChartWidget({
 	bars,
 }: BarChartWidgetProps) {
 	return (
-		<ResponsiveContainer width="100%" height="100%">
+		<ResponsiveContainer
+			width="100%"
+			height="100%"
+			initialDimension={{ width: 1, height: 1 }}
+		>
 			<BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
 				<CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID.stroke} />
 				<XAxis

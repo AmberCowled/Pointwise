@@ -18,13 +18,18 @@ import {
 } from "@pointwise/generated/api";
 import { getCroppedImg } from "@pointwise/lib/utils/image";
 import { useUploadThing } from "@pointwise/lib/utils/uploadthing";
+import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Area } from "react-easy-crop";
 import { IoCloudUpload, IoSave, IoTrashBin } from "react-icons/io5";
 import ProfilePictureCropperModal from "./ProfilePictureCropperModal";
 
 export default function ProfileSettings() {
-	const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
+	const { data: session } = useSession();
+	const { data: userData, isLoading: isUserLoading } = useGetUserQuery(
+		undefined,
+		{ skip: !session?.user?.id },
+	);
 	const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 	const { showNotification } = useNotifications();
 	const { startUpload } = useUploadThing("profilePictureUploader");
@@ -39,7 +44,7 @@ export default function ProfileSettings() {
 	const [website, setWebsite] = useState("");
 	const [profileVisibility, setProfileVisibility] = useState<
 		"PRIVATE" | "PUBLIC"
-	>("PRIVATE");
+	>("PUBLIC");
 	const [gender, setGender] = useState<string | null>(null);
 	const [displayNameError, setDisplayNameError] = useState("");
 
@@ -61,7 +66,7 @@ export default function ProfileSettings() {
 			setLocation(user.location || "");
 			setWebsite(user.website || "");
 			setProfileVisibility(
-				(user.profileVisibility as "PRIVATE" | "PUBLIC") || "PRIVATE",
+				(user.profileVisibility as "PRIVATE" | "PUBLIC") || "PUBLIC",
 			);
 			setGender(user.gender || null);
 		}

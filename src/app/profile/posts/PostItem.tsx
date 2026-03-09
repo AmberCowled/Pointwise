@@ -8,7 +8,6 @@ import {
 	useDeletePostMutation,
 	useGetPostCommentsQuery,
 } from "@pointwise/generated/api";
-import { useSubscribePostComments } from "@pointwise/lib/realtime/hooks/useSubscribePostComments";
 import type { Post } from "@pointwise/lib/validation/posts-schema";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -38,18 +37,10 @@ export default function PostItem({ post, userId }: PostItemProps) {
 
 	const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
 
-	const { data: commentsData, refetch: refetchComments } =
-		useGetPostCommentsQuery(
-			{ userId, postId: post.id },
-			{ skip: !showComments },
-		);
-
-	// Real-time subscription for comments
-	useSubscribePostComments(showComments ? post.id : undefined, {
-		onCommentCreated: () => void refetchComments(),
-		onCommentEdited: () => void refetchComments(),
-		onCommentDeleted: () => void refetchComments(),
-	});
+	const { data: commentsData } = useGetPostCommentsQuery(
+		{ userId, postId: post.id },
+		{ skip: !showComments },
+	);
 
 	const handleDelete = async () => {
 		if (isDeleting) return;

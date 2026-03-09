@@ -70,6 +70,7 @@ export default function ProjectMemberCard({
 				<ProfilePicture
 					profilePicture={member.image ?? ""}
 					displayName={member.displayName}
+					userId={member.userId}
 					size="xs"
 					className="shrink-0"
 				/>

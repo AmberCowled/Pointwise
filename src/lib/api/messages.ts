@@ -3,18 +3,15 @@ import {
 	ensureParticipant,
 } from "@pointwise/lib/api/conversations";
 import { ApiError } from "@pointwise/lib/api/errors";
-import {
-	sendNotification,
-	truncateMessageSnippet,
-} from "@pointwise/lib/notifications/service";
+import { truncateMessageSnippet } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
-import { publishNewMessage } from "@pointwise/lib/realtime/publish";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, publishNewMessage } from "@pointwise/lib/realtime/publish";
 import type {
 	Message,
 	MessagesResponse,
 	SendMessageInput,
 } from "@pointwise/lib/validation/message-schema";
-import { NotificationType } from "@pointwise/lib/validation/notification-schema";
 
 const messageWithSender = {
 	include: {
@@ -97,7 +94,7 @@ export async function sendMessage(
 	conversationId: string,
 	userId: string,
 	input: SendMessageInput,
-	senderInfo: SenderInfo,
+	_senderInfo: SenderInfo,
 ): Promise<Message> {
 	await ensureParticipant(conversationId, userId);
 
@@ -110,10 +107,6 @@ export async function sendMessage(
 	}
 
 	const content = input.content.trim();
-	const sender = await prisma.user.findUnique({
-		where: { id: userId },
-		select: { displayName: true, image: true },
-	});
 
 	const message = await prisma.message.create({
 		data: {
@@ -135,31 +128,19 @@ export async function sendMessage(
 		select: { userId: true },
 	});
 
-	const newMessageData = {
-		conversationId,
-		senderId: userId,
-		senderName: sender?.displayName ?? senderInfo.name ?? null,
-		senderImage: sender?.image ?? senderInfo.image ?? null,
-		messageSnippet: snippet,
-		messageId: message.id,
-	};
-
-	const results = await Promise.allSettled(
-		otherParticipants.map(({ userId: recipientId }) =>
-			sendNotification(
-				recipientId,
-				NotificationType.NEW_MESSAGE,
-				newMessageData,
-			),
-		),
-	);
-	for (const result of results) {
-		if (result.status === "rejected") {
-			console.warn(
-				"Failed to create/publish message notification",
-				result.reason,
-			);
-		}
+	try {
+		await dispatch(
+			"NEW_MESSAGE",
+			userId,
+			{
+				conversationId,
+				messageSnippet: snippet,
+				messageId: message.id,
+			},
+			otherParticipants.map(({ userId: id }) => id),
+		);
+	} catch (error) {
+		logDispatchError("message notifications", error);
 	}
 
 	try {
@@ -172,7 +153,7 @@ export async function sendMessage(
 			sender: message.sender ?? undefined,
 		});
 	} catch (err) {
-		console.warn("Failed to publish to conversation channel", err);
+		logDispatchError("conversation publish", err);
 	}
 
 	return {

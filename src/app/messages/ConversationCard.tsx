@@ -71,7 +71,13 @@ export default function ConversationCard({
 				href={`/messages/${conversation.id}`}
 				className="flex min-w-0 flex-1 items-center gap-3 px-3 py-3 text-left"
 			>
-				<ProfilePicture profilePicture={image} displayName={title} size="sm" />
+				<ProfilePicture
+					profilePicture={image}
+					displayName={title}
+					userId={otherParticipant?.userId}
+					size="sm"
+					disabled
+				/>
 				<Container
 					direction="vertical"
 					gap="none"

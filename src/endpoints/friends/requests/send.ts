@@ -1,8 +1,6 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { sendFriendRequest } from "@pointwise/lib/api/friends";
-import { buildPushExtras } from "@pointwise/lib/notifications/push";
-import { sendNotification } from "@pointwise/lib/notifications/service";
-import { NotificationType } from "@pointwise/lib/validation/notification-schema";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import { endpoint } from "ertk";
 import { z } from "zod";
 
@@ -23,40 +21,19 @@ export default endpoint.post<{ status: string }, { receiverId: string }>({
 		const result = await sendFriendRequest(user.id, body.receiverId);
 		if (result.status === "PENDING") {
 			try {
-				const extras = await buildPushExtras(
+				await dispatch("FRIEND_REQUEST_RECEIVED", user.id, {}, [
 					body.receiverId,
-					"FRIEND_REQUEST_RECEIVED",
-					{
-						senderId: user.id,
-						senderName: user.name as string | null,
-						senderImage: user.image as string | null,
-					},
-				);
-				await publishAblyEvent(
-					`user:${body.receiverId}:friend-requests`,
-					"friend-request:received",
-					{ senderId: user.id },
-					extras,
-				);
+				]);
 			} catch (error) {
-				console.warn("Failed to publish friend request event", error);
+				logDispatchError("friend request", error);
 			}
 		} else if (result.status === "FRIENDS") {
 			try {
-				await sendNotification(
+				await dispatch("FRIEND_REQUEST_ACCEPTED", user.id, {}, [
 					body.receiverId,
-					NotificationType.FRIEND_REQUEST_ACCEPTED,
-					{
-						accepterId: user.id,
-						accepterName: user.name as string | null,
-						accepterImage: user.image as string | null,
-					},
-				);
+				]);
 			} catch (error) {
-				console.warn(
-					"Failed to publish friend request acceptance event (mutual)",
-					error,
-				);
+				logDispatchError("mutual friend accept", error);
 			}
 		}
 		return result;

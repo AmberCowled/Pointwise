@@ -1,10 +1,6 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { requestToJoin, serializeProject } from "@pointwise/lib/api/projects";
-import { sendNotifications } from "@pointwise/lib/notifications/service";
-import {
-	RealtimeChannels,
-	RealtimeEvents,
-} from "@pointwise/lib/realtime/registry";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import type { RequestToJoinProjectResponse } from "@pointwise/lib/validation/projects-schema";
 import { endpoint } from "ertk";
 
@@ -25,34 +21,17 @@ export default endpoint.post<
 
 		// Send PROJECT_JOIN_REQUEST_RECEIVED notification to all admins
 		try {
-			await sendNotifications(
-				prismaProject.adminUserIds,
+			await dispatch(
 				"PROJECT_JOIN_REQUEST_RECEIVED",
+				user.id,
 				{
 					projectId: params.id,
 					projectName: prismaProject.name,
-					requesterId: user.id,
-					requesterName: (user.name as string) ?? null,
-					requesterImage: (user.image as string) ?? null,
 				},
+				prismaProject.adminUserIds,
 			);
-		} catch {
-			// Notification failure should not break the join request action
-		}
-
-		// Publish lightweight Ably event to admins so pending requests count updates
-		try {
-			await Promise.allSettled(
-				prismaProject.adminUserIds.map((adminId) =>
-					publishAblyEvent(
-						RealtimeChannels.user.projects(adminId),
-						RealtimeEvents.JOIN_REQUEST_RECEIVED,
-						{ projectId: params.id },
-					),
-				),
-			);
-		} catch {
-			// Ably publish failure should not break the join request action
+		} catch (error) {
+			logDispatchError("join request notification", error);
 		}
 
 		return { project };

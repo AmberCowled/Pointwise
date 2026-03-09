@@ -1,5 +1,6 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { removeFriend } from "@pointwise/lib/api/friends";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import { endpoint } from "ertk";
 
 export default endpoint.delete<{ success: boolean }, string>({
@@ -10,13 +11,11 @@ export default endpoint.delete<{ success: boolean }, string>({
 	handler: async ({ user, params }) => {
 		const result = await removeFriend(user.id, params.id);
 		try {
-			await publishAblyEvent(
-				`user:${result.friendId}:friend-requests`,
-				"friendship:removed",
-				{ removerId: user.id },
-			);
+			await dispatch("FRIENDSHIP_REMOVED", { removerId: user.id }, [
+				result.friendId,
+			]);
 		} catch (error) {
-			console.warn("Failed to publish friendship removal event", error);
+			logDispatchError("friendship removal", error);
 		}
 		return { success: true };
 	},

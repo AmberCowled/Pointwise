@@ -1,12 +1,8 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { approveJoinRequest } from "@pointwise/lib/api/joinRequests";
 import { serializeProject } from "@pointwise/lib/api/projects";
-import { sendNotification } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
-import {
-	RealtimeChannels,
-	RealtimeEvents,
-} from "@pointwise/lib/realtime/registry";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, emitEvent } from "@pointwise/lib/realtime/publish";
 import type { GetProjectResponse } from "@pointwise/lib/validation/projects-schema";
 import { endpoint } from "ertk";
 import { z } from "zod";
@@ -39,13 +35,18 @@ export default endpoint.patch<
 
 		// Send PROJECT_JOIN_REQUEST_APPROVED notification to the requesting user
 		try {
-			await sendNotification(params.targetId, "PROJECT_JOIN_REQUEST_APPROVED", {
-				projectId: params.id,
-				projectName: prismaProject.name,
-				role: body.role,
-			});
-		} catch {
-			// Notification failure should not break the approve action
+			await dispatch(
+				"PROJECT_JOIN_REQUEST_APPROVED",
+				user.id,
+				{
+					projectId: params.id,
+					projectName: prismaProject.name,
+					role: body.role,
+				},
+				[params.targetId],
+			);
+		} catch (error) {
+			logDispatchError("join request approve notification", error);
 		}
 
 		// Dismiss stale PROJECT_JOIN_REQUEST_RECEIVED notifications for all admins
@@ -55,41 +56,56 @@ export default endpoint.patch<
 					type: "PROJECT_JOIN_REQUEST_RECEIVED",
 					read: false,
 				},
-				select: { id: true, data: true },
+				select: { id: true, data: true, userId: true },
 			});
-			const idsToMark = staleNotifications
-				.filter((n) => {
-					const d = n.data as Record<string, unknown> | null;
-					return (
-						d?.projectId === params.id && d?.requesterId === params.targetId
-					);
-				})
-				.map((n) => n.id);
+			const matchingNotifs = staleNotifications.filter((n) => {
+				const d = n.data as Record<string, unknown> | null;
+				return d?.projectId === params.id && d?.actorId === params.targetId;
+			});
+			const idsToMark = matchingNotifs.map((n) => n.id);
 			if (idsToMark.length > 0) {
 				await prisma.notification.updateMany({
 					where: { id: { in: idsToMark } },
 					data: { read: true },
 				});
+				const affectedUserIds = [
+					...new Set(matchingNotifs.map((n) => n.userId)),
+				];
+				await Promise.all(
+					affectedUserIds.map((uid) =>
+						emitEvent("NOTIFICATIONS_READ", { userId: uid }, [uid]),
+					),
+				);
 			}
-		} catch {
-			// Staleness cleanup failure should not break the approve action
+		} catch (error) {
+			logDispatchError("join request staleness cleanup", error);
 		}
 
 		// Publish lightweight Ably event to admins so their menu count updates
 		try {
-			await Promise.allSettled(
-				prismaProject.adminUserIds
-					.filter((adminId) => adminId !== user.id)
-					.map((adminId) =>
-						publishAblyEvent(
-							RealtimeChannels.user.projects(adminId),
-							RealtimeEvents.JOIN_REQUEST_APPROVED,
-							{ projectId: params.id },
-						),
-					),
+			const filteredAdminIds = prismaProject.adminUserIds.filter(
+				(adminId) => adminId !== user.id,
 			);
-		} catch {
-			// Ably publish failure should not break the approve action
+			await dispatch(
+				"JOIN_REQUEST_APPROVED",
+				{ projectId: params.id },
+				filteredAdminIds,
+			);
+
+			// Realtime cache invalidation for non-admin members
+			const nonAdminMembers = [
+				...prismaProject.projectUserIds,
+				...prismaProject.viewerUserIds,
+			].filter((id) => id !== params.targetId);
+			if (nonAdminMembers.length > 0) {
+				await emitEvent(
+					"PROJECT_MUTATED",
+					{ projectId: params.id },
+					nonAdminMembers,
+				);
+			}
+		} catch (error) {
+			logDispatchError("join request approve event", error);
 		}
 
 		return { success: true, project };

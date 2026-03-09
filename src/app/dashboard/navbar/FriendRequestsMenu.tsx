@@ -6,20 +6,11 @@ import {
 	useGetPendingRequestsQuery,
 	useHandleFriendRequestMutation,
 } from "@pointwise/generated/api";
-import { invalidateTags } from "@pointwise/generated/invalidation";
-import {
-	RealtimePreset,
-	useSubscribeFriendUpdates,
-	useSubscribeUserNotifications,
-} from "@pointwise/lib/realtime";
-import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import { useSession } from "next-auth/react";
-import { useCallback } from "react";
 import { IoCheckmark, IoClose, IoPersonAdd } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
 export default function FriendRequestsMenu() {
-	const dispatch = useAppDispatch();
 	const { data: session } = useSession();
 	const userId = session?.user?.id;
 	const { data, isLoading } = useGetPendingRequestsQuery(undefined, {
@@ -47,19 +38,6 @@ export default function FriendRequestsMenu() {
 		}
 	};
 
-	const handleFriendUpdate = useCallback(() => {
-		dispatch(invalidateTags(["Friends", "FriendRequests", "FriendshipStatus"]));
-	}, [dispatch]);
-
-	useSubscribeUserNotifications(userId, {
-		preset: RealtimePreset.FRIEND_NOTIFICATIONS,
-		onEvent: handleFriendUpdate,
-	});
-
-	useSubscribeFriendUpdates(userId, {
-		onEvent: handleFriendUpdate,
-	});
-
 	return (
 		<Menu
 			trigger={
@@ -85,6 +63,7 @@ export default function FriendRequestsMenu() {
 							<ProfilePicture
 								profilePicture={request.sender?.image ?? ""}
 								displayName={request.sender?.displayName ?? "User"}
+								userId={request.sender?.id}
 								size="xs"
 							/>
 							<div className="flex-1 min-w-0">

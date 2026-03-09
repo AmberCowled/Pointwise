@@ -1,11 +1,7 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { removeMember } from "@pointwise/lib/api/members";
 import { serializeProject } from "@pointwise/lib/api/projects";
-import { sendNotification } from "@pointwise/lib/notifications/service";
-import {
-	RealtimeChannels,
-	RealtimeEvents,
-} from "@pointwise/lib/realtime/registry";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch, emitEvent } from "@pointwise/lib/realtime/publish";
 import type { RemoveMemberResponse } from "@pointwise/lib/validation/projects-schema";
 import { endpoint } from "ertk";
 
@@ -30,28 +26,41 @@ export default endpoint.delete<
 
 		// Send notification to the removed member
 		try {
-			await sendNotification(params.targetId, "PROJECT_MEMBER_REMOVED", {
-				projectId: params.id,
-				projectName: prismaProject.name,
-				removedByName: (user.name as string) ?? null,
-			});
-		} catch {
-			// Notification failure should not break the remove action
+			await dispatch(
+				"PROJECT_MEMBER_REMOVED",
+				user.id,
+				{
+					projectId: params.id,
+					projectName: prismaProject.name,
+				},
+				[params.targetId],
+			);
+		} catch (error) {
+			logDispatchError("member removed notification", error);
 		}
 
 		// Publish Ably event to all admins so their member lists update
 		try {
-			await Promise.allSettled(
-				prismaProject.adminUserIds.map((adminId) =>
-					publishAblyEvent(
-						RealtimeChannels.user.projects(adminId),
-						RealtimeEvents.MEMBER_REMOVED,
-						{ projectId: params.id },
-					),
-				),
+			await dispatch(
+				"MEMBER_REMOVED",
+				{ projectId: params.id },
+				prismaProject.adminUserIds,
 			);
-		} catch {
-			// Ably publish failure should not break the remove action
+
+			// Realtime cache invalidation for non-admin members
+			const nonAdminMembers = [
+				...prismaProject.projectUserIds,
+				...prismaProject.viewerUserIds,
+			].filter((id) => id !== user.id);
+			if (nonAdminMembers.length > 0) {
+				await emitEvent(
+					"PROJECT_MUTATED",
+					{ projectId: params.id },
+					nonAdminMembers,
+				);
+			}
+		} catch (error) {
+			logDispatchError("member removed event", error);
 		}
 
 		return { project };

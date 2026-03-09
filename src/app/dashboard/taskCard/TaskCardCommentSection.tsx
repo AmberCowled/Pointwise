@@ -3,11 +3,6 @@
 import Container from "@pointwise/app/components/ui/Container";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useGetCommentsQuery } from "@pointwise/generated/api";
-import { invalidateTags } from "@pointwise/generated/invalidation";
-import { useSubscribeTaskComments } from "@pointwise/lib/realtime/hooks";
-import type { CommentEventPayload } from "@pointwise/lib/realtime/types";
-import { useCallback } from "react";
-import { useDispatch } from "react-redux";
 import CommentInput from "./comments/CommentInput";
 import CommentList from "./comments/CommentList";
 
@@ -23,39 +18,6 @@ export default function TaskCardCommentSection({
 	isProjectAdmin = false,
 }: TaskCardCommentSectionProps) {
 	const { data, isLoading } = useGetCommentsQuery({ taskId, projectId });
-	const dispatch = useDispatch();
-
-	const invalidateComments = useCallback(() => {
-		dispatch(invalidateTags([{ type: "Comments", id: taskId }]));
-	}, [dispatch, taskId]);
-
-	const invalidateReplies = useCallback(
-		(parentCommentId: string | null) => {
-			if (parentCommentId) {
-				dispatch(invalidateTags([{ type: "Replies", id: parentCommentId }]));
-			}
-			// Also refresh comments to update replyCount
-			invalidateComments();
-		},
-		[dispatch, invalidateComments],
-	);
-
-	const handleCommentEvent = useCallback(
-		(payload: CommentEventPayload) => {
-			if (payload.parentCommentId) {
-				invalidateReplies(payload.parentCommentId);
-			} else {
-				invalidateComments();
-			}
-		},
-		[invalidateComments, invalidateReplies],
-	);
-
-	useSubscribeTaskComments(taskId, {
-		onCommentCreated: handleCommentEvent,
-		onCommentEdited: handleCommentEvent,
-		onCommentDeleted: handleCommentEvent,
-	});
 
 	return (
 		<Container

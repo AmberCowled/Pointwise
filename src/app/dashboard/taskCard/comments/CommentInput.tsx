@@ -33,23 +33,27 @@ export default function CommentInput({
 		const trimmed = content.trim();
 		if (!trimmed || isLoading) return;
 
-		if (parentCommentId) {
-			await createReply({
-				taskId,
-				commentId: parentCommentId,
-				projectId,
-				content: trimmed,
-			});
-		} else {
-			await createComment({ taskId, projectId, content: trimmed });
+		try {
+			if (parentCommentId) {
+				await createReply({
+					taskId,
+					commentId: parentCommentId,
+					projectId,
+					content: trimmed,
+				}).unwrap();
+			} else {
+				await createComment({ taskId, projectId, content: trimmed }).unwrap();
+			}
+			setContent("");
+		} catch (err) {
+			console.error("Failed to submit comment:", err);
 		}
-		setContent("");
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault();
-			void handleSubmit(e);
+			handleSubmit(e).catch(() => {});
 		}
 	};
 

@@ -5,6 +5,8 @@ import {
 } from "@pointwise/lib/api/projects";
 import { awardXpForTaskCompletion } from "@pointwise/lib/api/xp";
 import prisma from "@pointwise/lib/prisma";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import {
 	type CreateTaskRequest,
 	type Task,
@@ -256,6 +258,62 @@ export async function updateTask(
 		);
 	}
 
+	if (isNewlyCompleted) {
+		try {
+			const adminIds =
+				(
+					await prisma.project.findUnique({
+						where: { id: existingTask.projectId },
+						select: { adminUserIds: true },
+					})
+				)?.adminUserIds ?? [];
+			const notifRecipients = [
+				...new Set([...existingTask.assignedUserIds, ...adminIds]),
+			].filter((id) => id !== userId);
+
+			if (notifRecipients.length > 0) {
+				await dispatch(
+					"TASK_COMPLETED",
+					userId,
+					{
+						projectId: existingTask.projectId,
+						projectName: existingTask.project.name,
+						taskId,
+						taskName: updatedTask.title,
+					},
+					notifRecipients,
+				);
+			}
+		} catch (error) {
+			logDispatchError("task completed notification", error);
+		}
+	}
+
+	const isReopened =
+		existingTask.status === "COMPLETED" && updatedTask.status === "PENDING";
+	if (isReopened) {
+		try {
+			const notifRecipients = existingTask.assignedUserIds.filter(
+				(id) => id !== userId,
+			);
+			if (notifRecipients.length > 0) {
+				await dispatch(
+					"TASK_REOPENED",
+					userId,
+					{
+						projectId: existingTask.projectId,
+						projectName: existingTask.project.name,
+						taskId,
+						taskName: updatedTask.title,
+					},
+					notifRecipients,
+				);
+			}
+		} catch (error) {
+			logDispatchError("task reopened notification", error);
+		}
+	}
+
 	return updatedTask;
 }
 
@@ -276,6 +334,43 @@ export async function deleteTask(
 		throw new Error(
 			"Forbidden: You must be an admin to delete tasks in this project",
 		);
+	}
+
+	// Clean up reply threads before deleting the task.
+	// The cascade Task → CommentThread → Comment is blocked by reply
+	// CommentThreads referencing comments via parentCommentId (onDelete: NoAction).
+	const baseThread = await prisma.commentThread.findUnique({
+		where: { taskId },
+		select: { id: true },
+	});
+
+	if (baseThread) {
+		const topLevelComments = await prisma.comment.findMany({
+			where: { threadId: baseThread.id },
+			select: { id: true },
+		});
+
+		if (topLevelComments.length > 0) {
+			const commentIds = topLevelComments.map((c) => c.id);
+			const replyThreads = await prisma.commentThread.findMany({
+				where: { parentCommentId: { in: commentIds } },
+				select: { id: true },
+			});
+
+			if (replyThreads.length > 0) {
+				const replyThreadIds = replyThreads.map((t) => t.id);
+				// deleteMany doesn't cascade, so manually delete likes then comments
+				await prisma.commentLike.deleteMany({
+					where: { comment: { threadId: { in: replyThreadIds } } },
+				});
+				await prisma.comment.deleteMany({
+					where: { threadId: { in: replyThreadIds } },
+				});
+				await prisma.commentThread.deleteMany({
+					where: { id: { in: replyThreadIds } },
+				});
+			}
+		}
 	}
 
 	await prisma.task.delete({

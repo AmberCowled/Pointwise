@@ -1,5 +1,6 @@
-import { publishAblyEvent } from "@pointwise/lib/ably/server";
 import { declineFriendRequest } from "@pointwise/lib/api/friends";
+import { logDispatchError } from "@pointwise/lib/realtime/log";
+import { dispatch } from "@pointwise/lib/realtime/publish";
 import { endpoint } from "ertk";
 
 export default endpoint.delete<{ success: boolean }, string>({
@@ -13,16 +14,11 @@ export default endpoint.delete<{ success: boolean }, string>({
 	handler: async ({ user, params }) => {
 		const request = await declineFriendRequest(params.id, user.id);
 		try {
-			await publishAblyEvent(
-				`user:${request.receiverId}:friend-requests`,
-				"friend-request:cancelled",
-				{ cancellerId: user.id },
-			);
+			await dispatch("FRIEND_REQUEST_CANCELLED", { cancellerId: user.id }, [
+				request.receiverId,
+			]);
 		} catch (error) {
-			console.warn(
-				"Failed to publish friend request cancellation event",
-				error,
-			);
+			logDispatchError("friend request cancel", error);
 		}
 		return { success: true };
 	},

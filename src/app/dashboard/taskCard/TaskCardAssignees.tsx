@@ -42,6 +42,7 @@ export default function TaskCardAssignees({
 							<ProfilePicture
 								profilePicture={member.image ?? ""}
 								displayName={member.displayName}
+								userId={member.userId}
 								size="xs"
 								className="w-6! h-6! mr-2 shrink-0"
 							/>

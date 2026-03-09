@@ -4,9 +4,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
 import "./globals.css";
+import { RealtimeProvider } from "@pointwise/lib/realtime";
 import DeviceSessionProvider from "./components/providers/DeviceSessionProvider";
 import { NotificationProviderWrapper } from "./components/providers/NotificationProviderWrapper";
-import { PushNotificationProvider } from "./components/providers/PushNotificationProvider";
 import { SessionProviderWrapper } from "./components/providers/SessionProviderWrapper";
 import { ModalProvider } from "./components/ui/modal";
 import { StoreProvider } from "./StoreProvider";
@@ -93,13 +93,13 @@ export default function RootLayout({
 				<SessionProviderWrapper>
 					<StoreProvider>
 						<DeviceSessionProvider>
-							<PushNotificationProvider>
+							<RealtimeProvider>
 								<ModalProvider>
 									<NotificationProviderWrapper>
 										{children}
 									</NotificationProviderWrapper>
 								</ModalProvider>
-							</PushNotificationProvider>
+							</RealtimeProvider>
 						</DeviceSessionProvider>
 					</StoreProvider>
 				</SessionProviderWrapper>
