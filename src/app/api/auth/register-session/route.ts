@@ -1,4 +1,7 @@
+import crypto from "node:crypto";
 import { authOptions } from "@pointwise/lib/auth";
+import { sendEmail } from "@pointwise/lib/email/send";
+import { renderNewDeviceLoginEmail } from "@pointwise/lib/email/templates/new-device-login";
 import prisma from "@pointwise/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -43,6 +46,71 @@ function parseDeviceName(userAgent: string | null): string {
 	return `${browser} on ${os}`;
 }
 
+async function detectNewDeviceAndNotify(
+	userId: string,
+	jti: string,
+	ipAddress: string | null,
+	deviceName: string,
+	location: string | null,
+) {
+	if (!ipAddress) return;
+
+	// Find existing sessions with IP data (excluding the current stub)
+	const existingSessions = await prisma.deviceSession.findMany({
+		where: {
+			userId,
+			jti: { not: jti },
+			ipAddress: { not: null },
+		},
+		select: { ipAddress: true },
+	});
+
+	// No prior sessions with IP data — first login, skip notification
+	if (existingSessions.length === 0) return;
+
+	// Check if any existing session has the same IP
+	const knownIp = existingSessions.some((s) => s.ipAddress === ipAddress);
+	if (knownIp) return;
+
+	// New device detected — generate revoke token
+	const rawToken = crypto.randomUUID();
+	const hashedToken = crypto
+		.createHash("sha256")
+		.update(rawToken)
+		.digest("hex");
+
+	await prisma.verificationToken.create({
+		data: {
+			identifier: `device-revoke:${jti}`,
+			token: hashedToken,
+			expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+		},
+	});
+
+	// Fetch user email
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { email: true },
+	});
+	if (!user?.email) return;
+
+	const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+	const revokeUrl = `${baseUrl}/revoke-device?token=${rawToken}`;
+
+	const { subject, html } = renderNewDeviceLoginEmail({
+		deviceName,
+		ipAddress,
+		location,
+		time: new Date().toLocaleString("en-US", {
+			dateStyle: "medium",
+			timeStyle: "short",
+		}),
+		revokeUrl,
+	});
+
+	await sendEmail({ to: user.email, subject, html });
+}
+
 export async function POST(_request: Request) {
 	try {
 		const session = await getServerSession(authOptions);
@@ -57,6 +125,20 @@ export async function POST(_request: Request) {
 
 		const deviceName = parseDeviceName(userAgent);
 		const location = resolveLocation(headersList);
+
+		// Check for new device before upserting (so the current session
+		// doesn't appear in the "existing sessions" query)
+		try {
+			await detectNewDeviceAndNotify(
+				session.user.id,
+				session.jti,
+				ipAddress,
+				deviceName,
+				location,
+			);
+		} catch {
+			// Email failure must not break login
+		}
 
 		// Upsert to handle duplicate calls
 		await prisma.deviceSession.upsert({
@@ -78,14 +160,16 @@ export async function POST(_request: Request) {
 			},
 		});
 
-		// Clean up stale sessions from the same browser (e.g. user signed out
-		// and back in, creating a new jti but leaving the old record orphaned)
-		if (userAgent) {
+		// Clean up stale sessions from the same device (e.g. user signed out
+		// and back in, creating a new jti but leaving the old record orphaned).
+		// Match on both userAgent and ipAddress for more precise identification.
+		if (userAgent && ipAddress) {
 			await prisma.deviceSession.deleteMany({
 				where: {
 					userId: session.user.id,
 					jti: { not: session.jti },
 					userAgent,
+					ipAddress,
 				},
 			});
 		}

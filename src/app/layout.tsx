@@ -8,6 +8,7 @@ import { RealtimeProvider } from "@pointwise/lib/realtime";
 import DeviceSessionProvider from "./components/providers/DeviceSessionProvider";
 import { NotificationProviderWrapper } from "./components/providers/NotificationProviderWrapper";
 import { SessionProviderWrapper } from "./components/providers/SessionProviderWrapper";
+import TwoFactorGuard from "./components/providers/TwoFactorGuard";
 import { ModalProvider } from "./components/ui/modal";
 import { StoreProvider } from "./StoreProvider";
 
@@ -91,17 +92,19 @@ export default function RootLayout({
 			>
 				<NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
 				<SessionProviderWrapper>
-					<StoreProvider>
-						<DeviceSessionProvider>
-							<RealtimeProvider>
-								<ModalProvider>
-									<NotificationProviderWrapper>
-										{children}
-									</NotificationProviderWrapper>
-								</ModalProvider>
-							</RealtimeProvider>
-						</DeviceSessionProvider>
-					</StoreProvider>
+					<TwoFactorGuard>
+						<StoreProvider>
+							<DeviceSessionProvider>
+								<RealtimeProvider>
+									<ModalProvider>
+										<NotificationProviderWrapper>
+											{children}
+										</NotificationProviderWrapper>
+									</ModalProvider>
+								</RealtimeProvider>
+							</DeviceSessionProvider>
+						</StoreProvider>
+					</TwoFactorGuard>
 				</SessionProviderWrapper>
 			</body>
 		</html>
