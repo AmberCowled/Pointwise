@@ -13,9 +13,9 @@ export async function proxy(request: NextRequest) {
 	const isPublicRoute =
 		pathname === "/" ||
 		pathname === "/reset-password" ||
+		pathname === "/revoke-device" ||
 		pathname === "/two-factor" ||
-		pathname.startsWith("/api/auth") ||
-		pathname.startsWith("/api/uploadthing");
+		pathname.startsWith("/api/");
 
 	// Redirect unauthenticated users to landing page for protected routes
 	if (!token && !isPublicRoute) {
