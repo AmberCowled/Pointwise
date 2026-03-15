@@ -84,6 +84,21 @@ export const authOptions: NextAuthOptions = {
 		updateAge: 24 * 60 * 60, // refresh every 24h
 	},
 
+	cookies: {
+		sessionToken: {
+			name:
+				process.env.NODE_ENV === "production"
+					? "__Secure-next-auth.session-token"
+					: "next-auth.session-token",
+			options: {
+				httpOnly: true,
+				sameSite: "lax",
+				path: "/",
+				secure: process.env.NODE_ENV === "production",
+			},
+		},
+	},
+
 	secret: process.env.NEXTAUTH_SECRET,
 
 	pages: {
