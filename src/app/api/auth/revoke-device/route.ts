@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import prisma from "@pointwise/lib/prisma";
 import { checkRateLimit } from "@pointwise/lib/rate-limit";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
 				: null,
 		});
 	} catch (error) {
-		console.error("Revoke device error:", error);
+		logServerError("Revoke device error", error);
 		return NextResponse.json(
 			{ error: "Failed to revoke device" },
 			{ status: 500 },

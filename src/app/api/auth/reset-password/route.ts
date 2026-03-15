@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import prisma from "@pointwise/lib/prisma";
 import { checkRateLimit } from "@pointwise/lib/rate-limit";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { ResetPasswordSchema } from "@pointwise/lib/validation/password-reset-schema";
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("Reset password error:", error);
+		logServerError("Reset password error", error);
 		return NextResponse.json(
 			{ error: "Failed to reset password" },
 			{ status: 500 },

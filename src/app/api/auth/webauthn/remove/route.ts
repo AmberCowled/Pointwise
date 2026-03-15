@@ -1,6 +1,7 @@
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
 import { checkRateLimit } from "@pointwise/lib/rate-limit";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
@@ -54,7 +55,7 @@ export async function DELETE(request: Request) {
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("WebAuthn remove error:", error);
+		logServerError("WebAuthn remove error", error);
 		return NextResponse.json(
 			{ error: "Failed to remove credential" },
 			{ status: 500 },

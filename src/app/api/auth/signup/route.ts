@@ -1,6 +1,7 @@
 import { generateUniqueDisplayName } from "@pointwise/lib/api/users";
 import prisma from "@pointwise/lib/prisma";
 import { checkRateLimit } from "@pointwise/lib/rate-limit";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { parseSignupBody } from "@pointwise/lib/validation/auth";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
 				);
 			}
 		}
-		console.error("Signup error:", error);
+		logServerError("Signup error", error);
 		return Response.json(
 			{ error: "An unexpected error occurred" },
 			{ status: 500 },

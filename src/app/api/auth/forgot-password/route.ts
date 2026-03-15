@@ -3,6 +3,7 @@ import { sendEmail } from "@pointwise/lib/email/send";
 import { renderPasswordResetEmail } from "@pointwise/lib/email/templates/password-reset";
 import prisma from "@pointwise/lib/prisma";
 import { checkRateLimit } from "@pointwise/lib/rate-limit";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { ForgotPasswordSchema } from "@pointwise/lib/validation/password-reset-schema";
 import { NextResponse } from "next/server";
 
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("Forgot password error:", error);
+		logServerError("Forgot password error", error);
 		// Still return 200 to prevent information leakage
 		return NextResponse.json({ success: true });
 	}

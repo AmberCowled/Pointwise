@@ -1,6 +1,7 @@
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
 import { UpstashRateLimitAdapter } from "@pointwise/lib/rate-limit-adapter";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { Prisma } from "@prisma/client";
 import { configureHandler, defaultKeyFn } from "ertk/next";
 import { getServerSession } from "next-auth";
@@ -57,16 +58,11 @@ export const createRouteHandler = configureHandler({
 	errorHandlers: [
 		(error) => {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
-				console.error("Prisma Error:", {
-					code: error.code,
-					meta: error.meta,
-					message: error.message,
-				});
+				logServerError("Prisma error", error, { code: error.code });
 
 				if (error.code === "P2002") {
-					const field = (error.meta?.target as string[])?.[0] ?? "field";
 					return Response.json(
-						{ error: `${field} already exists` },
+						{ error: "A record with this value already exists" },
 						{ status: 409 },
 					);
 				}
@@ -82,7 +78,7 @@ export const createRouteHandler = configureHandler({
 			}
 
 			if (error instanceof Prisma.PrismaClientValidationError) {
-				console.error("Prisma Validation Error:", error.message);
+				logServerError("Prisma validation error", error);
 				return Response.json(
 					{ error: "Invalid data provided" },
 					{ status: 400 },
