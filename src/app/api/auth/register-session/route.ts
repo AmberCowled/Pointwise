@@ -3,6 +3,7 @@ import { authOptions } from "@pointwise/lib/auth";
 import { sendEmail } from "@pointwise/lib/email/send";
 import { renderNewDeviceLoginEmail } from "@pointwise/lib/email/templates/new-device-login";
 import prisma from "@pointwise/lib/prisma";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -176,7 +177,7 @@ export async function POST(_request: Request) {
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("Register session error:", error);
+		logServerError("Register session error", error);
 		return NextResponse.json(
 			{ error: "Failed to register session" },
 			{ status: 500 },

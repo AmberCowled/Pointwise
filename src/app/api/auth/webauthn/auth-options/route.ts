@@ -1,6 +1,7 @@
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
 import { checkRateLimit } from "@pointwise/lib/rate-limit";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
 
 		return NextResponse.json(options);
 	} catch (error) {
-		console.error("WebAuthn auth-options error:", error);
+		logServerError("WebAuthn auth-options error", error);
 		return NextResponse.json(
 			{ error: "Failed to generate authentication options" },
 			{ status: 500 },

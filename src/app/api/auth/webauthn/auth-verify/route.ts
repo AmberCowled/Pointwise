@@ -1,6 +1,7 @@
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
 import { checkRateLimit } from "@pointwise/lib/rate-limit";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
 
 		return NextResponse.json({ verified: true });
 	} catch (error) {
-		console.error("WebAuthn auth-verify error:", error);
+		logServerError("WebAuthn auth-verify error", error);
 		return NextResponse.json(
 			{ error: "Authentication verification failed" },
 			{ status: 500 },

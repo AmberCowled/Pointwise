@@ -1,6 +1,7 @@
 import { deleteUserAccount } from "@pointwise/lib/api/account-deletion";
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
+import { logServerError } from "@pointwise/lib/server-logger";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
@@ -41,7 +42,7 @@ export async function DELETE(request: Request) {
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("Delete account error:", error);
+		logServerError("Delete account error", error);
 		return NextResponse.json(
 			{ error: "Failed to delete account" },
 			{ status: 500 },
