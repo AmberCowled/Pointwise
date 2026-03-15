@@ -77,7 +77,7 @@ export const GetProjectsResponseSchema = z.object({
 });
 
 export const SearchPublicProjectsRequestSchema = z.object({
-	query: z.string().optional(),
+	query: z.string().max(100).optional(),
 	limit: z.coerce.number().int().min(1).max(100).optional().default(50),
 	offset: z.coerce.number().int().min(0).optional().default(0),
 });
