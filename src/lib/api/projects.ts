@@ -121,6 +121,17 @@ export async function getProjects(
 	return projects as (PrismaProject & { _count: { tasks: number } })[];
 }
 
+function sanitizeSearchQuery(query?: string): string | undefined {
+	if (!query) return undefined;
+	const sanitized = query
+		.trim()
+		.replace(/["\\]/g, "") // remove phrase/escape operators
+		.replace(/\b-/g, "") // remove negation operator
+		.replace(/\s+/g, " ") // collapse whitespace
+		.trim();
+	return sanitized || undefined;
+}
+
 export async function searchPublicProjects(
 	query?: string,
 	limit: number = 50,
@@ -129,7 +140,7 @@ export async function searchPublicProjects(
 	projects: (PrismaProject & { _count: { tasks: number } })[];
 	total: number;
 }> {
-	const searchTerm = query?.trim();
+	const searchTerm = sanitizeSearchQuery(query);
 
 	// Use MongoDB text search if query provided, otherwise use regular Prisma query
 	if (searchTerm) {
