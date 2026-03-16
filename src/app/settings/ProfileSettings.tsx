@@ -18,18 +18,13 @@ import {
 } from "@pointwise/generated/api";
 import { getCroppedImg } from "@pointwise/lib/utils/image";
 import { useUploadThing } from "@pointwise/lib/utils/uploadthing";
-import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Area } from "react-easy-crop";
 import { IoCloudUpload, IoSave, IoTrashBin } from "react-icons/io5";
 import ProfilePictureCropperModal from "./ProfilePictureCropperModal";
 
 export default function ProfileSettings() {
-	const { data: session } = useSession();
-	const { data: userData, isLoading: isUserLoading } = useGetUserQuery(
-		undefined,
-		{ skip: !session?.user?.id },
-	);
+	const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
 	const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 	const { showNotification } = useNotifications();
 	const { startUpload } = useUploadThing("profilePictureUploader");

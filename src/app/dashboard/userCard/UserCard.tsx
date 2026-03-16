@@ -31,9 +31,7 @@ export default function UserCard({ user }: { user: SearchableUser }) {
 	const profilePicture = user.image ?? "";
 	const displayName = user.displayName;
 	const { data: session } = useSession();
-	const { data: conversations = [] } = useGetConversationsQuery(undefined, {
-		skip: !session?.user?.id,
-	});
+	const { data: conversations = [] } = useGetConversationsQuery();
 	const [createConversation, { isLoading: isCreatingConversation }] =
 		useCreateConversationMutation();
 

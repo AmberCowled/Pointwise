@@ -9,18 +9,13 @@ import {
 } from "@pointwise/lib/realtime/registry";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { IoMail } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
 export default function MessagesMenu() {
-	const { data: session } = useSession();
-	const userId = session?.user?.id;
-
 	const { data, isLoading: notificationsLoading } = useGetNotificationsQuery(
 		{},
-		{ skip: !userId },
 	);
 	const notifications = data?.notifications ?? [];
 
