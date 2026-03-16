@@ -23,22 +23,14 @@ import {
 } from "@pointwise/lib/realtime/registry";
 import { useAppDispatch } from "@pointwise/lib/redux/hooks";
 import type { Notification } from "@pointwise/lib/validation/notification-schema";
-import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { IoCheckmark, IoClose, IoNotifications } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
 export default function NotificationMenu() {
 	const dispatch = useAppDispatch();
-	const { data: session } = useSession();
-	const userId = session?.user?.id;
 
-	const { data, isLoading } = useGetNotificationsQuery(
-		{},
-		{
-			skip: !userId,
-		},
-	);
+	const { data, isLoading } = useGetNotificationsQuery({});
 	const notifications = data?.notifications ?? [];
 
 	const [markAllRead] = useMarkAllReadMutation();

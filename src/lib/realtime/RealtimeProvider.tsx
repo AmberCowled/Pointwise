@@ -90,9 +90,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 	}, [userId, dispatch]);
 
 	// Push notifications
-	const { data: settingsData } = useGetNotificationSettingsQuery(undefined, {
-		skip: !userId,
-	});
+	const { data: settingsData } = useGetNotificationSettingsQuery();
 	const pushEnabled = settingsData?.settings?.pushEnabled ?? true;
 	const pushActivatedRef = useRef(false);
 

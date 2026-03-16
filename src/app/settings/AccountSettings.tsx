@@ -26,12 +26,8 @@ import DeleteAccountModal from "./DeleteAccountModal";
 
 export default function AccountSettings() {
 	const { data: session } = useSession();
-	const { data: accountData, isLoading } = useGetAccountInfoQuery(undefined, {
-		skip: !session?.user?.id,
-	});
-	const { data: sessionsData } = useGetDeviceSessionsQuery(undefined, {
-		skip: !session?.user?.id,
-	});
+	const { data: accountData, isLoading } = useGetAccountInfoQuery();
+	const { data: sessionsData } = useGetDeviceSessionsQuery();
 	const [revokeAll, { isLoading: isRevoking }] =
 		useRevokeAllDeviceSessionsMutation();
 	const { showNotification } = useNotifications();

@@ -6,16 +6,11 @@ import {
 	useGetPendingRequestsQuery,
 	useHandleFriendRequestMutation,
 } from "@pointwise/generated/api";
-import { useSession } from "next-auth/react";
 import { IoCheckmark, IoClose, IoPersonAdd } from "react-icons/io5";
 import ProfilePicture from "../userCard/ProfilePicture";
 
 export default function FriendRequestsMenu() {
-	const { data: session } = useSession();
-	const userId = session?.user?.id;
-	const { data, isLoading } = useGetPendingRequestsQuery(undefined, {
-		skip: !userId,
-	});
+	const { data, isLoading } = useGetPendingRequestsQuery();
 	const [handleRequest, { isLoading: isHandling }] =
 		useHandleFriendRequestMutation();
 

@@ -5,18 +5,10 @@ import Container from "@pointwise/app/components/ui/Container";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { useGetXPQuery } from "@pointwise/generated/api";
 import clsx from "clsx";
-import { useSession } from "next-auth/react";
 import { IoRefresh } from "react-icons/io5";
 
 export default function XPBar() {
-	const { data: session } = useSession();
-	const {
-		data: xp,
-		isLoading,
-		isFetching,
-		isError,
-		refetch,
-	} = useGetXPQuery(undefined, { skip: !session?.user?.id });
+	const { data: xp, isLoading, isFetching, isError, refetch } = useGetXPQuery();
 
 	const progress = xp?.xp.progress ?? 0;
 	const progressPercent = Math.min(100, Math.round(progress));

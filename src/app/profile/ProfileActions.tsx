@@ -66,9 +66,7 @@ export default function ProfileActions({
 function OtherUserActions({ user }: { user: PublicUserProfile }) {
 	const router = useRouter();
 	const { data: session } = useSession();
-	const { data: conversations = [] } = useGetConversationsQuery(undefined, {
-		skip: !session?.user?.id,
-	});
+	const { data: conversations = [] } = useGetConversationsQuery();
 	const [createConversation, { isLoading: isCreatingConversation }] =
 		useCreateConversationMutation();
 

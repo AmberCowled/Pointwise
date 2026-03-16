@@ -21,7 +21,7 @@ export default function MessagesOverview() {
 		isLoading,
 		isError,
 		refetch,
-	} = useGetConversationsQuery(undefined, { skip: !userId });
+	} = useGetConversationsQuery();
 
 	const handleNewMessage = () => Modal.Manager.open(NEW_MESSAGE_MODAL_ID);
 
