@@ -4,7 +4,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 const cspDirectives = [
 	"default-src 'self'",
-	"script-src 'self'",
+	"script-src 'self' 'unsafe-inline'",
 	"style-src 'self' 'unsafe-inline'",
 	"img-src 'self' blob: data: https://lh3.googleusercontent.com https://utfs.io https://*.utfs.io https://ufs.sh https://*.ufs.sh",
 	"font-src 'self'",
