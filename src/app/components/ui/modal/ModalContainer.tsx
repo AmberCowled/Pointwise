@@ -244,7 +244,7 @@ export function ModalContainer({
 		ModalManager.registerModal(id, ref);
 
 		return () => {
-			ModalManager.unregisterModal(id);
+			ModalManager.unregisterModal(id, ref);
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [id]); // Only re-register if id changes, not when open changes
