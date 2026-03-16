@@ -19,20 +19,19 @@ class ModalManagerClass {
 	 * Called automatically when a modal component mounts
 	 */
 	registerModal(id: string, ref: ModalRef): void {
-		if (this.modals.has(id)) {
-			console.warn(
-				`Modal with id "${id}" is already registered. Overwriting previous registration.`,
-			);
-		}
 		this.modals.set(id, ref);
 	}
 
 	/**
 	 * Unregister a modal from the manager
-	 * Called automatically when a modal component unmounts
+	 * Called automatically when a modal component unmounts.
+	 * Only removes the entry if the stored ref matches, preventing
+	 * stale cleanup from removing a freshly re-registered modal.
 	 */
-	unregisterModal(id: string): void {
-		this.modals.delete(id);
+	unregisterModal(id: string, ref: ModalRef): void {
+		if (this.modals.get(id) === ref) {
+			this.modals.delete(id);
+		}
 	}
 
 	/**
