@@ -3,13 +3,19 @@
 import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
-import TaskDescription from "@pointwise/app/dashboard/taskCard/TaskDescription";
 import {
 	useDeletePostMutation,
 	useGetPostCommentsQuery,
 } from "@pointwise/generated/api";
 import type { Post } from "@pointwise/lib/validation/posts-schema";
+import dynamic from "next/dynamic";
 import Image from "next/image";
+
+const TaskDescription = dynamic(
+	() => import("@pointwise/app/dashboard/taskCard/TaskDescription"),
+	{ ssr: false },
+);
+
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import {

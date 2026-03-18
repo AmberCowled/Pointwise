@@ -2,10 +2,16 @@
 
 import Grid from "@pointwise/app/components/ui/Grid";
 import type { CategoryBreakdownItem } from "@pointwise/lib/validation/analytics-schema";
-import BarChartWidget from "../charts/BarChartWidget";
+import dynamic from "next/dynamic";
 import ChartCard from "../charts/ChartCard";
 import { CHART_COLORS } from "../charts/chartTheme";
-import PieChartWidget from "../charts/PieChartWidget";
+
+const BarChartWidget = dynamic(() => import("../charts/BarChartWidget"), {
+	ssr: false,
+});
+const PieChartWidget = dynamic(() => import("../charts/PieChartWidget"), {
+	ssr: false,
+});
 
 interface CategoryBreakdownSectionProps {
 	categoryBreakdown: CategoryBreakdownItem[];

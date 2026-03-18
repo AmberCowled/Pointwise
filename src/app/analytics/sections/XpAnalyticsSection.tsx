@@ -5,10 +5,16 @@ import type {
 	CategoryBreakdownItem,
 	TimeSeriesItem,
 } from "@pointwise/lib/validation/analytics-schema";
+import dynamic from "next/dynamic";
 import ChartCard from "../charts/ChartCard";
 import { CHART_COLORS } from "../charts/chartTheme";
-import LineChartWidget from "../charts/LineChartWidget";
-import PieChartWidget from "../charts/PieChartWidget";
+
+const LineChartWidget = dynamic(() => import("../charts/LineChartWidget"), {
+	ssr: false,
+});
+const PieChartWidget = dynamic(() => import("../charts/PieChartWidget"), {
+	ssr: false,
+});
 
 interface XpAnalyticsSectionProps {
 	timeSeries: TimeSeriesItem[];
