@@ -7,11 +7,17 @@ import type {
 	HeatmapDay,
 	TimeSeriesItem,
 } from "@pointwise/lib/validation/analytics-schema";
+import dynamic from "next/dynamic";
 import ActivityHeatmap from "../charts/ActivityHeatmap";
-import BarChartWidget from "../charts/BarChartWidget";
 import ChartCard from "../charts/ChartCard";
 import { CHART_COLORS } from "../charts/chartTheme";
-import LineChartWidget from "../charts/LineChartWidget";
+
+const BarChartWidget = dynamic(() => import("../charts/BarChartWidget"), {
+	ssr: false,
+});
+const LineChartWidget = dynamic(() => import("../charts/LineChartWidget"), {
+	ssr: false,
+});
 
 interface TimeAnalysisSectionProps {
 	timeSeries: TimeSeriesItem[];

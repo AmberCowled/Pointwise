@@ -4,9 +4,14 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Modal from "@pointwise/app/components/ui/modal";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import { TabsV2 } from "@pointwise/app/components/ui/TabsV2";
-import TaskDescription from "@pointwise/app/dashboard/taskCard/TaskDescription";
 import { useCreatePostMutation } from "@pointwise/generated/api";
+import dynamic from "next/dynamic";
 import { useState } from "react";
+
+const TaskDescription = dynamic(
+	() => import("@pointwise/app/dashboard/taskCard/TaskDescription"),
+	{ ssr: false },
+);
 
 const MODAL_ID = "create-post";
 

@@ -4,6 +4,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import type { Task } from "@pointwise/lib/validation/tasks-schema";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import AssignTaskModal from "../modals/task/AssignTaskModal";
 import UpdateTaskModal from "../modals/task/UpdateTaskModal";
@@ -15,8 +16,11 @@ import TaskCardLikeButton from "./TaskCardLikeButton";
 import TaskCardMenu from "./TaskCardMenu";
 import TaskCardOptional from "./TaskCardOptional";
 import TaskStatus from "./TaskCardStatus";
-import TaskDescription from "./TaskDescription";
 import TaskHeader from "./TaskHeader";
+
+const TaskDescription = dynamic(() => import("./TaskDescription"), {
+	ssr: false,
+});
 
 export interface TaskCardProps {
 	task: Task;

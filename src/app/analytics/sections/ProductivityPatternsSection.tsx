@@ -5,9 +5,13 @@ import type {
 	DayOfWeekItem,
 	TimeOfDayItem,
 } from "@pointwise/lib/validation/analytics-schema";
-import BarChartWidget from "../charts/BarChartWidget";
+import dynamic from "next/dynamic";
 import ChartCard from "../charts/ChartCard";
 import { CHART_COLORS } from "../charts/chartTheme";
+
+const BarChartWidget = dynamic(() => import("../charts/BarChartWidget"), {
+	ssr: false,
+});
 
 interface ProductivityPatternsSectionProps {
 	dayOfWeekDistribution: DayOfWeekItem[];

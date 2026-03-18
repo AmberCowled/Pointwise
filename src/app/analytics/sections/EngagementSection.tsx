@@ -7,9 +7,13 @@ import type {
 	TimeSeriesItem,
 	TopTask,
 } from "@pointwise/lib/validation/analytics-schema";
+import dynamic from "next/dynamic";
 import ChartCard from "../charts/ChartCard";
 import { CHART_COLORS } from "../charts/chartTheme";
-import LineChartWidget from "../charts/LineChartWidget";
+
+const LineChartWidget = dynamic(() => import("../charts/LineChartWidget"), {
+	ssr: false,
+});
 
 interface EngagementSectionProps {
 	timeSeries: TimeSeriesItem[];

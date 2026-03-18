@@ -2,11 +2,19 @@
 
 import Grid from "@pointwise/app/components/ui/Grid";
 import type { TimeSeriesItem } from "@pointwise/lib/validation/analytics-schema";
-import AreaChartWidget from "../charts/AreaChartWidget";
-import BarChartWidget from "../charts/BarChartWidget";
+import dynamic from "next/dynamic";
 import ChartCard from "../charts/ChartCard";
 import { CHART_COLORS } from "../charts/chartTheme";
-import LineChartWidget from "../charts/LineChartWidget";
+
+const AreaChartWidget = dynamic(() => import("../charts/AreaChartWidget"), {
+	ssr: false,
+});
+const BarChartWidget = dynamic(() => import("../charts/BarChartWidget"), {
+	ssr: false,
+});
+const LineChartWidget = dynamic(() => import("../charts/LineChartWidget"), {
+	ssr: false,
+});
 
 interface TaskCompletionSectionProps {
 	timeSeries: TimeSeriesItem[];
