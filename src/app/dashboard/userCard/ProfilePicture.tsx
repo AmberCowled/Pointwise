@@ -57,7 +57,6 @@ export default function ProfilePicture({
 						"rounded-full w-full h-full object-cover absolute inset-0",
 						imgLoaded ? "opacity-100" : "opacity-0",
 					)}
-					unoptimized
 					priority={priority}
 					onLoad={() => setImgLoaded(true)}
 					onError={() => setImgError(true)}
