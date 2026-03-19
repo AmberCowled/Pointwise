@@ -1,12 +1,19 @@
 import { deleteUserAccount } from "@pointwise/lib/api/account-deletion";
 import { authOptions } from "@pointwise/lib/auth";
 import prisma from "@pointwise/lib/prisma";
+import { checkRateLimit } from "@pointwise/lib/rate-limit";
 import { logServerError } from "@pointwise/lib/server-logger";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 export async function DELETE(request: Request) {
 	try {
+		const rateLimited = await checkRateLimit(request, {
+			windowMs: 600_000,
+			max: 5,
+		});
+		if (rateLimited) return rateLimited;
+
 		const session = await getServerSession(authOptions);
 		if (!session?.user?.id || !session?.user?.email) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
