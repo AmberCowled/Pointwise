@@ -82,7 +82,6 @@ export default function PostItem({ post, userId }: PostItemProps) {
 							width={32}
 							height={32}
 							className="rounded-full shrink-0"
-							unoptimized
 						/>
 					) : (
 						<div className="w-8 h-8 rounded-full bg-zinc-700 shrink-0 flex items-center justify-center text-sm text-zinc-400">

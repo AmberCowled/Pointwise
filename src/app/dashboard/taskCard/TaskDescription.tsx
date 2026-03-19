@@ -237,7 +237,6 @@ export default function TaskDescription({
 						sizes="100vw"
 						style={{ width: "100%", height: "auto" }}
 						className={`rounded-lg border ${StyleTheme.Container.Border.Subtle} shadow-lg shadow-black/20`}
-						unoptimized
 					/>
 				</span>
 			);
