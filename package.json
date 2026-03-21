@@ -79,12 +79,20 @@
 		"overrides": {
 			"preact": ">=10.28.2",
 			"qs": ">=6.14.2",
-			"tar": ">=7.5.7",
 			"ajv": ">=8.18.0",
 			"minimatch": ">=10.2.3",
 			"hono": ">=4.12.7",
 			"express-rate-limit": ">=8.2.2",
 			"effect": ">=3.20.0"
+		},
+		"overrideComments": {
+			"preact": "next-auth v4 / @auth/prisma-adapter → @auth/core. Resolves with next-auth v5 (Auth.js) migration.",
+			"qs": "@google/genai → @modelcontextprotocol/sdk → express. Resolves with upstream SDK update.",
+			"ajv": "@google/genai → @modelcontextprotocol/sdk → ajv-formats. Resolves with upstream SDK update.",
+			"minimatch": "@google/genai → google-auth-library → gaxios → rimraf → glob; ertk → ts-morph. Resolves with upstream updates.",
+			"hono": "@google/genai → @modelcontextprotocol/sdk → @hono/node-server. Resolves with upstream SDK update.",
+			"express-rate-limit": "@google/genai → @modelcontextprotocol/sdk. Resolves with upstream SDK update.",
+			"effect": "prisma → @prisma/config; uploadthing → @effect/platform. Resolves with upstream updates."
 		},
 		"ignoredBuiltDependencies": [
 			"@biomejs/biome",
