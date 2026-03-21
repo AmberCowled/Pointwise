@@ -23,6 +23,24 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.redirect(loginUrl);
 	}
 
+	// Enforce custom session expiry (short "non-remembered" sessions).
+	// Cookie deletion prevents redirect loops with the expired JWT.
+	if (
+		token?.expiresAt &&
+		typeof token.expiresAt === "number" &&
+		Date.now() >= token.expiresAt &&
+		!isPublicRoute
+	) {
+		const loginUrl = new URL("/", request.url);
+		const response = NextResponse.redirect(loginUrl);
+		const cookieName =
+			process.env.NODE_ENV === "production"
+				? "__Secure-next-auth.session-token"
+				: "next-auth.session-token";
+		response.cookies.delete(cookieName);
+		return response;
+	}
+
 	// If user has pending 2FA and is trying to access protected routes,
 	// redirect them to the 2FA page
 	if (token?.pendingTwoFactor && !isPublicRoute) {

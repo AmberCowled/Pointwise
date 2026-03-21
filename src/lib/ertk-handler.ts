@@ -19,6 +19,9 @@ export const createRouteHandler = configureHandler({
 			const email = session?.user?.email;
 			if (!email) return null;
 
+			// Check custom session expiry
+			if (session.expiresAt && Date.now() >= session.expiresAt) return null;
+
 			// Check if session is pending 2FA — block API access
 			if (session.pendingTwoFactor) return null;
 
