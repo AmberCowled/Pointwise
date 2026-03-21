@@ -1,5 +1,6 @@
 import { utapi } from "@pointwise/lib/api/utapi";
 import prisma from "@pointwise/lib/prisma";
+import { logServerError } from "@pointwise/lib/server-logger";
 import {
 	type PublicUserProfileResponse,
 	PublicUserProfileSchema,
@@ -225,9 +226,8 @@ export async function updateUserProfile(
 			if (fileKey) {
 				try {
 					await utapi.deleteFiles(fileKey);
-					console.log("Deleted old profile picture:", fileKey);
 				} catch (error) {
-					console.error("Failed to delete old profile picture:", error);
+					logServerError("Failed to delete old profile picture", error);
 				}
 			}
 		}
