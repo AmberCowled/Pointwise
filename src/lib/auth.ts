@@ -11,6 +11,12 @@ import GoogleProvider from "next-auth/providers/google";
 
 const prismaAdapter = PrismaAdapter(prisma) as Adapter;
 
+/** Duration for "remembered" sessions (14 days in seconds). */
+const REMEMBERED_MAX_AGE = 14 * 24 * 60 * 60;
+
+/** Duration for "non-remembered" sessions (24 hours in seconds). */
+const SHORT_MAX_AGE = 24 * 60 * 60;
+
 export const authOptions: NextAuthOptions = {
 	adapter: {
 		...prismaAdapter,
@@ -43,6 +49,7 @@ export const authOptions: NextAuthOptions = {
 			credentials: {
 				email: { label: "Email", type: "email" },
 				password: { label: "Password", type: "password" },
+				remember: { label: "Remember me", type: "text" },
 			},
 			async authorize(credentials) {
 				if (!credentials?.email || !credentials.password) return null;
@@ -73,6 +80,7 @@ export const authOptions: NextAuthOptions = {
 					email: user.email,
 					image: user.image,
 					twoFactorEnabled: user.twoFactorEnabled,
+					rememberMe: credentials.remember === "true",
 				};
 			},
 		}),
@@ -80,7 +88,7 @@ export const authOptions: NextAuthOptions = {
 
 	session: {
 		strategy: "jwt",
-		maxAge: 30 * 24 * 60 * 60, // 30 days
+		maxAge: REMEMBERED_MAX_AGE, // 14 days
 		updateAge: 24 * 60 * 60, // refresh every 24h
 	},
 
@@ -133,6 +141,12 @@ export const authOptions: NextAuthOptions = {
 				// Generate a unique JWT ID for device session tracking
 				token.jti = crypto.randomUUID();
 
+				// Set custom session expiry based on "remember me" preference.
+				// OAuth sign-ins have undefined rememberMe, defaulting to remembered.
+				const rememberMe = user.rememberMe !== false;
+				const maxAge = rememberMe ? REMEMBERED_MAX_AGE : SHORT_MAX_AGE;
+				token.expiresAt = Date.now() + maxAge * 1000;
+
 				// Pre-register device session so API calls succeed immediately
 				// on the first page load (avoids race with DeviceSessionProvider).
 				// DeviceSessionProvider will upsert with device info later.
@@ -159,6 +173,16 @@ export const authOptions: NextAuthOptions = {
 				}
 			}
 
+			// Enforce custom session expiry (short "non-remembered" sessions)
+			if (token.expiresAt && Date.now() >= token.expiresAt) {
+				if (token.jti) {
+					await prisma.deviceSession
+						.delete({ where: { jti: token.jti as string } })
+						.catch(() => {});
+				}
+				return {} as typeof token;
+			}
+
 			// Handle session.update() trigger for 2FA verification
 			if (trigger === "update" && token.id && token.pendingTwoFactor) {
 				const dbUser = await prisma.user.findUnique({
@@ -177,9 +201,6 @@ export const authOptions: NextAuthOptions = {
 				}
 			}
 
-			if (token.shortSession) {
-				token.shortSession = true;
-			}
 			return token;
 		},
 
@@ -193,9 +214,11 @@ export const authOptions: NextAuthOptions = {
 			if (token.pendingTwoFactor) {
 				session.pendingTwoFactor = true;
 			}
-			if (token.shortSession) {
-				session.remember = false;
+			if (token.expiresAt) {
+				session.expiresAt = token.expiresAt;
 			}
+			session.remember =
+				!token.expiresAt || token.expiresAt - Date.now() > SHORT_MAX_AGE * 1000;
 			return session;
 		},
 	},
