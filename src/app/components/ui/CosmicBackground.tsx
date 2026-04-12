@@ -176,6 +176,17 @@ export default function CosmicBackground({
 					opacity: 0.7,
 				}}
 			/>
+
+			{/* Vignette overlay - fades edges to black for seamless body blending */}
+			<div
+				className="absolute inset-0 pointer-events-none"
+				style={{
+					background: `
+						radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0.7) 85%, #000000 100%),
+						linear-gradient(to bottom, #000000 0%, transparent 15%, transparent 85%, #000000 100%)
+					`,
+				}}
+			/>
 		</div>
 	);
 }
