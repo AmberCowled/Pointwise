@@ -2,7 +2,6 @@ import "@pointwise/lib/env";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { headers } from "next/headers";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
 import "./globals.css";
@@ -82,15 +81,11 @@ export const viewport: Viewport = {
 	themeColor: "#3B0270",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	// Reading the nonce header triggers Next.js to attach it to
-	// framework-generated inline <script> tags (required for nonce-based CSP).
-	(await headers()).get("x-nonce");
-
 	return (
 		<html lang="en">
 			<body
