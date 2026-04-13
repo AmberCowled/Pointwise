@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
 
-// CSP is handled per-request via nonce in src/middleware.ts.
+// CSP is handled per-request in src/proxy.ts (unsafe-eval removed, unsafe-inline kept).
 // Only static security headers remain here.
 const securityHeaders = [
 	{ key: "X-Frame-Options", value: "DENY" },
