@@ -2,21 +2,8 @@ import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
 
-const cspDirectives = [
-	"default-src 'self'",
-	"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-	"style-src 'self' 'unsafe-inline'",
-	"img-src 'self' blob: data: https://lh3.googleusercontent.com https://utfs.io https://*.utfs.io https://ufs.sh https://*.ufs.sh",
-	"font-src 'self'",
-	"connect-src 'self' https://realtime.ably.io https://rest.ably.io https://*.ably.io https://*.ably.net wss://realtime.ably.io wss://*.ably.io wss://*.ably.net https://ingest.uploadthing.com https://*.uploadthing.com",
-	"worker-src 'self'",
-	"frame-ancestors 'none'",
-	"form-action 'self'",
-	"base-uri 'self'",
-	"object-src 'none'",
-	"upgrade-insecure-requests",
-];
-
+// CSP is handled per-request via nonce in src/middleware.ts.
+// Only static security headers remain here.
 const securityHeaders = [
 	{ key: "X-Frame-Options", value: "DENY" },
 	{ key: "X-Content-Type-Options", value: "nosniff" },
@@ -27,10 +14,6 @@ const securityHeaders = [
 	},
 	...(isProd
 		? [
-				{
-					key: "Content-Security-Policy",
-					value: cspDirectives.join("; "),
-				},
 				{
 					key: "Strict-Transport-Security",
 					value: "max-age=63072000; includeSubDomains; preload",
