@@ -81,7 +81,7 @@
 			"qs": ">=6.14.2",
 			"ajv": ">=8.18.0",
 			"minimatch": ">=10.2.3",
-			"hono": ">=4.12.12",
+			"hono": ">=4.12.14",
 			"express-rate-limit": ">=8.2.2",
 			"effect": ">=3.20.0",
 			"picomatch": ">=4.0.4",
@@ -89,7 +89,8 @@
 			"brace-expansion": ">=5.0.5",
 			"path-to-regexp": ">=8.4.0",
 			"@hono/node-server": ">=1.19.13",
-			"yaml": ">=2.8.3"
+			"yaml": ">=2.8.3",
+			"protobufjs": ">=7.5.5"
 		},
 		"overrideComments": {
 			"preact": "next-auth v4 / @auth/prisma-adapter → @auth/core. Resolves with next-auth v5 (Auth.js) migration.",
@@ -104,7 +105,8 @@
 			"brace-expansion": "minimatch → brace-expansion. Zero-step sequence causes hang and memory exhaustion.",
 			"path-to-regexp": "@google/genai → @modelcontextprotocol/sdk → express → router. DoS via sequential optional groups.",
 			"@hono/node-server": "@google/genai → @modelcontextprotocol/sdk. Middleware bypass via repeated slashes.",
-			"yaml": "lint-staged → yaml. Stack overflow via deeply nested YAML collections."
+			"yaml": "lint-staged → yaml. Stack overflow via deeply nested YAML collections.",
+			"protobufjs": "eslint → protobufjs. ReDoS via regex in option.parse."
 		},
 		"ignoredBuiltDependencies": [
 			"@biomejs/biome",
