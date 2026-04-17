@@ -165,10 +165,7 @@ export const authOptions: NextAuthOptions = {
 					where: { id: user.id },
 					select: { twoFactorEnabled: true },
 				});
-				if (
-					dbUser?.twoFactorEnabled &&
-					process.env.NODE_ENV !== "development"
-				) {
+				if (dbUser?.twoFactorEnabled && process.env.SKIP_2FA !== "true") {
 					token.pendingTwoFactor = true;
 				}
 			}

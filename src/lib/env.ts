@@ -44,3 +44,15 @@ if (!process.env.CI) {
 		throw new Error(`Missing or invalid environment variables: ${missing}`);
 	}
 }
+
+// Prevent the 2FA bypass flag from ever being enabled in a production runtime.
+// During `next build`, NODE_ENV is "production" but the app isn't serving traffic,
+// so we skip the check during CI and the Next.js build phase.
+if (
+	!process.env.CI &&
+	process.env.NEXT_PHASE !== "phase-production-build" &&
+	process.env.SKIP_2FA === "true" &&
+	process.env.NODE_ENV === "production"
+) {
+	throw new Error("SKIP_2FA must not be enabled in production");
+}
