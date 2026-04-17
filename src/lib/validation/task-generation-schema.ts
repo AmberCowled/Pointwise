@@ -39,6 +39,25 @@ export const TaskExpandResponseSchema = z.object({
 	category: z.string(),
 });
 
+// ── Breakdown ──
+
+export const TaskBreakdownRequestSchema = z.object({
+	projectId: z.string(),
+	goal: z.string().optional().nullable(),
+	title: z.string().min(1),
+	description: z.string().optional().nullable(),
+});
+
+const TaskBreakdownSubtaskSchema = z.object({
+	title: z.string(),
+	description: z.string(),
+	category: z.string(),
+});
+
+export const TaskBreakdownResponseSchema = z.object({
+	subtasks: z.array(TaskBreakdownSubtaskSchema),
+});
+
 // ── Types ──
 
 export type ExistingTask = z.infer<typeof ExistingTaskSchema>;
@@ -51,3 +70,6 @@ export type TaskSuggestionsResponse = z.infer<
 export type TaskSuggestion = z.infer<typeof TaskSuggestionSchema>;
 export type TaskExpandRequest = z.infer<typeof TaskExpandRequestSchema>;
 export type TaskExpandResponse = z.infer<typeof TaskExpandResponseSchema>;
+export type TaskBreakdownRequest = z.infer<typeof TaskBreakdownRequestSchema>;
+export type TaskBreakdownResponse = z.infer<typeof TaskBreakdownResponseSchema>;
+export type TaskBreakdownSubtask = z.infer<typeof TaskBreakdownSubtaskSchema>;
