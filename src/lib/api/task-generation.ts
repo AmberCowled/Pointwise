@@ -27,6 +27,10 @@ export function buildTaskSuggestionsPrompt(
 Suggest exactly 3 new tasks for the project described below.
 Each suggestion should be distinct from existing tasks and from each other.
 
+Each task must be a discrete, one-time action that can be completed in a single session.
+Do NOT suggest tasks that require daily repetition, streaks, or sustained effort over multiple days (e.g. "exercise for 7 days straight", "read every morning for a week").
+Instead, suggest concrete, completable actions (e.g. "complete a 30-minute workout", "read chapter 3 of [book]").
+
 Output ONLY a JSON array with exactly 3 objects, each having "title" and "summary" keys.
 - "title": A concise task title (3-10 words)
 - "summary": A 1-2 sentence description of what the task involves
@@ -94,6 +98,8 @@ export function buildTaskExpansionPrompt(
 	return `You are a task planner for a project management app.
 
 Expand the following task suggestion into a full task definition.
+The task must describe a discrete, one-time action — not a recurring habit or multi-day streak.
+Frame the task as something that can be marked complete after a single effort.
 
 Output ONLY a JSON object with these keys:
 - "title": The task title (may refine the original, 3-10 words)
