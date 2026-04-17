@@ -7,6 +7,7 @@ import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import AssignTaskModal from "../modals/task/AssignTaskModal";
+import BreakdownTaskModal from "../modals/task/BreakdownTaskModal";
 import UpdateTaskModal from "../modals/task/UpdateTaskModal";
 import TaskCardAssignees from "./TaskCardAssignees";
 import TaskCardCommentButton from "./TaskCardCommentButton";
@@ -36,6 +37,7 @@ export default function TaskCard({ task, project }: TaskCardProps) {
 		<>
 			<UpdateTaskModal task={task} project={project} />
 			<AssignTaskModal task={task} project={project} />
+			<BreakdownTaskModal task={task} project={project} />
 			<Container
 				direction="vertical"
 				width="full"

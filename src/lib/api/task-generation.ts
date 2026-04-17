@@ -2,6 +2,7 @@ import { CORE_TASK_CATEGORIES } from "@pointwise/lib/categories";
 import { callGemini } from "@pointwise/lib/llm/gemini";
 import type {
 	ExistingTask,
+	TaskBreakdownSubtask,
 	TaskExpandResponse,
 	TaskSuggestion,
 } from "@pointwise/lib/validation/task-generation-schema";
@@ -152,4 +153,81 @@ export async function expandTaskSuggestion(
 	const { success, response } = await callGemini(prompt);
 	if (!success || !response) return null;
 	return parseExpandFromResponse(response);
+}
+
+// ── Breakdown ──
+
+export function buildTaskBreakdownPrompt(
+	goal: string | null,
+	title: string,
+	description: string | null,
+): string {
+	const categoryList = CORE_TASK_CATEGORIES.join(", ");
+
+	return `You are a task planner for a project management app.
+
+Break the following task into 2-6 smaller, concrete subtasks.
+Each subtask must be a discrete, one-time action that can be completed in a single session.
+Do NOT create subtasks that require daily repetition, streaks, or sustained effort over multiple days.
+Each subtask should be independently completable and together they should cover the full scope of the original task.
+
+Output ONLY a JSON array of objects, each with these keys:
+- "title": A concise subtask title (3-10 words)
+- "description": A detailed, well-structured description using Markdown formatting. Use bullet points, numbered lists, bold text, or headings where appropriate. Aim for 2-5 lines.
+- "category": One of [${categoryList}] or a short custom category name (max 60 chars)
+
+Do not include any text outside the JSON array. Do not use markdown code fences.
+
+Project goal:
+${goal || "Not specified"}
+
+Task to break down:
+Title: ${title}
+Description: ${description || "No description provided"}`;
+}
+
+function parseBreakdownFromResponse(
+	response: string,
+): TaskBreakdownSubtask[] | null {
+	try {
+		const cleaned = response
+			.replace(/```json\s*/g, "")
+			.replace(/```\s*/g, "")
+			.trim();
+		const parsed = JSON.parse(cleaned);
+		if (!Array.isArray(parsed)) return null;
+
+		const subtasks: TaskBreakdownSubtask[] = [];
+		for (const item of parsed) {
+			if (
+				typeof item.title === "string" &&
+				item.title.length > 0 &&
+				typeof item.description === "string" &&
+				item.description.length > 0 &&
+				typeof item.category === "string" &&
+				item.category.length > 0
+			) {
+				subtasks.push({
+					title: item.title,
+					description: item.description,
+					category: item.category.slice(0, 60),
+				});
+			}
+		}
+
+		return subtasks.length > 0 ? subtasks : null;
+	} catch {
+		return null;
+	}
+}
+
+export async function getTaskBreakdown(
+	goal: string | null,
+	title: string,
+	description: string | null,
+): Promise<TaskBreakdownSubtask[] | null> {
+	const prompt = buildTaskBreakdownPrompt(goal, title, description);
+	const { success, response } = await callGemini(prompt);
+	if (!success || !response) return null;
+	return parseBreakdownFromResponse(response);
 }

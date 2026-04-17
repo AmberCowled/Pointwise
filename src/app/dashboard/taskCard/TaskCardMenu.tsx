@@ -13,6 +13,7 @@ import type { Task } from "@pointwise/lib/validation/tasks-schema";
 import {
 	IoCheckmarkCircleOutline,
 	IoEllipsisHorizontal,
+	IoGitBranchOutline,
 	IoPencilOutline,
 	IoPersonAddOutline,
 	IoTrashOutline,
@@ -91,6 +92,14 @@ export default function TaskCardMenu({ task, project }: TaskCardMenuProps) {
 			</Menu.Section>
 			{hasDeleteAccess(project.role) && (
 				<Menu.Section title="Admin">
+					<Menu.Option
+						label="Break down"
+						icon={<IoGitBranchOutline className="text-amber-400" />}
+						onClick={() =>
+							Modal.Manager.open(`breakdown-task-modal-${task.id}`)
+						}
+						disabled={task.status === "COMPLETED"}
+					/>
 					<Menu.Option
 						label="Delete"
 						icon={<IoTrashOutline className="text-rose-400" />}
