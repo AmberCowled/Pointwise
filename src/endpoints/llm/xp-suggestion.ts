@@ -8,11 +8,12 @@ export default endpoint.post<{ xp: number }, XpSuggestionRequest>({
 	request: XpSuggestionRequestSchema,
 	protected: true,
 	query: (body) => ({ url: "/llm/xp-suggestion", method: "POST", body }),
-	handler: async ({ body }) => {
+	handler: async ({ body, user }) => {
 		const xp = await getXpSuggestion(
 			body.goal ?? null,
 			body.taskName.trim(),
 			body.description?.trim() ?? null,
+			user.id,
 		);
 
 		if (xp === null) {

@@ -80,9 +80,15 @@ export async function getTaskSuggestions(
 	goal: string | null,
 	existingTasks: ExistingTask[],
 	userPrompt: string | null,
+	userId: string,
+	projectId: string,
 ): Promise<TaskSuggestion[] | null> {
 	const prompt = buildTaskSuggestionsPrompt(goal, existingTasks, userPrompt);
-	const { success, response } = await callGemini(prompt);
+	const { success, response } = await callGemini(prompt, {
+		userId,
+		projectId,
+		actionType: "TASK_SUGGESTIONS",
+	});
 	if (!success || !response) return null;
 	return parseSuggestionsFromResponse(response);
 }
@@ -148,9 +154,15 @@ export async function expandTaskSuggestion(
 	goal: string | null,
 	title: string,
 	summary: string,
+	userId: string,
+	projectId: string,
 ): Promise<TaskExpandResponse | null> {
 	const prompt = buildTaskExpansionPrompt(goal, title, summary);
-	const { success, response } = await callGemini(prompt);
+	const { success, response } = await callGemini(prompt, {
+		userId,
+		projectId,
+		actionType: "TASK_EXPAND",
+	});
 	if (!success || !response) return null;
 	return parseExpandFromResponse(response);
 }
@@ -225,9 +237,15 @@ export async function getTaskBreakdown(
 	goal: string | null,
 	title: string,
 	description: string | null,
+	userId: string,
+	projectId: string,
 ): Promise<TaskBreakdownSubtask[] | null> {
 	const prompt = buildTaskBreakdownPrompt(goal, title, description);
-	const { success, response } = await callGemini(prompt);
+	const { success, response } = await callGemini(prompt, {
+		userId,
+		projectId,
+		actionType: "TASK_BREAKDOWN",
+	});
 	if (!success || !response) return null;
 	return parseBreakdownFromResponse(response);
 }

@@ -123,9 +123,13 @@ export async function getXpSuggestion(
 	goal: string | null,
 	taskName: string,
 	description: string | null,
+	userId: string,
 ): Promise<number | null> {
 	const prompt = buildXpSuggestionPrompt(goal, taskName, description);
-	const { success, response } = await callGemini(prompt);
+	const { success, response } = await callGemini(prompt, {
+		userId,
+		actionType: "XP_SUGGESTION",
+	});
 	if (!success || !response) return null;
 	return parseXpFromResponse(response);
 }
