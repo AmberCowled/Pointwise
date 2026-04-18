@@ -1,5 +1,6 @@
 import { ApiError } from "@pointwise/lib/api/errors";
 import { getProject } from "@pointwise/lib/api/projects";
+import { enforceProjectMemberLimit } from "@pointwise/lib/credits/member-limits";
 import prisma from "@pointwise/lib/prisma";
 import type { ProjectRole } from "@pointwise/lib/validation/projects-schema";
 import type { Project as PrismaProject } from "@prisma/client";
@@ -83,7 +84,10 @@ export async function approveJoinRequest(
 		throw new ApiError("User is already a member of this project", 400);
 	}
 
-	// 4. Determine which role array to add to
+	// 4. Enforce member limit
+	await enforceProjectMemberLimit(project);
+
+	// 5. Determine which role array to add to
 	const roleField =
 		role === "ADMIN"
 			? "adminUserIds"
@@ -91,7 +95,7 @@ export async function approveJoinRequest(
 				? "projectUserIds"
 				: "viewerUserIds";
 
-	// 5. Update project: remove from joinRequestUserIds and add to appropriate role array
+	// 6. Update project: remove from joinRequestUserIds and add to appropriate role array
 	const updatedProject = await prisma.project.update({
 		where: { id: projectId },
 		data: {

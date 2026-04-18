@@ -54,6 +54,14 @@ export const ProjectSchema = z.object({
 	taskCount: PROJECT_TASK_COUNT_SCHEMA,
 	inviteCount: PROJECT_INVITE_COUNT_SCHEMA,
 	role: PROJECT_ROLE_SCHEMA,
+	memberLimitInfo: z
+		.object({
+			current: z.number(),
+			limit: z.number(),
+			exceeded: z.boolean(),
+			ownerTier: z.string(),
+		})
+		.optional(),
 });
 
 export const ProjectsSchema = z.array(ProjectSchema);

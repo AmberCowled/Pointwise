@@ -272,6 +272,12 @@ export function serializeProject(
 		_count?: { tasks: number; projectInvites?: number };
 	},
 	userId: string,
+	memberLimitInfo?: {
+		current: number;
+		limit: number;
+		exceeded: boolean;
+		ownerTier: string;
+	},
 ): Project {
 	return ProjectSchema.parse({
 		id: project.id,
@@ -289,6 +295,7 @@ export function serializeProject(
 		taskCount: project._count?.tasks ?? 0,
 		inviteCount: project._count?.projectInvites ?? 0,
 		role: getUserRoleInProject(project, userId),
+		memberLimitInfo,
 	});
 }
 

@@ -697,6 +697,11 @@ export const EventRegistry = {
 	// New event-only entries (3) — realtime cache invalidation
 	// -----------------------------------------------------------------------
 
+	OWNER_TIER_CHANGED: {
+		event: "owner:tier-changed" as const,
+		schema: z.object({ ownerId: z.string() }),
+		tags: ["Projects"] as TagDescription[],
+	},
 	TASK_MUTATED: {
 		event: "task:mutated" as const,
 		schema: z.object({ projectId: z.string() }),
