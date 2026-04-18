@@ -1,4 +1,5 @@
 import prisma from "@pointwise/lib/prisma";
+import { emitEvent } from "@pointwise/lib/realtime/publish";
 import { PERIOD_DAYS, TIER_CONFIG } from "./config";
 
 const MS_PER_PERIOD = PERIOD_DAYS * 24 * 60 * 60 * 1000;
@@ -11,7 +12,7 @@ function getCurrentPeriod(anchor: Date) {
 	return { start, end };
 }
 
-async function resolveUserTier(userId: string) {
+export async function resolveUserTier(userId: string) {
 	const userTier = await prisma.userTier.findUnique({
 		where: { userId },
 	});
@@ -27,17 +28,42 @@ async function resolveUserTier(userId: string) {
 		userTier.pendingChangeAt &&
 		userTier.pendingChangeAt <= new Date()
 	) {
-		return prisma.userTier.update({
+		const updated = await prisma.userTier.update({
 			where: { id: userTier.id },
 			data: {
 				tier: userTier.pendingTier,
 				tierChangedAt: userTier.pendingChangeAt,
 				pendingTier: null,
 				pendingChangeAt: null,
-				periodStart: null,
-				periodEnd: null,
+				periodStart: userTier.pendingChangeAt,
+				periodEnd: new Date(userTier.pendingChangeAt.getTime() + MS_PER_PERIOD),
 			},
 		});
+
+		// Notify all members of the owner's projects so memberLimitInfo refreshes
+		const projects = await prisma.project.findMany({
+			where: { ownerId: userId },
+			select: {
+				adminUserIds: true,
+				projectUserIds: true,
+				viewerUserIds: true,
+			},
+		});
+		const memberIds = new Set<string>();
+		for (const p of projects) {
+			for (const id of [
+				...p.adminUserIds,
+				...p.projectUserIds,
+				...p.viewerUserIds,
+			]) {
+				if (id !== userId) memberIds.add(id);
+			}
+		}
+		if (memberIds.size > 0) {
+			void emitEvent("OWNER_TIER_CHANGED", { ownerId: userId }, [...memberIds]);
+		}
+
+		return updated;
 	}
 
 	return userTier;

@@ -43,6 +43,7 @@ export async function createProject(
 			description: request.description || null,
 			goal: request.goal ?? null,
 			visibility: request.visibility || "PRIVATE",
+			ownerId: userId,
 			adminUserIds: [userId],
 		},
 		include: {
@@ -271,6 +272,19 @@ export function serializeProject(
 		_count?: { tasks: number; projectInvites?: number };
 	},
 	userId: string,
+	memberLimitInfo?: {
+		current: number;
+		limit: number;
+		exceeded: boolean;
+		ownerTier: string;
+	},
+	storageInfo?: {
+		used: number;
+		limit: number;
+		percentage: number;
+		exceeded: boolean;
+		ownerTier: string;
+	},
 ): Project {
 	return ProjectSchema.parse({
 		id: project.id,
@@ -278,6 +292,7 @@ export function serializeProject(
 		description: project.description || null,
 		goal: project.goal || null,
 		visibility: project.visibility,
+		ownerId: project.ownerId,
 		adminUserIds: project.adminUserIds || [],
 		projectUserIds: project.projectUserIds || [],
 		viewerUserIds: project.viewerUserIds || [],
@@ -287,6 +302,8 @@ export function serializeProject(
 		taskCount: project._count?.tasks ?? 0,
 		inviteCount: project._count?.projectInvites ?? 0,
 		role: getUserRoleInProject(project, userId),
+		memberLimitInfo,
+		storageInfo,
 	});
 }
 
@@ -506,9 +523,9 @@ export async function leaveProject(
 		throw new ApiError("You are not a member of this project", 403);
 	}
 
-	if (role === "ADMIN" && prismaProject.adminUserIds.length === 1) {
+	if (prismaProject.ownerId === userId) {
 		throw new ApiError(
-			"You are the only admin of this project and cannot leave",
+			"Project owners cannot leave. Transfer ownership first.",
 			400,
 		);
 	}
@@ -551,4 +568,29 @@ export async function leaveProject(
 	await removeUserFromTaskAssignments(projectId, userId);
 
 	return updatedProject as PrismaProject & { _count: { tasks: number } };
+}
+
+export async function transferOwnership(
+	projectId: string,
+	currentOwnerId: string,
+	newOwnerId: string,
+): Promise<PrismaProject & { _count: { tasks: number } }> {
+	const project = await prisma.project.findUniqueOrThrow({
+		where: { id: projectId },
+	});
+
+	if (project.ownerId !== currentOwnerId)
+		throw new ApiError("Only the project owner can transfer ownership", 403);
+	if (newOwnerId === currentOwnerId)
+		throw new ApiError("New owner must be a different user", 400);
+	if (!project.adminUserIds.includes(newOwnerId))
+		throw new ApiError("New owner must be an admin of the project", 400);
+
+	const updated = await prisma.project.update({
+		where: { id: projectId },
+		data: { ownerId: newOwnerId, shareOwnerCredits: false },
+		include: { _count: { select: { tasks: true } } },
+	});
+
+	return updated as PrismaProject & { _count: { tasks: number } };
 }

@@ -1,5 +1,6 @@
 import { ApiError } from "@pointwise/lib/api/errors";
 import { getProject } from "@pointwise/lib/api/projects";
+import { enforceProjectMemberLimit } from "@pointwise/lib/credits/member-limits";
 import prisma from "@pointwise/lib/prisma";
 import type { ProjectRole } from "@pointwise/lib/validation/projects-schema";
 import type { Invite, Project as PrismaProject } from "@prisma/client";
@@ -96,7 +97,12 @@ export async function inviteUsersToProject(
 		validInvites.push(invite);
 	}
 
-	// 6. Return error if no valid invites (all filtered out or invalid)
+	// 6. Enforce member limit before creating invites
+	if (validInvites.length > 0) {
+		await enforceProjectMemberLimit(project, validInvites.length);
+	}
+
+	// 7. Return error if no valid invites (all filtered out or invalid)
 	if (validInvites.length === 0) {
 		if (invalidUserIds.length > 0) {
 			throw new ApiError(`Invalid user IDs: ${invalidUserIds.join(", ")}`, 400);
@@ -107,7 +113,7 @@ export async function inviteUsersToProject(
 		);
 	}
 
-	// 7. Create invites in database
+	// 8. Create invites in database
 	await prisma.invite.createMany({
 		data: validInvites.map((invite) => ({
 			inviterId,
@@ -117,7 +123,7 @@ export async function inviteUsersToProject(
 		})),
 	});
 
-	// 8. Query newly created invites to get their IDs
+	// 9. Query newly created invites to get their IDs
 	const createdInvites = await prisma.invite.findMany({
 		where: {
 			projectId,
@@ -126,7 +132,7 @@ export async function inviteUsersToProject(
 		select: { id: true, invitedUserId: true },
 	});
 
-	// 9. Return updated project with new invite count + list of invited users
+	// 10. Return updated project with new invite count + list of invited users
 	const updatedProject = await prisma.project.findUniqueOrThrow({
 		where: { id: projectId },
 		include: {
@@ -220,7 +226,10 @@ export async function acceptInvite(
 		throw new ApiError("You are already a member of this project", 400);
 	}
 
-	// 3. Add user to the appropriate role array based on inviteRole
+	// 3. Enforce member limit
+	await enforceProjectMemberLimit(project);
+
+	// 4. Add user to the appropriate role array based on inviteRole
 	const roleField =
 		invite.inviteRole === "ADMIN"
 			? "adminUserIds"
@@ -228,7 +237,7 @@ export async function acceptInvite(
 				? "projectUserIds"
 				: "viewerUserIds";
 
-	// 4. Update project and delete invite in a transaction
+	// 5. Update project and delete invite in a transaction
 	const updatedProject = await prisma.$transaction(async (tx) => {
 		// Add user to project
 		const updated = await tx.project.update({

@@ -8,9 +8,12 @@ import {
 	useGetNotificationSettingsQuery,
 	useUpdateNotificationSettingsMutation,
 } from "@pointwise/generated/api";
-import { useEffect, useState } from "react";
+import type { NotificationSettingsType } from "@pointwise/lib/validation/notification-settings-schema";
+import { useState } from "react";
 import { IoSave } from "react-icons/io5";
 import { Button } from "../components/ui/Button";
+
+type SettingsKey = keyof NotificationSettingsType;
 
 export default function NotificationSettings() {
 	const { data, isLoading } = useGetNotificationSettingsQuery();
@@ -18,56 +21,45 @@ export default function NotificationSettings() {
 		useUpdateNotificationSettingsMutation();
 	const { showNotification } = useNotifications();
 
-	const [pushEnabled, setPushEnabled] = useState(true);
-	const [pushMessages, setPushMessages] = useState(true);
-	const [pushFriendRequests, setPushFriendRequests] = useState(true);
-	const [pushProjectActivity, setPushProjectActivity] = useState(true);
-	const [pushTaskAssignments, setPushTaskAssignments] = useState(true);
-	const [pushComments, setPushComments] = useState(true);
-	const [pushTaskStatusChanges, setPushTaskStatusChanges] = useState(true);
-	const [pushLikes, setPushLikes] = useState(true);
+	const [edits, setEdits] = useState<Partial<NotificationSettingsType>>({});
 
-	useEffect(() => {
-		if (data?.settings) {
-			const s = data.settings;
-			setPushEnabled(s.pushEnabled);
-			setPushMessages(s.pushMessages);
-			setPushFriendRequests(s.pushFriendRequests);
-			setPushProjectActivity(s.pushProjectActivity);
-			setPushTaskAssignments(s.pushTaskAssignments);
-			setPushComments(s.pushComments);
-			setPushTaskStatusChanges(s.pushTaskStatusChanges);
-			setPushLikes(s.pushLikes);
-		}
-	}, [data]);
-
-	const hasChanges = (() => {
-		if (!data?.settings) return false;
-		const s = data.settings;
+	if (isLoading || !data?.settings) {
 		return (
-			pushEnabled !== s.pushEnabled ||
-			pushMessages !== s.pushMessages ||
-			pushFriendRequests !== s.pushFriendRequests ||
-			pushProjectActivity !== s.pushProjectActivity ||
-			pushTaskAssignments !== s.pushTaskAssignments ||
-			pushComments !== s.pushComments ||
-			pushTaskStatusChanges !== s.pushTaskStatusChanges ||
-			pushLikes !== s.pushLikes
+			<Container direction="vertical" width="full" className="py-4">
+				<div>Loading...</div>
+			</Container>
 		);
-	})();
+	}
+
+	const settings = data.settings;
+
+	const get = (key: SettingsKey): boolean => edits[key] ?? settings[key];
+
+	const set = (key: SettingsKey) => (value: boolean) => {
+		setEdits((prev) => ({ ...prev, [key]: value }));
+	};
+
+	const hasChanges = (Object.keys(edits) as SettingsKey[]).some(
+		(key) => edits[key] !== settings[key],
+	);
+
+	const pushEnabled = get("pushEnabled");
 
 	const handleSave = async () => {
+		const merged: NotificationSettingsType = {
+			pushEnabled: get("pushEnabled"),
+			pushMessages: get("pushMessages"),
+			pushFriendRequests: get("pushFriendRequests"),
+			pushProjectActivity: get("pushProjectActivity"),
+			pushTaskAssignments: get("pushTaskAssignments"),
+			pushComments: get("pushComments"),
+			pushTaskStatusChanges: get("pushTaskStatusChanges"),
+			pushLikes: get("pushLikes"),
+		};
+
 		try {
-			await updateSettings({
-				pushEnabled,
-				pushMessages,
-				pushFriendRequests,
-				pushProjectActivity,
-				pushTaskAssignments,
-				pushComments,
-				pushTaskStatusChanges,
-				pushLikes,
-			}).unwrap();
+			await updateSettings(merged).unwrap();
+			setEdits({});
 			showNotification({
 				message: "Notification settings saved",
 				variant: "success",
@@ -80,57 +72,42 @@ export default function NotificationSettings() {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<Container direction="vertical" width="full" className="py-4">
-				<div>Loading...</div>
-			</Container>
-		);
-	}
-
 	const toggles = [
 		{
 			label: "Messages",
 			description: "New direct messages",
-			checked: pushMessages,
-			onChange: setPushMessages,
+			key: "pushMessages" as SettingsKey,
 		},
 		{
 			label: "Friend Requests",
 			description: "Incoming friend requests and acceptances",
-			checked: pushFriendRequests,
-			onChange: setPushFriendRequests,
+			key: "pushFriendRequests" as SettingsKey,
 		},
 		{
 			label: "Project Activity",
 			description: "Invites, join requests, role changes, and removals",
-			checked: pushProjectActivity,
-			onChange: setPushProjectActivity,
+			key: "pushProjectActivity" as SettingsKey,
 		},
 		{
 			label: "Task Assignments",
 			description: "When you are assigned to a task",
-			checked: pushTaskAssignments,
-			onChange: setPushTaskAssignments,
+			key: "pushTaskAssignments" as SettingsKey,
 		},
 		{
 			label: "Task Completions",
 			description:
 				"When a task you're assigned to or administrate is completed",
-			checked: pushTaskStatusChanges,
-			onChange: setPushTaskStatusChanges,
+			key: "pushTaskStatusChanges" as SettingsKey,
 		},
 		{
 			label: "Comments",
 			description: "Comments on your tasks and posts",
-			checked: pushComments,
-			onChange: setPushComments,
+			key: "pushComments" as SettingsKey,
 		},
 		{
 			label: "Likes",
 			description: "When someone likes your task or post",
-			checked: pushLikes,
-			onChange: setPushLikes,
+			key: "pushLikes" as SettingsKey,
 		},
 	];
 
@@ -150,7 +127,7 @@ export default function NotificationSettings() {
 						Receive browser notifications when you&apos;re not on the site
 					</p>
 				</div>
-				<ToggleSwitch checked={pushEnabled} onChange={setPushEnabled} />
+				<ToggleSwitch checked={pushEnabled} onChange={set("pushEnabled")} />
 			</Container>
 
 			{toggles.map((toggle) => (
@@ -172,8 +149,8 @@ export default function NotificationSettings() {
 						</p>
 					</div>
 					<ToggleSwitch
-						checked={toggle.checked}
-						onChange={toggle.onChange}
+						checked={get(toggle.key)}
+						onChange={set(toggle.key)}
 						disabled={!pushEnabled}
 					/>
 				</Container>

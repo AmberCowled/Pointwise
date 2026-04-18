@@ -4,28 +4,33 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import { ErrorCard } from "@pointwise/app/components/ui/ErrorCard";
 import Modal from "@pointwise/app/components/ui/modal";
-import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
-import {
-	useGetProjectMembersQuery,
-	useRemoveProjectMemberMutation,
-	useUpdateMemberRoleMutation,
-} from "@pointwise/generated/api";
+import { Tag } from "@pointwise/app/components/ui/Tag";
+import { useGetProjectMembersQuery } from "@pointwise/generated/api";
 import { getErrorMessage } from "@pointwise/lib/api/errors";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
-import ProjectMemberCard from "./ProjectMemberCard";
+import ProfilePicture from "../../userCard/ProfilePicture";
 
 export interface ViewMembersModalProps {
 	project: Project;
 }
 
+const roleTagVariants: Record<string, "info" | "success" | "warning"> = {
+	ADMIN: "warning",
+	USER: "info",
+	VIEWER: "success",
+};
+
+const roleLabels: Record<string, string> = {
+	ADMIN: "Admin",
+	USER: "User",
+	VIEWER: "Viewer",
+};
+
 export default function ViewMembersModal({ project }: ViewMembersModalProps) {
-	const { showNotification } = useNotifications();
 	const { data: session } = useSession();
 	const currentUserId = session?.user?.id;
-	const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null);
 
 	const {
 		data: membersData,
@@ -36,65 +41,7 @@ export default function ViewMembersModal({ project }: ViewMembersModalProps) {
 		skip: !project.id,
 	});
 
-	const [updateMemberRole] = useUpdateMemberRoleMutation();
-	const [removeProjectMember] = useRemoveProjectMemberMutation();
-
-	const handleRoleChange = async (
-		userId: string,
-		role: "ADMIN" | "USER" | "VIEWER",
-	) => {
-		setLoadingMemberId(userId);
-		try {
-			await updateMemberRole({
-				projectId: project.id,
-				targetId: userId,
-				role,
-			}).unwrap();
-			showNotification({
-				message: "Role updated successfully",
-				variant: "success",
-			});
-		} catch (err) {
-			showNotification({
-				message: getErrorMessage(err),
-				variant: "error",
-			});
-		} finally {
-			setLoadingMemberId(null);
-		}
-	};
-
-	const handleRemove = async (userId: string) => {
-		const confirmed = await Modal.Confirm({
-			title: "Remove Member",
-			message: "Are you sure you want to remove this member from the project?",
-			confirmText: "Remove",
-			confirmVariant: "danger",
-		});
-		if (!confirmed) return;
-
-		setLoadingMemberId(userId);
-		try {
-			await removeProjectMember({
-				projectId: project.id,
-				targetId: userId,
-			}).unwrap();
-			showNotification({
-				message: "Member removed successfully",
-				variant: "success",
-			});
-		} catch (err) {
-			showNotification({
-				message: getErrorMessage(err),
-				variant: "error",
-			});
-		} finally {
-			setLoadingMemberId(null);
-		}
-	};
-
 	const members = membersData?.members ?? [];
-	const isAdmin = project.role === "ADMIN";
 
 	return (
 		<Modal
@@ -117,15 +64,49 @@ export default function ViewMembersModal({ project }: ViewMembersModalProps) {
 						className="items-stretch"
 					>
 						{members.map((member) => (
-							<ProjectMemberCard
-								key={`${member.userId}-${member.role}`}
-								member={member}
-								isAdmin={isAdmin}
-								isCurrentUser={member.userId === currentUserId}
-								onRoleChange={handleRoleChange}
-								onRemove={handleRemove}
-								isLoading={loadingMemberId === member.userId}
-							/>
+							<Container
+								key={member.userId}
+								direction="horizontal"
+								width="full"
+								className="p-3 items-center rounded-lg bg-zinc-700/50 border border-zinc-700/80"
+							>
+								<ProfilePicture
+									profilePicture={member.image ?? ""}
+									displayName={member.displayName}
+									userId={member.userId}
+									size="xs"
+									className="shrink-0"
+								/>
+								<Container
+									direction="horizontal"
+									gap="sm"
+									width="full"
+									className="items-center min-w-0"
+								>
+									<span
+										className={`text-sm font-medium ${StyleTheme.Text.Primary} truncate`}
+									>
+										{member.displayName}
+									</span>
+									{member.userId === currentUserId && (
+										<Tag variant="info" size="sm">
+											You
+										</Tag>
+									)}
+								</Container>
+								<Container
+									direction="horizontal"
+									width="auto"
+									className="items-center shrink-0"
+								>
+									<Tag
+										variant={roleTagVariants[member.role] ?? "info"}
+										size="sm"
+									>
+										{roleLabels[member.role] ?? member.role}
+									</Tag>
+								</Container>
+							</Container>
 						))}
 					</Container>
 				) : (

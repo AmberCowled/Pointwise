@@ -105,7 +105,12 @@ export async function updateMemberRole(
 	}
 
 	if (project.adminUserIds.includes(targetId)) {
-		throw new ApiError("Cannot change the role of an admin", 400);
+		if (project.ownerId !== adminId) {
+			throw new ApiError("Cannot change the role of an admin", 400);
+		}
+		if (targetId === adminId) {
+			throw new ApiError("Cannot change your own role", 400);
+		}
 	}
 
 	const currentRole = getUserRoleInProject(project, targetId);
@@ -165,7 +170,12 @@ export async function removeMember(
 	}
 
 	if (project.adminUserIds.includes(targetId)) {
-		throw new ApiError("Cannot remove an admin from the project", 400);
+		if (project.ownerId !== adminId) {
+			throw new ApiError("Cannot remove an admin from the project", 400);
+		}
+		if (targetId === adminId) {
+			throw new ApiError("Cannot remove yourself from the project", 400);
+		}
 	}
 
 	const currentRole = getUserRoleInProject(project, targetId);

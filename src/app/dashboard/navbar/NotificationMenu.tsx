@@ -2,6 +2,7 @@
 
 import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
+import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	api,
@@ -14,6 +15,7 @@ import {
 	useRejectJoinRequestMutation,
 } from "@pointwise/generated/api";
 import { invalidateTags } from "@pointwise/generated/invalidation";
+import { getErrorMessage } from "@pointwise/lib/api/errors";
 import type { NotificationAction } from "@pointwise/lib/notifications/actions";
 import { getNotificationActions } from "@pointwise/lib/notifications/actions";
 import {
@@ -29,6 +31,7 @@ import ProfilePicture from "../userCard/ProfilePicture";
 
 export default function NotificationMenu() {
 	const dispatch = useAppDispatch();
+	const { showNotification } = useNotifications();
 
 	const { data, isLoading } = useGetNotificationsQuery({});
 	const notifications = data?.notifications ?? [];
@@ -104,7 +107,10 @@ export default function NotificationMenu() {
 					]),
 				);
 			} catch (err) {
-				console.error("Notification action failed:", err);
+				showNotification({
+					message: getErrorMessage(err),
+					variant: "error",
+				});
 			} finally {
 				setPendingActions((prev) => {
 					const next = new Set(prev);
@@ -122,6 +128,7 @@ export default function NotificationMenu() {
 			joinRequestRoles,
 			removeNotificationFromCache,
 			dispatch,
+			showNotification,
 		],
 	);
 

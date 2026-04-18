@@ -4,6 +4,7 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Container from "@pointwise/app/components/ui/Container";
 import Modal from "@pointwise/app/components/ui/modal";
 import { useNotifications } from "@pointwise/app/components/ui/NotificationProvider";
+import { ProgressBar } from "@pointwise/app/components/ui/ProgressBar";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import {
 	useGetAccountInfoQuery,
@@ -13,6 +14,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import {
+	IoCloudOutline,
 	IoFingerPrint,
 	IoGlobeOutline,
 	IoKeyOutline,
@@ -174,6 +176,20 @@ export default function AccountSettings() {
 				variant: "error",
 			});
 		}
+	};
+
+	const formatBytes = (bytes: number): string => {
+		if (bytes < 1024) return `${bytes} B`;
+		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+		if (bytes < 1024 * 1024 * 1024)
+			return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+		return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+	};
+
+	const storageColorClass = (usage: number): string => {
+		if (usage >= 1) return "bg-red-400";
+		if (usage >= 0.8) return "bg-amber-400";
+		return "bg-emerald-400";
 	};
 
 	const formatRelativeTime = (dateStr: string) => {
@@ -386,6 +402,42 @@ export default function AccountSettings() {
 					)}
 				</div>
 			</section>
+
+			{/* Storage */}
+			{info?.storageInfo && (
+				<section>
+					<div className="flex items-center gap-2 mb-3">
+						<IoCloudOutline
+							className={`text-base ${StyleTheme.Text.Secondary}`}
+						/>
+						<span
+							className={`text-xs font-semibold uppercase tracking-[0.3em] ${StyleTheme.Text.Secondary}`}
+						>
+							Storage
+						</span>
+					</div>
+					<div
+						className={`border-b ${StyleTheme.Container.Border.Dark} pb-3 space-y-2`}
+					>
+						<ProgressBar
+							value={info.storageInfo.used}
+							maxValue={info.storageInfo.limit}
+							heightClass="h-2"
+							overwriteColorClass={storageColorClass}
+						/>
+						<div className="flex items-center justify-between">
+							<span className={`text-xs ${StyleTheme.Text.Secondary}`}>
+								{formatBytes(info.storageInfo.used)} /{" "}
+								{formatBytes(info.storageInfo.limit)} (
+								{info.storageInfo.percentage}%)
+							</span>
+							<span className="text-xs px-2 py-0.5 rounded-full bg-zinc-700/50 text-zinc-400 uppercase">
+								{info.storageInfo.ownerTier} tier
+							</span>
+						</div>
+					</div>
+				</section>
+			)}
 
 			{/* Danger Zone */}
 			<section className="mt-2">

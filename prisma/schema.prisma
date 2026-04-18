@@ -83,11 +83,14 @@ model User {
   comments     Comment[]
   commentLikes CommentLike[]
 
+  ownedProjects    Project[]      @relation("OwnedProjects")
   aiUsageTriggered AiUsageEvent[] @relation("AiUsageTriggered")
   aiUsageBilled    AiUsageEvent[] @relation("AiUsageBilled")
 
   deviceSessions      DeviceSession[]
   webAuthnCredentials WebAuthnCredential[]
+
+  storageBytesUsed BigInt @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -335,6 +338,11 @@ model Project {
   description String?
   goal        String?
   visibility  ProjectVisibility @default(PRIVATE)
+
+  ownerId          String            @db.ObjectId
+  owner            User              @relation("OwnedProjects", fields: [ownerId], references: [id])
+  shareOwnerCredits  Boolean          @default(false)
+  storageBytesUsed   BigInt           @default(0)
 
   // User roles (using arrays for flexibility)
   adminUserIds       String[] @default([]) @db.ObjectId // Users with admin access

@@ -4,7 +4,8 @@ interface TierConfig {
 	credits: number;
 	maxProjects: number;
 	usersPerProject: number;
-	storageBytesPerProject: number;
+	storageBytes: number;
+	maxFileSizeBytes: number;
 }
 
 export const TIER_CONFIG: Record<SubscriptionTier, TierConfig> = {
@@ -12,25 +13,29 @@ export const TIER_CONFIG: Record<SubscriptionTier, TierConfig> = {
 		credits: 30,
 		maxProjects: 5,
 		usersPerProject: 2,
-		storageBytesPerProject: 50 * 1024 * 1024,
+		storageBytes: 50 * 1024 * 1024,
+		maxFileSizeBytes: 5 * 1024 * 1024,
 	},
 	PLUS: {
 		credits: 300,
 		maxProjects: 25,
 		usersPerProject: 10,
-		storageBytesPerProject: 500 * 1024 * 1024,
+		storageBytes: 500 * 1024 * 1024,
+		maxFileSizeBytes: 25 * 1024 * 1024,
 	},
 	PRO: {
 		credits: 1000,
 		maxProjects: Infinity,
 		usersPerProject: 50,
-		storageBytesPerProject: 2 * 1024 * 1024 * 1024,
+		storageBytes: 2 * 1024 * 1024 * 1024,
+		maxFileSizeBytes: 100 * 1024 * 1024,
 	},
 	ENTERPRISE: {
 		credits: 9999,
 		maxProjects: Infinity,
 		usersPerProject: 9999,
-		storageBytesPerProject: 10 * 1024 * 1024 * 1024,
+		storageBytes: 10 * 1024 * 1024 * 1024,
+		maxFileSizeBytes: 500 * 1024 * 1024,
 	},
 };
 

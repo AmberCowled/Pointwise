@@ -189,7 +189,7 @@ export function Notification({
 					{title && (
 						<div className="font-semibold mb-1 text-current">{title}</div>
 					)}
-					<div className="text-current">{message}</div>
+					<div className="text-current whitespace-pre-line">{message}</div>
 					{action && (
 						<button
 							type="button"

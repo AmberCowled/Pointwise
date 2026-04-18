@@ -24,6 +24,8 @@ import GenerateTaskModal from "../modals/task/GenerateTaskModal";
 import TaskCard from "../taskCard/TaskCard";
 import NoFilteredTasksView from "./NoFilteredTasksView";
 import NoTasksView from "./NoTasksView";
+import OverLimitCard from "./OverLimitCard";
+import StorageBanner from "./StorageBanner";
 import TaskFilters, { type TaskFiltersRequest } from "./TaskFilters";
 
 const filterByStatus = (task: Task, filters: TaskFiltersRequest) => {
@@ -161,6 +163,14 @@ export default function TasksOverview() {
 		);
 	}, [tasks, currentFilters]);
 
+	if (project?.memberLimitInfo?.exceeded) {
+		return (
+			<Container direction="vertical" gap="sm" className="py-3">
+				<OverLimitCard project={project} />
+			</Container>
+		);
+	}
+
 	return (
 		<>
 			{project && <CreateTaskModal project={project} />}
@@ -168,6 +178,7 @@ export default function TasksOverview() {
 				<GenerateTaskModal project={project} tasks={tasks?.tasks ?? []} />
 			)}
 			<Container direction="vertical" gap="sm" className="py-3">
+				{project && <StorageBanner project={project} />}
 				<Card
 					title="Tasks"
 					label="Overview"

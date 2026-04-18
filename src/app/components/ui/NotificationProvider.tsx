@@ -145,7 +145,7 @@ export function NotificationProvider({
 			{children}
 			<div
 				className={clsx(
-					"fixed z-50 pointer-events-none",
+					"fixed z-[9999] pointer-events-none",
 					positionStyles[position],
 					position.includes("top") || position.includes("bottom")
 						? "flex flex-col gap-3"

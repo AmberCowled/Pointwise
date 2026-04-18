@@ -15,6 +15,15 @@ export const AccountInfoSchema = z.object({
 	hasPassword: z.boolean(),
 	twoFactorEnabled: z.boolean(),
 	email: z.string().nullable(),
+	storageInfo: z
+		.object({
+			used: z.number(),
+			limit: z.number(),
+			percentage: z.number(),
+			exceeded: z.boolean(),
+			ownerTier: z.string(),
+		})
+		.optional(),
 });
 
 export const AccountInfoResponseSchema = z.object({
