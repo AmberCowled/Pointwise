@@ -674,6 +674,24 @@ export const EventRegistry = {
 			},
 		},
 	},
+	PROJECT_OWNERSHIP_TRANSFERRED: {
+		tags: ["Projects", "Members"] as TagDescription[],
+		notification: {
+			schema: z.object({
+				projectId: z.string(),
+				projectName: z.string(),
+			}),
+			pushCategory: "pushProjectActivity" as const,
+			menu: "notifications" as const,
+			getMessage(data: Record<string, unknown>, actorName: string) {
+				const d = data as { projectName: string };
+				return `${actorName} transferred ownership of ${d.projectName} to you.`;
+			},
+			getHref(data: Record<string, unknown>) {
+				return `/dashboard/${(data as { projectId: string }).projectId}`;
+			},
+		},
+	},
 
 	// -----------------------------------------------------------------------
 	// New event-only entries (3) — realtime cache invalidation

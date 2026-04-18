@@ -4,12 +4,15 @@ import { Button } from "@pointwise/app/components/ui/Button";
 import Menu from "@pointwise/app/components/ui/menu";
 import Modal from "@pointwise/app/components/ui/modal";
 import ManageJoinRequestsModal from "@pointwise/app/dashboard/modals/joinRequest/ManageJoinRequestsModal";
+import EditRolesModal from "@pointwise/app/dashboard/modals/project/EditRolesModal";
 import InviteFriendsModal from "@pointwise/app/dashboard/modals/project/InviteFriendsModal";
 import LeaveProjectConfirmModal from "@pointwise/app/dashboard/modals/project/LeaveProjectConfirmModal";
 import ManageProjectInvitesModal from "@pointwise/app/dashboard/modals/project/ManageProjectInvitesModal";
+import TransferOwnershipModal from "@pointwise/app/dashboard/modals/project/TransferOwnershipModal";
 import UpdateProjectModal from "@pointwise/app/dashboard/modals/project/UpdateProjectModal";
 import ViewMembersModal from "@pointwise/app/dashboard/modals/project/ViewMembersModal";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
+import { useSession } from "next-auth/react";
 import {
 	IoClipboard,
 	IoFolder,
@@ -19,6 +22,8 @@ import {
 	IoPersonAdd,
 	IoPersonRemove,
 	IoSettings,
+	IoShield,
+	IoSwapHorizontal,
 	IoTrash,
 } from "react-icons/io5";
 
@@ -27,8 +32,9 @@ export interface ProjectCardMenuProps {
 }
 
 export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
-	const isOnlyAdmin =
-		project.role === "ADMIN" && project.adminUserIds?.length === 1;
+	const { data: session } = useSession();
+	const currentUserId = session?.user?.id;
+	const isOwner = project.ownerId === currentUserId;
 
 	return (
 		<>
@@ -38,6 +44,7 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 					<ManageProjectInvitesModal project={project} />
 					<ManageJoinRequestsModal project={project} />
 					<InviteFriendsModal project={project} />
+					<EditRolesModal project={project} />
 				</>
 			)}
 			{project.role !== "NONE" && (
@@ -46,6 +53,7 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 					<ViewMembersModal project={project} />
 				</>
 			)}
+			{isOwner && <TransferOwnershipModal project={project} />}
 			{(project.role !== "NONE" || project.visibility === "PUBLIC") && (
 				<Menu trigger={<Button variant="ghost" size="xs" icon={IoSettings} />}>
 					<Menu.Section title="Navigation">
@@ -55,9 +63,7 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 							description="View all tasks"
 							href={`/dashboard/${project.id}`}
 						/>
-					</Menu.Section>
-					{project.role !== "NONE" && (
-						<Menu.Section title="Community">
+						{project.role !== "NONE" && (
 							<Menu.Option
 								icon={<IoPeople />}
 								label="View Members"
@@ -66,6 +72,10 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 									Modal.Manager.open(`view-members-modal-${project.id}`)
 								}
 							/>
+						)}
+					</Menu.Section>
+					{project.role !== "NONE" && (
+						<Menu.Section title="Community">
 							<Menu.Option
 								icon={<IoPersonAdd />}
 								label="Invite Members"
@@ -79,7 +89,7 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 								icon={<IoPersonRemove />}
 								label="Leave Project"
 								description="Leave project"
-								disabled={isOnlyAdmin}
+								disabled={isOwner}
 								onClick={() =>
 									Modal.Manager.open(`leave-project-modal-${project.id}`)
 								}
@@ -117,6 +127,26 @@ export default function ProjectCardMenu({ project }: ProjectCardMenuProps) {
 								onClick={() => {
 									Modal.Manager.open(`update-project-modal-${project.id}`);
 								}}
+							/>
+							<Menu.Option
+								icon={<IoShield />}
+								label="Edit Roles"
+								description="Edit member roles"
+								onClick={() => {
+									Modal.Manager.open(`edit-roles-modal-${project.id}`);
+								}}
+							/>
+						</Menu.Section>
+					)}
+					{isOwner && (
+						<Menu.Section title="Owner">
+							<Menu.Option
+								icon={<IoSwapHorizontal />}
+								label="Transfer Ownership"
+								description="Transfer to another admin"
+								onClick={() =>
+									Modal.Manager.open(`transfer-ownership-modal-${project.id}`)
+								}
 							/>
 							<Menu.Option
 								icon={<IoTrash />}

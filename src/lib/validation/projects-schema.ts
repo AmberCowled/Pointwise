@@ -44,6 +44,7 @@ export const ProjectSchema = z.object({
 	description: PROJECT_DESCRIPTION_SCHEMA,
 	goal: PROJECT_GOAL_SCHEMA,
 	visibility: PROJECT_VISIBILITY_SCHEMA,
+	ownerId: z.string(),
 	adminUserIds: PROJECT_ADMIN_USER_IDS_SCHEMA,
 	projectUserIds: PROJECT_PROJECT_USER_IDS_SCHEMA,
 	viewerUserIds: PROJECT_VIEWER_USER_IDS_SCHEMA,
@@ -215,3 +216,18 @@ export type UpdateMemberRoleResponse = z.infer<
 	typeof UpdateMemberRoleResponseSchema
 >;
 export type RemoveMemberResponse = z.infer<typeof RemoveMemberResponseSchema>;
+
+export const TransferOwnershipRequestSchema = z.object({
+	newOwnerId: z.string().min(1),
+});
+
+export const TransferOwnershipResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
+export type TransferOwnershipRequest = z.infer<
+	typeof TransferOwnershipRequestSchema
+>;
+export type TransferOwnershipResponse = z.infer<
+	typeof TransferOwnershipResponseSchema
+>;

@@ -47,16 +47,17 @@ export default endpoint.delete<
 				prismaProject.adminUserIds,
 			);
 
-			// Realtime cache invalidation for non-admin members
+			// Realtime cache invalidation for non-admin members + removed user
 			const nonAdminMembers = [
 				...prismaProject.projectUserIds,
 				...prismaProject.viewerUserIds,
 			].filter((id) => id !== user.id);
-			if (nonAdminMembers.length > 0) {
+			const invalidateTargets = [...nonAdminMembers, params.targetId];
+			if (invalidateTargets.length > 0) {
 				await emitEvent(
 					"PROJECT_MUTATED",
 					{ projectId: params.id },
-					nonAdminMembers,
+					invalidateTargets,
 				);
 			}
 		} catch (error) {

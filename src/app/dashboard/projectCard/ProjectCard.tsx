@@ -4,6 +4,7 @@ import Container from "@pointwise/app/components/ui/Container";
 import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import DeleteProjectModal from "../modals/project/DeleteProjectModal";
 import ProjectCardDescription from "./ProjectCardDescription";
 import ProjectCardJoinRequestButton from "./ProjectCardJoinRequestButton";
@@ -25,6 +26,8 @@ export default function ProjectCard({
 	overrideOnClick,
 }: ProjectCardProps) {
 	const router = useRouter();
+	const { data: session } = useSession();
+	const isOwner = project.ownerId === session?.user?.id;
 
 	return (
 		<>
@@ -49,7 +52,7 @@ export default function ProjectCard({
 					<Container width="full" gap="sm">
 						<ProjectCardTitle title={project.name} />
 						<ProjectCardVisibility visibility={project.visibility} />
-						<ProjectCardRole role={project.role} />
+						<ProjectCardRole role={project.role} isOwner={isOwner} />
 					</Container>
 					{!disableMenu && (
 						<Container width="auto" className="justify-end">

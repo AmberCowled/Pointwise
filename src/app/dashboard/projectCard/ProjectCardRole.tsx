@@ -5,6 +5,7 @@ import clsx from "clsx";
 
 export interface ProjectCardRoleProps {
 	role: ProjectRole;
+	isOwner?: boolean;
 }
 
 type RoleKey = "ADMIN" | "USER" | "VIEWER";
@@ -21,7 +22,10 @@ const roleLabels: Record<RoleKey, string> = {
 	VIEWER: "Viewer",
 };
 
-export default function ProjectCardRole({ role }: ProjectCardRoleProps) {
+export default function ProjectCardRole({
+	role,
+	isOwner,
+}: ProjectCardRoleProps) {
 	if (role === "NONE") {
 		return null;
 	}
@@ -33,7 +37,7 @@ export default function ProjectCardRole({ role }: ProjectCardRoleProps) {
 				roleStyles[role],
 			)}
 		>
-			{roleLabels[role]}
+			{isOwner && role === "ADMIN" ? "Owner" : roleLabels[role]}
 		</span>
 	);
 }
