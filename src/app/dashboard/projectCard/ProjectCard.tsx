@@ -5,7 +5,7 @@ import { StyleTheme } from "@pointwise/app/components/ui/StyleTheme";
 import type { Project } from "@pointwise/lib/validation/projects-schema";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { IoLockClosed } from "react-icons/io5";
+import { IoCloudOffline, IoLockClosed } from "react-icons/io5";
 import DeleteProjectModal from "../modals/project/DeleteProjectModal";
 import ProjectCardDescription from "./ProjectCardDescription";
 import ProjectCardJoinRequestButton from "./ProjectCardJoinRequestButton";
@@ -30,6 +30,7 @@ export default function ProjectCard({
 	const { data: session } = useSession();
 	const isOwner = project.ownerId === session?.user?.id;
 	const isOverLimit = project.memberLimitInfo?.exceeded ?? false;
+	const isStorageExceeded = project.storageInfo?.exceeded ?? false;
 
 	return (
 		<>
@@ -38,7 +39,7 @@ export default function ProjectCard({
 				width="full"
 				direction="vertical"
 				gap="none"
-				className={`${StyleTheme.Container.BackgroundSubtle} rounded-lg border ${isOverLimit ? "border-amber-500/50" : StyleTheme.Container.Border.Dark} hover:border-zinc-600 cursor-pointer px-4 py-2`}
+				className={`${StyleTheme.Container.BackgroundSubtle} rounded-lg border ${isOverLimit || isStorageExceeded ? "border-amber-500/50" : StyleTheme.Container.Border.Dark} hover:border-zinc-600 cursor-pointer px-4 py-2`}
 				onClick={() => {
 					if (overrideOnClick) {
 						overrideOnClick();
@@ -59,6 +60,12 @@ export default function ProjectCard({
 							<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">
 								<IoLockClosed className="h-3 w-3" />
 								Over limit
+							</span>
+						)}
+						{isStorageExceeded && (
+							<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">
+								<IoCloudOffline className="h-3 w-3" />
+								Storage full
 							</span>
 						)}
 					</Container>

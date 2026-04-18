@@ -1,3 +1,4 @@
+import { getOwnerStorageInfo } from "@pointwise/lib/credits/storage";
 import prisma from "@pointwise/lib/prisma";
 import type { AccountInfoResponse } from "@pointwise/lib/validation/account-schema";
 import { endpoint } from "ertk";
@@ -9,7 +10,7 @@ export default endpoint.get<AccountInfoResponse, void>({
 	maxRetries: 2,
 	query: () => "/user/account-info",
 	handler: async ({ user }) => {
-		const [accounts, dbUser] = await Promise.all([
+		const [accounts, dbUser, storageInfo] = await Promise.all([
 			prisma.account.findMany({
 				where: { userId: user.id },
 				select: { provider: true },
@@ -22,6 +23,7 @@ export default endpoint.get<AccountInfoResponse, void>({
 					email: true,
 				},
 			}),
+			getOwnerStorageInfo(user.id),
 		]);
 
 		return {
@@ -30,6 +32,7 @@ export default endpoint.get<AccountInfoResponse, void>({
 				hasPassword: !!dbUser?.passwordHash,
 				twoFactorEnabled: dbUser?.twoFactorEnabled ?? false,
 				email: dbUser?.email ?? null,
+				storageInfo,
 			},
 		};
 	},

@@ -278,6 +278,13 @@ export function serializeProject(
 		exceeded: boolean;
 		ownerTier: string;
 	},
+	storageInfo?: {
+		used: number;
+		limit: number;
+		percentage: number;
+		exceeded: boolean;
+		ownerTier: string;
+	},
 ): Project {
 	return ProjectSchema.parse({
 		id: project.id,
@@ -296,6 +303,7 @@ export function serializeProject(
 		inviteCount: project._count?.projectInvites ?? 0,
 		role: getUserRoleInProject(project, userId),
 		memberLimitInfo,
+		storageInfo,
 	});
 }
 

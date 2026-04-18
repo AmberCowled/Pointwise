@@ -62,6 +62,15 @@ export const ProjectSchema = z.object({
 			ownerTier: z.string(),
 		})
 		.optional(),
+	storageInfo: z
+		.object({
+			used: z.number(),
+			limit: z.number(),
+			percentage: z.number(),
+			exceeded: z.boolean(),
+			ownerTier: z.string(),
+		})
+		.optional(),
 });
 
 export const ProjectsSchema = z.array(ProjectSchema);

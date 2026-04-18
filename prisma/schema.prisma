@@ -90,6 +90,8 @@ model User {
   deviceSessions      DeviceSession[]
   webAuthnCredentials WebAuthnCredential[]
 
+  storageBytesUsed BigInt @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -339,7 +341,8 @@ model Project {
 
   ownerId          String            @db.ObjectId
   owner            User              @relation("OwnedProjects", fields: [ownerId], references: [id])
-  shareOwnerCredits Boolean          @default(false)
+  shareOwnerCredits  Boolean          @default(false)
+  storageBytesUsed   BigInt           @default(0)
 
   // User roles (using arrays for flexibility)
   adminUserIds       String[] @default([]) @db.ObjectId // Users with admin access

@@ -3,6 +3,7 @@ import {
 	getOwnerTier,
 	getProjectMemberLimitInfo,
 } from "@pointwise/lib/credits/member-limits";
+import { getOwnerStorageInfo } from "@pointwise/lib/credits/storage";
 import type { GetProjectsResponse } from "@pointwise/lib/validation/projects-schema";
 import type { SubscriptionTier } from "@prisma/client";
 import { endpoint } from "ertk";
@@ -28,6 +29,21 @@ export default endpoint.get<GetProjectsResponse, void>({
 			tierResults.map((r) => [r.ownerId, r.tier]),
 		);
 
+		// Cache storageInfo per owner (multiple projects may share the same owner)
+		const storageInfoMap = new Map<
+			string,
+			Awaited<ReturnType<typeof getOwnerStorageInfo>>
+		>();
+		await Promise.all(
+			uniqueOwnerIds.map(async (ownerId) => {
+				const ownerTier = ownerTierMap.get(ownerId) ?? "FREE";
+				storageInfoMap.set(
+					ownerId,
+					await getOwnerStorageInfo(ownerId, ownerTier),
+				);
+			}),
+		);
+
 		const projects = await Promise.all(
 			prismaProjects.map(async (project) => {
 				const ownerTier = ownerTierMap.get(project.ownerId) ?? "FREE";
@@ -35,7 +51,8 @@ export default endpoint.get<GetProjectsResponse, void>({
 					project,
 					ownerTier,
 				);
-				return serializeProject(project, user.id, memberLimitInfo);
+				const storageInfo = storageInfoMap.get(project.ownerId);
+				return serializeProject(project, user.id, memberLimitInfo, storageInfo);
 			}),
 		);
 
