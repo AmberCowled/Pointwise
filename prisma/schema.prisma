@@ -42,6 +42,8 @@ model User {
 
   profileVisibility ProfileVisibility @default(PUBLIC)
 
+  userTier UserTier?
+
   displayName   String
   bio          String?
   location     String?
@@ -255,6 +257,13 @@ enum AiActionType {
   XP_SUGGESTION
 }
 
+enum SubscriptionTier {
+  FREE
+  PLUS
+  PRO
+  ENTERPRISE
+}
+
 model AiUsageEvent {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   userId         String       @db.ObjectId
@@ -278,6 +287,22 @@ model AiUsageEvent {
   @@index([projectId])
   @@index([createdAt])
   @@index([actionType])
+}
+
+model UserTier {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String            @unique @db.ObjectId
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            SubscriptionTier  @default(FREE)
+  tierChangedAt   DateTime          @default(now())
+  pendingTier     SubscriptionTier?
+  pendingChangeAt DateTime?
+  periodStart     DateTime?
+  periodEnd       DateTime?
+  totalCredits    Int               @default(0)
+  usedCredits     Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }
 
 model Invite {
