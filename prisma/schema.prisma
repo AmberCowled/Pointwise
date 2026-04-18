@@ -81,6 +81,9 @@ model User {
   comments     Comment[]
   commentLikes CommentLike[]
 
+  aiUsageTriggered AiUsageEvent[] @relation("AiUsageTriggered")
+  aiUsageBilled    AiUsageEvent[] @relation("AiUsageBilled")
+
   deviceSessions      DeviceSession[]
   webAuthnCredentials WebAuthnCredential[]
 
@@ -243,6 +246,38 @@ enum ProjectRole {
   ADMIN
   USER
   VIEWER
+}
+
+enum AiActionType {
+  TASK_SUGGESTIONS
+  TASK_EXPAND
+  TASK_BREAKDOWN
+  XP_SUGGESTION
+}
+
+model AiUsageEvent {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String       @db.ObjectId
+  user           User         @relation("AiUsageTriggered", fields: [userId], references: [id], onDelete: Cascade)
+  billedUserId   String       @db.ObjectId
+  billedUser     User         @relation("AiUsageBilled", fields: [billedUserId], references: [id], onDelete: Cascade)
+  projectId      String?      @db.ObjectId
+  actionType     AiActionType
+  model          String
+  inputTokens    Int
+  outputTokens   Int
+  costUsd        Float
+  creditsCharged Int
+  success        Boolean
+  durationMs     Int
+  createdAt      DateTime     @default(now())
+
+  @@index([userId])
+  @@index([billedUserId])
+  @@index([billedUserId, createdAt])
+  @@index([projectId])
+  @@index([createdAt])
+  @@index([actionType])
 }
 
 model Invite {

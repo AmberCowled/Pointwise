@@ -11,11 +11,13 @@ export default endpoint.post<TaskSuggestionsResponse, TaskSuggestionsRequest>({
 	request: TaskSuggestionsRequestSchema,
 	protected: true,
 	query: (body) => ({ url: "/llm/task-suggestions", method: "POST", body }),
-	handler: async ({ body }) => {
+	handler: async ({ body, user }) => {
 		const suggestions = await getTaskSuggestions(
 			body.goal ?? null,
 			body.existingTasks ?? [],
 			body.userPrompt?.trim() ?? null,
+			user.id,
+			body.projectId,
 		);
 
 		if (suggestions === null) {

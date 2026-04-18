@@ -11,11 +11,13 @@ export default endpoint.post<TaskBreakdownResponse, TaskBreakdownRequest>({
 	request: TaskBreakdownRequestSchema,
 	protected: true,
 	query: (body) => ({ url: "/llm/task-breakdown", method: "POST", body }),
-	handler: async ({ body }) => {
+	handler: async ({ body, user }) => {
 		const subtasks = await getTaskBreakdown(
 			body.goal ?? null,
 			body.title.trim(),
 			body.description?.trim() ?? null,
+			user.id,
+			body.projectId,
 		);
 
 		if (subtasks === null) {

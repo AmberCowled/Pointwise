@@ -11,11 +11,13 @@ export default endpoint.post<TaskExpandResponse, TaskExpandRequest>({
 	request: TaskExpandRequestSchema,
 	protected: true,
 	query: (body) => ({ url: "/llm/task-expand", method: "POST", body }),
-	handler: async ({ body }) => {
+	handler: async ({ body, user }) => {
 		const expanded = await expandTaskSuggestion(
 			body.goal ?? null,
 			body.title.trim(),
 			body.summary.trim(),
+			user.id,
+			body.projectId,
 		);
 
 		if (expanded === null) {
