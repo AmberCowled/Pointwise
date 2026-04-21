@@ -9,6 +9,7 @@ import {
 	likeComment,
 	unlikeComment,
 } from "@pointwise/lib/api/comments";
+import { ApiError } from "@pointwise/lib/api/errors";
 import { truncateMessageSnippet } from "@pointwise/lib/notifications/service";
 import prisma from "@pointwise/lib/prisma";
 import { logDispatchError } from "@pointwise/lib/realtime/log";
@@ -157,7 +158,7 @@ export async function getPostReplies(
 		where: { id: parentCommentId, threadId: baseThread.id },
 	});
 	if (!parentComment) {
-		throw new Error("Parent comment not found in this post");
+		throw new ApiError("Parent comment not found in this post", 404);
 	}
 
 	const replyThread = await prisma.commentThread.findUnique({
@@ -184,14 +185,14 @@ export async function createPostReply(
 		where: { postId },
 	});
 	if (!baseThread) {
-		throw new Error("Post has no comments yet");
+		throw new ApiError("Post has no comments yet", 404);
 	}
 
 	const parentComment = await prisma.comment.findFirst({
 		where: { id: parentCommentId, threadId: baseThread.id },
 	});
 	if (!parentComment) {
-		throw new Error("Parent comment not found in this post");
+		throw new ApiError("Parent comment not found in this post", 404);
 	}
 
 	const replyThread = await getOrCreateReplyThread(parentCommentId);
@@ -264,15 +265,16 @@ export async function editPostComment(
 		where: { id: commentId },
 		include: { thread: true },
 	});
-	if (!comment) throw new Error("Comment not found");
+	if (!comment) throw new ApiError("Comment not found", 404);
 	if (comment.authorId !== userId) {
-		throw new Error("Forbidden: Only the author can edit this comment");
+		throw new ApiError("Forbidden: Only the author can edit this comment", 403);
 	}
 
 	const baseThread = await prisma.commentThread.findFirst({
 		where: { postId },
 	});
-	if (!baseThread) throw new Error("Comment does not belong to this post");
+	if (!baseThread)
+		throw new ApiError("Comment does not belong to this post", 404);
 
 	const isTopLevel = comment.threadId === baseThread.id;
 	if (!isTopLevel) {
@@ -281,13 +283,13 @@ export async function editPostComment(
 			select: { parentCommentId: true },
 		});
 		if (!replyThread?.parentCommentId) {
-			throw new Error("Comment does not belong to this post");
+			throw new ApiError("Comment does not belong to this post", 404);
 		}
 		const parentInBase = await prisma.comment.findFirst({
 			where: { id: replyThread.parentCommentId, threadId: baseThread.id },
 		});
 		if (!parentInBase) {
-			throw new Error("Comment does not belong to this post");
+			throw new ApiError("Comment does not belong to this post", 404);
 		}
 	}
 
@@ -338,15 +340,19 @@ export async function deletePostComment(
 		where: { id: commentId },
 		include: { thread: true },
 	});
-	if (!comment) throw new Error("Comment not found");
+	if (!comment) throw new ApiError("Comment not found", 404);
 	if (comment.authorId !== userId) {
-		throw new Error("Forbidden: Only the author can delete this comment");
+		throw new ApiError(
+			"Forbidden: Only the author can delete this comment",
+			403,
+		);
 	}
 
 	const baseThread = await prisma.commentThread.findFirst({
 		where: { postId },
 	});
-	if (!baseThread) throw new Error("Comment does not belong to this post");
+	if (!baseThread)
+		throw new ApiError("Comment does not belong to this post", 404);
 
 	const isTopLevel = comment.threadId === baseThread.id;
 	let decrementCount = 1;
@@ -371,7 +377,7 @@ export async function deletePostComment(
 			select: { parentCommentId: true },
 		});
 		if (!replyThread?.parentCommentId) {
-			throw new Error("Comment does not belong to this post");
+			throw new ApiError("Comment does not belong to this post", 404);
 		}
 	}
 

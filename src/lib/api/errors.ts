@@ -7,6 +7,7 @@
  */
 export class ApiError extends Error {
 	status: number;
+	expose = true;
 	data?: unknown;
 
 	constructor(message: string, status: number, data?: unknown) {

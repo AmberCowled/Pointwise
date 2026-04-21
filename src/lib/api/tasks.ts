@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import {
 	isProjectAdmin,
 	isProjectUserOrHigher,
@@ -53,7 +54,10 @@ export async function getTask(
 	userId: string,
 ): Promise<TaskWithLikes | null> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 	const task = await prisma.task.findFirst({
 		where: { id: taskId, projectId },
@@ -83,7 +87,10 @@ export async function getTasks(
 	userId: string,
 ): Promise<TaskWithLikes[]> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 
 	const tasks = await prisma.task.findMany({
@@ -117,8 +124,9 @@ export async function createTask(
 	userId: string,
 ): Promise<PrismaTask> {
 	if (!(await isProjectUserOrHigher(request.projectId, userId))) {
-		throw new Error(
+		throw new ApiError(
 			"Forbidden: You do not have write permissions in this project",
+			403,
 		);
 	}
 
@@ -178,12 +186,13 @@ export async function updateTask(
 	});
 
 	if (!existingTask) {
-		throw new Error("Task not found");
+		throw new ApiError("Task not found", 404);
 	}
 
 	if (!(await isProjectUserOrHigher(existingTask.projectId, userId))) {
-		throw new Error(
+		throw new ApiError(
 			"Forbidden: You do not have write permissions in this project",
+			403,
 		);
 	}
 
@@ -327,12 +336,13 @@ export async function deleteTask(
 	});
 
 	if (!task) {
-		throw new Error("Task not found");
+		throw new ApiError("Task not found", 404);
 	}
 
 	if (!(await isProjectAdmin(task.projectId, userId))) {
-		throw new Error(
+		throw new ApiError(
 			"Forbidden: You must be an admin to delete tasks in this project",
+			403,
 		);
 	}
 
@@ -431,15 +441,18 @@ export async function updateTaskAssignments(
 	});
 
 	if (!task) {
-		throw new Error("Task not found");
+		throw new ApiError("Task not found", 404);
 	}
 
 	if (task.status === "COMPLETED") {
-		throw new Error("Cannot assign users to a completed task");
+		throw new ApiError("Cannot assign users to a completed task", 400);
 	}
 
 	if (!(await isProjectAdmin(task.projectId, userId))) {
-		throw new Error("Forbidden: You must be an admin to assign users to tasks");
+		throw new ApiError(
+			"Forbidden: You must be an admin to assign users to tasks",
+			403,
+		);
 	}
 
 	const eligibleUserIds = new Set([
@@ -449,8 +462,9 @@ export async function updateTaskAssignments(
 
 	for (const id of assignedUserIds) {
 		if (!eligibleUserIds.has(id)) {
-			throw new Error(
+			throw new ApiError(
 				`User ${id} is not an eligible member (admins and users only)`,
+				400,
 			);
 		}
 	}

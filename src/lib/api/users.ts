@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import { utapi } from "@pointwise/lib/api/utapi";
 import prisma from "@pointwise/lib/prisma";
 import { logServerError } from "@pointwise/lib/server-logger";
@@ -132,7 +133,7 @@ export async function getUser(id: string): Promise<User> {
 	});
 
 	if (!userCheck) {
-		throw new Error("User not found");
+		throw new ApiError("User not found", 404);
 	}
 
 	// Generate displayName if missing
@@ -205,7 +206,7 @@ export async function updateUserProfile(
 			userId,
 		);
 		if (!available) {
-			throw new Error("DISPLAY_NAME_TAKEN");
+			throw new ApiError("DISPLAY_NAME_TAKEN", 400);
 		}
 	}
 
@@ -292,7 +293,7 @@ export async function getPublicUserProfile(
 	});
 
 	if (!userData) {
-		throw new Error("User not found");
+		throw new ApiError("User not found", 404);
 	}
 
 	const isOwnProfile = targetUserId === requesterId;
