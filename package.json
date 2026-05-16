@@ -2,6 +2,7 @@
 	"name": "pointwise",
 	"version": "0.1.0",
 	"private": true,
+	"packageManager": "pnpm@9.15.9",
 	"scripts": {
 		"generate": "ertk generate",
 		"dev": "concurrently \"next dev\" \"ertk generate --watch\"",
