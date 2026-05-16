@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import prisma from "@pointwise/lib/prisma";
 import type { Post } from "@pointwise/lib/validation/posts-schema";
 
@@ -49,7 +50,7 @@ export async function getPosts(
 		where: { id: profileUserId },
 		select: { profileVisibility: true },
 	});
-	if (!user) throw new Error("User not found");
+	if (!user) throw new ApiError("User not found", 404);
 
 	const isOwn = profileUserId === requesterId;
 	if (user.profileVisibility === "PRIVATE" && !isOwn) {
@@ -85,9 +86,9 @@ export async function editPost(
 		where: { id: postId },
 		select: { authorId: true },
 	});
-	if (!post) throw new Error("Post not found");
+	if (!post) throw new ApiError("Post not found", 404);
 	if (post.authorId !== userId) {
-		throw new Error("Forbidden: Only the author can edit this post");
+		throw new ApiError("Forbidden: Only the author can edit this post", 403);
 	}
 
 	const updated = await prisma.post.update({
@@ -106,9 +107,9 @@ export async function deletePost(
 		where: { id: postId },
 		select: { authorId: true },
 	});
-	if (!post) throw new Error("Post not found");
+	if (!post) throw new ApiError("Post not found", 404);
 	if (post.authorId !== userId) {
-		throw new Error("Forbidden: Only the author can delete this post");
+		throw new ApiError("Forbidden: Only the author can delete this post", 403);
 	}
 
 	// Delete associated comment thread and comments (cascade handles most)

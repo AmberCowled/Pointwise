@@ -4,6 +4,7 @@ import {
 	serializeComment,
 	serializeReply,
 } from "@pointwise/lib/api/comment-serialization";
+import { ApiError } from "@pointwise/lib/api/errors";
 import {
 	getProjectMemberIds,
 	isProjectAdmin,
@@ -81,7 +82,10 @@ export async function getComments(
 	userId: string,
 ): Promise<Comment[]> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 
 	const thread = await prisma.commentThread.findUnique({
@@ -105,7 +109,10 @@ export async function createComment(
 	content: string,
 ): Promise<Comment> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 
 	const thread = await getOrCreateBaseThread(taskId);
@@ -189,7 +196,10 @@ export async function getReplies(
 	userId: string,
 ): Promise<Reply[]> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 
 	// Verify the parent comment belongs to this task's base thread
@@ -202,7 +212,7 @@ export async function getReplies(
 		where: { id: parentCommentId, threadId: baseThread.id },
 	});
 	if (!parentComment) {
-		throw new Error("Parent comment not found in this task");
+		throw new ApiError("Parent comment not found in this task", 404);
 	}
 
 	const replyThread = await prisma.commentThread.findUnique({
@@ -227,7 +237,10 @@ export async function createReply(
 	content: string,
 ): Promise<Reply> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 
 	// Verify the parent comment belongs to this task's base thread
@@ -235,14 +248,14 @@ export async function createReply(
 		where: { taskId },
 	});
 	if (!baseThread) {
-		throw new Error("Task has no comments yet");
+		throw new ApiError("Task has no comments yet", 404);
 	}
 
 	const parentComment = await prisma.comment.findFirst({
 		where: { id: parentCommentId, threadId: baseThread.id },
 	});
 	if (!parentComment) {
-		throw new Error("Parent comment not found in this task");
+		throw new ApiError("Parent comment not found in this task", 404);
 	}
 
 	const replyThread = await getOrCreateReplyThread(parentCommentId);
@@ -327,7 +340,10 @@ export async function editComment(
 	content: string,
 ): Promise<Comment | Reply> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 
 	const comment = await prisma.comment.findUnique({
@@ -335,10 +351,10 @@ export async function editComment(
 		include: { thread: true },
 	});
 	if (!comment) {
-		throw new Error("Comment not found");
+		throw new ApiError("Comment not found", 404);
 	}
 	if (comment.authorId !== userId) {
-		throw new Error("Forbidden: Only the author can edit this comment");
+		throw new ApiError("Forbidden: Only the author can edit this comment", 403);
 	}
 
 	// Verify comment belongs to this task (either base thread or a reply thread of a base thread comment)
@@ -346,7 +362,7 @@ export async function editComment(
 		where: { taskId },
 	});
 	if (!baseThread) {
-		throw new Error("Comment does not belong to this task");
+		throw new ApiError("Comment does not belong to this task", 404);
 	}
 
 	const isTopLevel = comment.threadId === baseThread.id;
@@ -357,13 +373,13 @@ export async function editComment(
 			select: { parentCommentId: true },
 		});
 		if (!replyThread?.parentCommentId) {
-			throw new Error("Comment does not belong to this task");
+			throw new ApiError("Comment does not belong to this task", 404);
 		}
 		const parentInBase = await prisma.comment.findFirst({
 			where: { id: replyThread.parentCommentId, threadId: baseThread.id },
 		});
 		if (!parentInBase) {
-			throw new Error("Comment does not belong to this task");
+			throw new ApiError("Comment does not belong to this task", 404);
 		}
 	}
 
@@ -412,7 +428,10 @@ export async function deleteComment(
 	userId: string,
 ): Promise<void> {
 	if (!(await verifyProjectAccess(projectId, userId))) {
-		throw new Error("Forbidden: You do not have access to this project");
+		throw new ApiError(
+			"Forbidden: You do not have access to this project",
+			403,
+		);
 	}
 
 	const comment = await prisma.comment.findUnique({
@@ -420,15 +439,16 @@ export async function deleteComment(
 		include: { thread: true },
 	});
 	if (!comment) {
-		throw new Error("Comment not found");
+		throw new ApiError("Comment not found", 404);
 	}
 
 	// Must be author or project admin
 	const isAuthor = comment.authorId === userId;
 	const isAdmin = await isProjectAdmin(projectId, userId);
 	if (!isAuthor && !isAdmin) {
-		throw new Error(
+		throw new ApiError(
 			"Forbidden: Only the author or a project admin can delete this comment",
+			403,
 		);
 	}
 
@@ -437,7 +457,7 @@ export async function deleteComment(
 		where: { taskId },
 	});
 	if (!baseThread) {
-		throw new Error("Comment does not belong to this task");
+		throw new ApiError("Comment does not belong to this task", 404);
 	}
 
 	const isTopLevel = comment.threadId === baseThread.id;
@@ -466,7 +486,7 @@ export async function deleteComment(
 			select: { parentCommentId: true },
 		});
 		if (!replyThread?.parentCommentId) {
-			throw new Error("Comment does not belong to this task");
+			throw new ApiError("Comment does not belong to this task", 404);
 		}
 	}
 

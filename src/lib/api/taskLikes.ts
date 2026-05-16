@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import prisma from "@pointwise/lib/prisma";
 import type { TaskLike as PrismaTaskLike } from "@prisma/client";
 
@@ -10,7 +11,7 @@ export async function likeTask(
 	});
 
 	if (!task) {
-		throw new Error("Task not found");
+		throw new ApiError("Task not found", 404);
 	}
 
 	const existing = await prisma.taskLike.findUnique({
@@ -37,7 +38,7 @@ export async function unlikeTask(
 	});
 
 	if (!task) {
-		throw new Error("Task not found");
+		throw new ApiError("Task not found", 404);
 	}
 
 	await prisma.taskLike.deleteMany({

@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import { getTaskSuggestions } from "@pointwise/lib/api/task-generation";
 import type { TaskSuggestionsResponse } from "@pointwise/lib/validation/task-generation-schema";
 import {
@@ -21,9 +22,7 @@ export default endpoint.post<TaskSuggestionsResponse, TaskSuggestionsRequest>({
 		);
 
 		if (suggestions === null) {
-			const err = new Error("Failed to generate task suggestions");
-			(err as Error & { status: number }).status = 400;
-			throw err;
+			throw new ApiError("Failed to generate task suggestions", 400);
 		}
 
 		return { suggestions };

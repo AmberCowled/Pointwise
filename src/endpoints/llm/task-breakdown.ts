@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import { getTaskBreakdown } from "@pointwise/lib/api/task-generation";
 import type { TaskBreakdownResponse } from "@pointwise/lib/validation/task-generation-schema";
 import {
@@ -21,9 +22,7 @@ export default endpoint.post<TaskBreakdownResponse, TaskBreakdownRequest>({
 		);
 
 		if (subtasks === null) {
-			const err = new Error("Failed to break down task");
-			(err as Error & { status: number }).status = 400;
-			throw err;
+			throw new ApiError("Failed to break down task", 400);
 		}
 
 		return { subtasks };

@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import { createPost } from "@pointwise/lib/api/posts";
 import type { CreatePostResponse } from "@pointwise/lib/validation/posts-schema";
 import { CreatePostRequestSchema } from "@pointwise/lib/validation/posts-schema";
@@ -20,8 +21,9 @@ export default endpoint.post<
 	}),
 	handler: async ({ user, body, params }) => {
 		if (user.id !== params.id) {
-			throw new Error(
+			throw new ApiError(
 				"Forbidden: You can only create posts on your own profile",
+				403,
 			);
 		}
 		const post = await createPost(user.id, body.content);

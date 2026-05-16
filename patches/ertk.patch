@@ -1,0 +1,13 @@
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+index 7814a0fe6b159223bf7b17bbec4d65fd91d6b564..c01a60a84bdfe3a96213f4f264c8913336128224 100644
+--- a/dist/types.d.ts
++++ b/dist/types.d.ts
+@@ -34,7 +34,7 @@ export interface DefaultUser {
+  * Context passed to endpoint handlers on the server side.
+  */
+ export interface HandlerContext<TBody = unknown, TQuery = unknown, TUser = DefaultUser> {
+-    user: TUser | null;
++    user: TUser;
+     body: TBody;
+     query: TQuery;
+     params: Record<string, string>;

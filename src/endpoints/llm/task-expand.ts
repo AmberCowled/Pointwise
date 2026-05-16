@@ -1,3 +1,4 @@
+import { ApiError } from "@pointwise/lib/api/errors";
 import { expandTaskSuggestion } from "@pointwise/lib/api/task-generation";
 import type { TaskExpandResponse } from "@pointwise/lib/validation/task-generation-schema";
 import {
@@ -21,9 +22,7 @@ export default endpoint.post<TaskExpandResponse, TaskExpandRequest>({
 		);
 
 		if (expanded === null) {
-			const err = new Error("Failed to expand task suggestion");
-			(err as Error & { status: number }).status = 400;
-			throw err;
+			throw new ApiError("Failed to expand task suggestion", 400);
 		}
 
 		return expanded;
