@@ -267,6 +267,11 @@ enum SubscriptionTier {
   ENTERPRISE
 }
 
+enum ProjectCreditPolicy {
+  MEMBER_CREDITS
+  OWNER_CREDITS
+}
+
 model AiUsageEvent {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   userId         String       @db.ObjectId
@@ -341,7 +346,8 @@ model Project {
 
   ownerId          String            @db.ObjectId
   owner            User              @relation("OwnedProjects", fields: [ownerId], references: [id])
-  shareOwnerCredits  Boolean          @default(false)
+  creditPolicy       ProjectCreditPolicy @default(MEMBER_CREDITS)
+  memberCreditCap    Int?
   storageBytesUsed   BigInt           @default(0)
 
   // User roles (using arrays for flexibility)

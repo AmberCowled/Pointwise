@@ -1,3 +1,4 @@
+import { gateCreditUsage } from "@pointwise/lib/credits/gate";
 import { callGemini } from "@pointwise/lib/llm/gemini";
 import prisma from "@pointwise/lib/prisma";
 import {
@@ -126,9 +127,13 @@ export async function getXpSuggestion(
 	userId: string,
 ): Promise<number | null> {
 	const prompt = buildXpSuggestionPrompt(goal, taskName, description);
+	const resolution = await gateCreditUsage(userId);
+
 	const { success, response } = await callGemini(prompt, {
 		userId,
 		actionType: "XP_SUGGESTION",
+		billedUserId: resolution.billedUserId,
+		creditsCharged: 1,
 	});
 	if (!success || !response) return null;
 	return parseXpFromResponse(response);

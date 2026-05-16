@@ -15,6 +15,8 @@ interface UsageContext {
 	userId: string;
 	projectId?: string;
 	actionType: AiActionType;
+	billedUserId?: string;
+	creditsCharged?: number;
 }
 
 export async function callGemini(
@@ -67,23 +69,35 @@ export async function callGemini(
 			if (usageContext) {
 				const inputTokens = usage?.inputTokens ?? 0;
 				const outputTokens = usage?.outputTokens ?? 0;
+				const creditsCharged = usageContext.creditsCharged ?? 0;
 				prisma.aiUsageEvent
 					.create({
 						data: {
 							userId: usageContext.userId,
-							billedUserId: usageContext.userId,
+							billedUserId: usageContext.billedUserId ?? usageContext.userId,
 							projectId: usageContext.projectId,
 							actionType: usageContext.actionType,
 							model: MODEL,
 							inputTokens,
 							outputTokens,
 							costUsd: calculateCostUsd(MODEL, inputTokens, outputTokens),
-							creditsCharged: 0,
+							creditsCharged,
 							success: true,
 							durationMs: Math.round(performance.now() - start),
 						},
 					})
 					.catch(() => {});
+
+				if (creditsCharged > 0) {
+					prisma.userTier
+						.update({
+							where: {
+								userId: usageContext.billedUserId ?? usageContext.userId,
+							},
+							data: { usedCredits: { increment: creditsCharged } },
+						})
+						.catch(() => {});
+				}
 			}
 
 			return { success: true, response: text, usage };
@@ -94,7 +108,7 @@ export async function callGemini(
 				.create({
 					data: {
 						userId: usageContext.userId,
-						billedUserId: usageContext.userId,
+						billedUserId: usageContext.billedUserId ?? usageContext.userId,
 						projectId: usageContext.projectId,
 						actionType: usageContext.actionType,
 						model: MODEL,
@@ -119,7 +133,7 @@ export async function callGemini(
 				.create({
 					data: {
 						userId: usageContext.userId,
-						billedUserId: usageContext.userId,
+						billedUserId: usageContext.billedUserId ?? usageContext.userId,
 						projectId: usageContext.projectId,
 						actionType: usageContext.actionType,
 						model: MODEL,

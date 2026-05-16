@@ -1,4 +1,5 @@
 import { CORE_TASK_CATEGORIES } from "@pointwise/lib/categories";
+import { gateCreditUsage } from "@pointwise/lib/credits/gate";
 import { callGemini } from "@pointwise/lib/llm/gemini";
 import type {
 	ExistingTask,
@@ -84,10 +85,14 @@ export async function getTaskSuggestions(
 	projectId: string,
 ): Promise<TaskSuggestion[] | null> {
 	const prompt = buildTaskSuggestionsPrompt(goal, existingTasks, userPrompt);
+	const resolution = await gateCreditUsage(userId, projectId);
+
 	const { success, response } = await callGemini(prompt, {
 		userId,
 		projectId,
 		actionType: "TASK_SUGGESTIONS",
+		billedUserId: resolution.billedUserId,
+		creditsCharged: 1,
 	});
 	if (!success || !response) return null;
 	return parseSuggestionsFromResponse(response);
@@ -158,10 +163,14 @@ export async function expandTaskSuggestion(
 	projectId: string,
 ): Promise<TaskExpandResponse | null> {
 	const prompt = buildTaskExpansionPrompt(goal, title, summary);
+	const resolution = await gateCreditUsage(userId, projectId);
+
 	const { success, response } = await callGemini(prompt, {
 		userId,
 		projectId,
 		actionType: "TASK_EXPAND",
+		billedUserId: resolution.billedUserId,
+		creditsCharged: 1,
 	});
 	if (!success || !response) return null;
 	return parseExpandFromResponse(response);
@@ -241,10 +250,14 @@ export async function getTaskBreakdown(
 	projectId: string,
 ): Promise<TaskBreakdownSubtask[] | null> {
 	const prompt = buildTaskBreakdownPrompt(goal, title, description);
+	const resolution = await gateCreditUsage(userId, projectId);
+
 	const { success, response } = await callGemini(prompt, {
 		userId,
 		projectId,
 		actionType: "TASK_BREAKDOWN",
+		billedUserId: resolution.billedUserId,
+		creditsCharged: 1,
 	});
 	if (!success || !response) return null;
 	return parseBreakdownFromResponse(response);
