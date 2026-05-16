@@ -1,6 +1,13 @@
+import { realpathSync } from "node:fs";
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
+
+// Turbopack uses fs.realpathSync.native internally, which resolves the true
+// on-disk casing (e.g. "GitHub" vs "Github" on OneDrive). When cwd casing
+// differs from disk casing, pnpm symlinks break Turbopack's package resolution.
+// Pinning the root to the native realpath fixes this.
+const projectRoot = realpathSync.native(import.meta.dirname);
 
 // CSP is handled per-request in src/proxy.ts (unsafe-eval removed, unsafe-inline kept).
 // Only static security headers remain here.
@@ -23,6 +30,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+	turbopack: {
+		root: projectRoot,
+	},
 	reactCompiler: true,
 	allowedDevOrigins: ["http://192.168.0.*:3000", "http://localhost:3000"],
 
