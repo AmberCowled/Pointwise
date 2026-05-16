@@ -6,6 +6,7 @@ import {
 	type Project,
 	type ProjectRole,
 	ProjectSchema,
+	type UpdateCreditSettingsRequest,
 	type UpdateProjectRequest,
 } from "@pointwise/lib/validation/projects-schema";
 import type { Prisma, Project as PrismaProject } from "@prisma/client";
@@ -297,6 +298,8 @@ export function serializeProject(
 		projectUserIds: project.projectUserIds || [],
 		viewerUserIds: project.viewerUserIds || [],
 		joinRequestUserIds: project.joinRequestUserIds || [],
+		creditPolicy: project.creditPolicy,
+		memberCreditCap: project.memberCreditCap ?? null,
 		createdAt: project.createdAt.toISOString(),
 		updatedAt: project.updatedAt.toISOString(),
 		taskCount: project._count?.tasks ?? 0,
@@ -374,6 +377,23 @@ export async function updateProject(
 		);
 	}
 
+	// Only the project owner can change credit policy fields
+	if (
+		request.creditPolicy !== undefined ||
+		request.memberCreditCap !== undefined
+	) {
+		const existing = await prisma.project.findUniqueOrThrow({
+			where: { id: projectId },
+			select: { ownerId: true },
+		});
+		if (existing.ownerId !== userId) {
+			throw new ApiError(
+				"Forbidden: Only the project owner can change credit policy",
+				403,
+			);
+		}
+	}
+
 	const project = await prisma.project.update({
 		where: {
 			id: projectId,
@@ -383,6 +403,8 @@ export async function updateProject(
 			description: request.description ?? null,
 			goal: request.goal ?? null,
 			visibility: request.visibility,
+			creditPolicy: request.creditPolicy,
+			memberCreditCap: request.memberCreditCap,
 		},
 		include: {
 			_count: {
@@ -570,6 +592,46 @@ export async function leaveProject(
 	return updatedProject as PrismaProject & { _count: { tasks: number } };
 }
 
+export async function updateCreditSettings(
+	projectId: string,
+	request: UpdateCreditSettingsRequest,
+	userId: string,
+): Promise<PrismaProject & { _count: { tasks: number } }> {
+	const project = await prisma.project.findUniqueOrThrow({
+		where: { id: projectId },
+		select: { ownerId: true, visibility: true },
+	});
+
+	if (project.ownerId !== userId) {
+		throw new ApiError(
+			"Forbidden: Only the project owner can change credit settings",
+			403,
+		);
+	}
+
+	let { memberCreditCap } = request;
+
+	// Abuse prevention: public project + owner credits + no cap → auto-set cap to 10
+	if (
+		project.visibility === "PUBLIC" &&
+		request.creditPolicy === "OWNER_CREDITS" &&
+		memberCreditCap === null
+	) {
+		memberCreditCap = 10;
+	}
+
+	const updated = await prisma.project.update({
+		where: { id: projectId },
+		data: {
+			creditPolicy: request.creditPolicy,
+			memberCreditCap,
+		},
+		include: { _count: { select: { tasks: true } } },
+	});
+
+	return updated as PrismaProject & { _count: { tasks: number } };
+}
+
 export async function transferOwnership(
 	projectId: string,
 	currentOwnerId: string,
@@ -588,7 +650,11 @@ export async function transferOwnership(
 
 	const updated = await prisma.project.update({
 		where: { id: projectId },
-		data: { ownerId: newOwnerId, shareOwnerCredits: false },
+		data: {
+			ownerId: newOwnerId,
+			creditPolicy: "MEMBER_CREDITS",
+			memberCreditCap: null,
+		},
 		include: { _count: { select: { tasks: true } } },
 	});
 

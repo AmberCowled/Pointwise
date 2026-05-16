@@ -49,6 +49,11 @@ export const ProjectSchema = z.object({
 	projectUserIds: PROJECT_PROJECT_USER_IDS_SCHEMA,
 	viewerUserIds: PROJECT_VIEWER_USER_IDS_SCHEMA,
 	joinRequestUserIds: PROJECT_JOIN_REQUEST_USER_IDS_SCHEMA,
+	creditPolicy: z
+		.enum(["MEMBER_CREDITS", "OWNER_CREDITS"])
+		.optional()
+		.default("MEMBER_CREDITS"),
+	memberCreditCap: z.number().int().min(1).nullable().optional(),
 	createdAt: PROJECT_CREATED_DATE_RESPONSE_SCHEMA,
 	updatedAt: PROJECT_UPDATED_DATE_RESPONSE_SCHEMA,
 	taskCount: PROJECT_TASK_COUNT_SCHEMA,
@@ -115,6 +120,8 @@ export const UpdateProjectRequestSchema = z.object({
 	description: PROJECT_DESCRIPTION_SCHEMA,
 	goal: PROJECT_GOAL_SCHEMA,
 	visibility: PROJECT_VISIBILITY_SCHEMA,
+	creditPolicy: z.enum(["MEMBER_CREDITS", "OWNER_CREDITS"]).optional(),
+	memberCreditCap: z.number().int().min(1).nullable().optional(),
 });
 
 export const UpdateProjectResponseSchema = z.object({
@@ -247,4 +254,20 @@ export type TransferOwnershipRequest = z.infer<
 >;
 export type TransferOwnershipResponse = z.infer<
 	typeof TransferOwnershipResponseSchema
+>;
+
+export const UpdateCreditSettingsRequestSchema = z.object({
+	creditPolicy: z.enum(["MEMBER_CREDITS", "OWNER_CREDITS"]),
+	memberCreditCap: z.number().int().min(1).nullable(),
+});
+
+export const UpdateCreditSettingsResponseSchema = z.object({
+	project: ProjectSchema,
+});
+
+export type UpdateCreditSettingsRequest = z.infer<
+	typeof UpdateCreditSettingsRequestSchema
+>;
+export type UpdateCreditSettingsResponse = z.infer<
+	typeof UpdateCreditSettingsResponseSchema
 >;
