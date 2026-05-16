@@ -99,6 +99,7 @@
 		"ignoredBuiltDependencies": [
 			"@biomejs/biome",
 			"@depot/cli",
+			"@google/genai",
 			"@prisma/client",
 			"@prisma/engines",
 			"bcrypt",
